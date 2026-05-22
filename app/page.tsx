@@ -4,18 +4,23 @@ import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 
 const BOARDS = [
-  { id: 'free', ko: '자유게시판', en: 'Free Board', icon: '💬' },
-  { id: 'secret', ko: '비밀게시판', en: 'Secret Board', icon: '🔒' },
-  { id: 'graduate', ko: '졸업생게시판', en: 'Graduate', icon: '🎓' },
-  { id: 'freshman', ko: '새내기게시판', en: 'Freshman', icon: '🌱' },
-  { id: 'issue', ko: '시사·이슈', en: 'Issues', icon: '📰' },
-  { id: 'info', ko: '정보게시판', en: 'Info', icon: '📌' },
-  { id: 'event', ko: '이벤트게시판', en: 'Events', icon: '🎉' },
-  { id: 'promo', ko: '홍보게시판', en: 'Promotions', icon: '📢' },
-  { id: 'club', ko: '동아리·학회', en: 'Clubs', icon: '🤝' },
-  { id: 'career', ko: '취업·진로', en: 'Career', icon: '💼' },
-  { id: 'dorm', ko: '기숙사게시판', en: 'Dormitory', icon: '🏠' },
+  { id: 'campustalk', ko: '캠퍼스톡', en: 'Campus Talk', icon: '💬' },
+  { id: 'lifeinfo',   ko: '생활정보',  en: 'Life Info',   icon: '🗺️' },
+  { id: 'career',     ko: '취업·진로', en: 'Career',       icon: '💼' },
+  { id: 'club',       ko: '동아리·모임', en: 'Clubs',      icon: '🤝' },
+  { id: 'korea',      ko: '한국소식',  en: 'Korea News',   icon: '🇰🇷' },
 ] as const;
+
+const QUICK_MENUS = [
+  { icon: '🛂', ko: '비자',     en: 'Visa' },
+  { icon: '🏠', ko: '부동산',   en: 'Housing' },
+  { icon: '🏦', ko: '은행',     en: 'Bank' },
+  { icon: '📱', ko: '휴대폰',   en: 'Phone' },
+  { icon: '🛡️', ko: '보험',     en: 'Insurance' },
+  { icon: '🏥', ko: '병원',     en: 'Hospital' },
+  { icon: '💼', ko: '알바',     en: 'Part-time' },
+  { icon: '🎓', ko: '학교생활', en: 'Campus' },
+];
 
 type BoardId = typeof BOARDS[number]['id'];
 
@@ -44,7 +49,7 @@ export default function Home() {
   const [showWrite, setShowWrite] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
-  const [newBoard, setNewBoard] = useState<BoardId>('free');
+  const [newBoard, setNewBoard] = useState<BoardId>('campustalk');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -387,11 +392,38 @@ export default function Home() {
             <div className="text-center py-16 text-[#AAAAAA] text-sm">불러오는 중...</div>
           )}
 
-          {/* ── 홈: 게시판 프리뷰 그리드 (에브리타임 스타일) ── */}
+          {/* ── 홈: 소개 + 빠른메뉴 + 게시판 프리뷰 ── */}
           {!loading && activeBoard === 'home' && !currentPost && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-5">
-              {BOARDS.map(b => (
-                <div key={b.id} className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
+            <>
+              {/* 소개 섹션 */}
+              <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-4 mb-3 sm:mb-5">
+                <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-1">BUFS COMMUNITY</p>
+                <h2 className="text-white text-[16px] font-bold leading-snug mb-4">
+                  부산외대 유학생을 위한<br/>학교생활 커뮤니티
+                </h2>
+                {/* 빠른메뉴 4×2 */}
+                <div className="grid grid-cols-4 gap-2">
+                  {QUICK_MENUS.map((m, i) => (
+                    <button
+                      key={i}
+                      className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl py-3 border-none cursor-pointer transition-colors"
+                    >
+                      <span className="text-[22px] leading-none">{m.icon}</span>
+                      <span className="text-[10px] text-white/90 font-medium leading-tight text-center whitespace-nowrap">
+                        {lang === 'ko' ? m.ko : m.en}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
+              {BOARDS.map((b, idx) => (
+                <div
+                  key={b.id}
+                  className={`bg-white rounded-xl border border-[#EBEBEB] overflow-hidden
+                    ${idx === BOARDS.length - 1 && BOARDS.length % 2 !== 0 ? 'col-span-2 sm:col-span-1' : ''}`}
+                >
 
                   {/* 카드 헤더 */}
                   <div className="flex items-center justify-between px-3.5 pt-3.5 pb-2.5 border-b border-[#F0F0F0]">
@@ -430,6 +462,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            </>
           )}
 
           {/* ── 게시판 목록 뷰 ── */}
@@ -627,68 +660,85 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════
-          BOTTOM TAB BAR  (xl 미만)
-          에브리타임 스타일: 흰 배경, SVG 아이콘
+          BOTTOM TAB BAR  (xl 미만)  – 5탭
       ══════════════════════════════════════════ */}
       <div className="xl:hidden fixed bottom-0 left-0 right-0 z-[300] bg-white border-t border-[#EBEBEB] flex">
 
         {/* 홈 */}
         <button
           onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
-          className={`flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer transition-colors
+          className={`flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer transition-colors
             ${activeBoard === 'home' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
             <polyline points="9 21 9 12 15 12 15 21"/>
           </svg>
-          <span className="text-[10px] font-medium">{lang === 'ko' ? '홈' : 'Home'}</span>
+          <span className="text-[9px] font-medium">{lang === 'ko' ? '홈' : 'Home'}</span>
         </button>
 
-        {/* 게시판 */}
+        {/* 생활정보 */}
+        <button
+          onClick={() => { setActiveBoard('lifeinfo'); setCurrentPost(null); }}
+          className={`flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer transition-colors
+            ${activeBoard === 'lifeinfo' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
+        >
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span className="text-[9px] font-medium">{lang === 'ko' ? '생활정보' : 'Life'}</span>
+        </button>
+
+        {/* 글쓰기 – 강조 버튼 */}
+        <button
+          onClick={() => { if (activeBoard === 'home') setActiveBoard('campustalk'); setShowWrite(v => !v); }}
+          className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer transition-colors text-[#BBBBBB]"
+        >
+          <div className="w-[38px] h-[38px] -mt-[18px] bg-[#F6C21A] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(246,194,26,0.45)]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F2F2F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
+          <span className="text-[9px] font-medium">{lang === 'ko' ? '글쓰기' : 'Write'}</span>
+        </button>
+
+        {/* 커뮤니티 */}
         <button
           onClick={() => setShowBoardSheet(true)}
-          className={`flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer transition-colors
-            ${activeBoard !== 'home' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
+          className={`flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer transition-colors
+            ${activeBoard !== 'home' && activeBoard !== 'lifeinfo' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-          <span className="text-[10px] font-medium">{lang === 'ko' ? '게시판' : 'Boards'}</span>
-        </button>
-
-        {/* 글쓰기 */}
-        <button
-          onClick={() => { if (activeBoard === 'home') setActiveBoard('free'); setShowWrite(v => !v); }}
-          className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB] transition-colors"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-          <span className="text-[10px] font-medium">{lang === 'ko' ? '글쓰기' : 'Write'}</span>
+          <span className="text-[9px] font-medium">{lang === 'ko' ? '커뮤니티' : 'Community'}</span>
         </button>
 
         {/* MY */}
         {user ? (
           <button
-            className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB] transition-colors"
+            className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB] transition-colors"
             onClick={handleLogout}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            <span className="text-[10px] font-medium">MY</span>
+            <span className="text-[9px] font-medium">MY</span>
           </button>
         ) : (
-          <a href="/auth" className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] text-[#BBBBBB] no-underline">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <a href="/auth" className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] text-[#BBBBBB] no-underline">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            <span className="text-[10px] font-medium">MY</span>
+            <span className="text-[9px] font-medium">MY</span>
           </a>
         )}
       </div>
