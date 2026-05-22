@@ -3,23 +3,93 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 
+type Lang = 'ko' | 'en' | 'zh' | 'ja';
+const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
+
+const T = {
+  ko: {
+    schoolName: '부산외국어대학교', schoolNameShort: '부산외국어대학교',
+    introLine1: '부산외대 유학생을 위한', introLine2: '학교생활 커뮤니티',
+    introSub: '비자, 집, 학교생활, 취업, 동아리, 친구 찾기까지 한곳에서',
+    all: '전체', more: '더보기', login: '로그인', logout: '로그아웃', signUp: '회원가입',
+    write: '글쓰기', submit: '등록', cancel: '취소', back: '목록으로',
+    search: '검색', searchPh: '검색...', loading: '불러오는 중...',
+    noPostCard: '아직 게시글이 없습니다', noPosts: '게시글이 없습니다. 첫 글을 작성해보세요!',
+    selectBoard: '게시판 선택', allBoards: '전체',
+    comments: '댓글', commentPh: '댓글을 입력하세요...', titlePh: '제목을 입력하세요', bodyPh: '내용을 입력하세요...',
+    posts: '개', myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
+    boards: '게시판', calendar: '학사 일정', pleaseLogin: '로그인이 필요해요',
+    tabHome: '홈', tabLife: '생활정보', tabWrite: '글쓰기', tabCommunity: '커뮤니티', tabMy: 'MY',
+    subSlogan: '외국인 유학생을 위한 BUFS 생활 커뮤니티',
+    midtermResults: '중간고사 성적 발표', courseChange: '수강변경 기간', sportsDay: '체육대회', finalsStart: '기말고사 시작',
+  },
+  en: {
+    schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ. of Foreign Studies',
+    introLine1: 'Campus Life Community for', introLine2: 'BUFS International Students',
+    introSub: 'Visa, Housing, Campus Life, Jobs, Clubs & Friends — all in one place',
+    all: 'All', more: 'More', login: 'Sign In', logout: 'Logout', signUp: 'Sign Up',
+    write: 'Write', submit: 'Post', cancel: 'Cancel', back: 'Back',
+    search: 'Search', searchPh: 'Search...', loading: 'Loading...',
+    noPostCard: 'No posts yet', noPosts: 'No posts yet. Be the first!',
+    selectBoard: 'Select Board', allBoards: 'All Boards',
+    comments: 'Comments', commentPh: 'Write a comment...', titlePh: 'Title', bodyPh: 'Write your post...',
+    posts: '', myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
+    boards: 'BOARDS', calendar: 'Calendar', pleaseLogin: 'Please sign in',
+    tabHome: 'Home', tabLife: 'Life', tabWrite: 'Write', tabCommunity: 'Community', tabMy: 'MY',
+    subSlogan: 'BUFS Community for International Students',
+    midtermResults: 'Midterm Results', courseChange: 'Course Change', sportsDay: 'Sports Day', finalsStart: 'Finals Start',
+  },
+  zh: {
+    schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
+    introLine1: '为釜山外大留学生打造的', introLine2: '校园生活社区',
+    introSub: '签证、住房、校园生活、就业、社团与交友，一站搞定',
+    all: '全部', more: '更多', login: '登录', logout: '退出', signUp: '注册',
+    write: '写帖', submit: '提交', cancel: '取消', back: '返回列表',
+    search: '搜索', searchPh: '搜索...', loading: '加载中...',
+    noPostCard: '暂无帖子', noPosts: '暂无帖子，快来发第一篇吧！',
+    selectBoard: '选择版块', allBoards: '全部版块',
+    comments: '评论', commentPh: '写下你的评论...', titlePh: '请输入标题', bodyPh: '请输入内容...',
+    posts: '篇', myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
+    boards: '版块', calendar: '学校日程', pleaseLogin: '请先登录',
+    tabHome: '首页', tabLife: '生活', tabWrite: '写帖', tabCommunity: '社区', tabMy: '我的',
+    subSlogan: '为外国留学生打造的BUFS生活社区',
+    midtermResults: '期中考试成绩发布', courseChange: '选课变更期间', sportsDay: '运动会', finalsStart: '期末考试开始',
+  },
+  ja: {
+    schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
+    introLine1: 'BUFS留学生のための', introLine2: 'キャンパスライフコミュニティ',
+    introSub: 'ビザ、住居、学校生活、就職、サークル、友達づくりまで一箇所で',
+    all: '全体', more: 'もっと見る', login: 'ログイン', logout: 'ログアウト', signUp: '新規登録',
+    write: '投稿する', submit: '登録', cancel: 'キャンセル', back: '一覧へ',
+    search: '検索', searchPh: '検索...', loading: '読み込み中...',
+    noPostCard: '投稿がありません', noPosts: '投稿がありません。最初の投稿をしてみましょう！',
+    selectBoard: '掲示板を選択', allBoards: '全掲示板',
+    comments: 'コメント', commentPh: 'コメントを入力してください...', titlePh: 'タイトルを入力', bodyPh: '内容を入力してください...',
+    posts: '件', myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
+    boards: '掲示板', calendar: '学事日程', pleaseLogin: 'ログインしてください',
+    tabHome: 'ホーム', tabLife: '生活', tabWrite: '投稿', tabCommunity: 'コミュ', tabMy: 'MY',
+    subSlogan: '外国人留学生のためのBUFS生活コミュニティ',
+    midtermResults: '中間試験成績発表', courseChange: '履修変更期間', sportsDay: '体育祭', finalsStart: '期末試験開始',
+  },
+} as const;
+
 const BOARDS = [
-  { id: 'campustalk', ko: '캠퍼스톡', en: 'Campus Talk', icon: '💬' },
-  { id: 'lifeinfo',   ko: '생활정보',  en: 'Life Info',   icon: '🗺️' },
-  { id: 'career',     ko: '취업·진로', en: 'Career',       icon: '💼' },
-  { id: 'club',       ko: '동아리·모임', en: 'Clubs',      icon: '🤝' },
-  { id: 'korea',      ko: '한국소식',  en: 'Korea News',   icon: '🇰🇷' },
+  { id: 'campustalk', ko: '캠퍼스톡',    en: 'Campus Talk', zh: '校园话题',  ja: 'キャンパストーク', icon: '💬' },
+  { id: 'lifeinfo',   ko: '생활정보',    en: 'Life Info',   zh: '生活信息',  ja: '生活情報',         icon: '🗺️' },
+  { id: 'career',     ko: '취업·진로',   en: 'Career',      zh: '就业·进路', ja: '就職·進路',        icon: '💼' },
+  { id: 'club',       ko: '동아리·모임', en: 'Clubs',       zh: '社团·聚会', ja: 'サークル·集い',    icon: '🤝' },
+  { id: 'korea',      ko: '한국소식',    en: 'Korea News',  zh: '韩国资讯',  ja: '韓国ニュース',      icon: '🇰🇷' },
 ] as const;
 
 const QUICK_MENUS = [
-  { icon: '🛂', ko: '비자',     en: 'Visa' },
-  { icon: '🏠', ko: '부동산',   en: 'Housing' },
-  { icon: '🏦', ko: '은행',     en: 'Bank' },
-  { icon: '📱', ko: '휴대폰',   en: 'Phone' },
-  { icon: '🛡️', ko: '보험',     en: 'Insurance' },
-  { icon: '🏥', ko: '병원',     en: 'Hospital' },
-  { icon: '💼', ko: '알바',     en: 'Part-time' },
-  { icon: '🎓', ko: '학교생활', en: 'Campus' },
+  { icon: '🛂', ko: '비자',     en: 'Visa',      zh: '签证',     ja: 'ビザ' },
+  { icon: '🏠', ko: '부동산',   en: 'Housing',   zh: '住房',     ja: '住居' },
+  { icon: '🏦', ko: '은행',     en: 'Bank',      zh: '银行',     ja: '銀行' },
+  { icon: '📱', ko: '휴대폰',   en: 'Phone',     zh: '手机',     ja: 'スマホ' },
+  { icon: '🛡️', ko: '보험',     en: 'Insurance', zh: '保险',     ja: '保険' },
+  { icon: '🏥', ko: '병원',     en: 'Hospital',  zh: '医院',     ja: '病院' },
+  { icon: '💼', ko: '알바',     en: 'Part-time', zh: '兼职',     ja: 'アルバイト' },
+  { icon: '🎓', ko: '학교생활', en: 'Campus',    zh: '校园生活', ja: '学校生活' },
 ];
 
 type BoardId = typeof BOARDS[number]['id'];
@@ -28,17 +98,17 @@ interface Comment { id: number; post_id: number; author: string; body: string; c
 interface Post { id: number; board: BoardId; title: string; body: string; author: string; created_at: string; likes: number; }
 
 const NAV_ITEMS = [
-  { id: 'home', ko: '게시판', en: 'Boards' },
-  { id: 'timetable', ko: '시간표', en: 'Timetable' },
-  { id: 'lecture', ko: '강의실', en: 'Lecture' },
-  { id: 'grade', ko: '학점계산기', en: 'GPA Calc' },
-  { id: 'friend', ko: '친구', en: 'Friends' },
-  { id: 'book', ko: '책방', en: 'Books' },
-  { id: 'campus', ko: '캠퍼스픽', en: 'Campus' },
+  { id: 'home',      ko: '게시판',     en: 'Boards',    zh: '版块',     ja: '掲示板' },
+  { id: 'timetable', ko: '시간표',     en: 'Timetable', zh: '课程表',   ja: '時間割' },
+  { id: 'lecture',   ko: '강의실',     en: 'Lecture',   zh: '教室',     ja: '講義室' },
+  { id: 'grade',     ko: '학점계산기', en: 'GPA Calc',  zh: '成绩计算', ja: 'GPA計算' },
+  { id: 'friend',    ko: '친구',       en: 'Friends',   zh: '朋友',     ja: '友達' },
+  { id: 'book',      ko: '책방',       en: 'Books',     zh: '书店',     ja: '本屋' },
+  { id: 'campus',    ko: '캠퍼스픽',   en: 'Campus',    zh: '校园',     ja: 'キャンパス' },
 ];
 
 export default function Home() {
-  const [lang, setLang] = useState<'ko' | 'en'>('ko');
+  const [lang, setLang] = useState<Lang>('ko');
   const [activeBoard, setActiveBoard] = useState<BoardId | 'home'>('home');
   const [currentPost, setCurrentPost] = useState<Post | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -58,7 +128,10 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showBoardSheet, setShowBoardSheet] = useState(false);
 
-  const boardName = (id: BoardId) => { const b = BOARDS.find(x => x.id === id)!; return lang === 'ko' ? b.ko : b.en; };
+  const t = T[lang];
+  const bLabel = (b: { ko: string; en: string; zh: string; ja: string }) =>
+    lang === 'ko' ? b.ko : lang === 'en' ? b.en : lang === 'zh' ? b.zh : b.ja;
+  const boardName = (id: BoardId) => { const b = BOARDS.find(x => x.id === id)!; return bLabel(b); };
   const filteredPosts = posts.filter(p => search === '' || p.title.includes(search));
 
   useEffect(() => {
@@ -147,9 +220,11 @@ export default function Home() {
 
       {/* ══════════════════════════════════════════
           MOBILE HEADER  (xl 미만)
-          에브리타임 스타일: 흰 배경 + 로고 + 아이콘
+          Row 1: 로고 + 아이콘 (54px)
+          Row 2: 언어 탭 4개 (~30px)
       ══════════════════════════════════════════ */}
       <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+        {/* Row 1 */}
         <div className="flex items-center h-[54px] px-4">
 
           {/* 로고 + 학교명 */}
@@ -164,34 +239,15 @@ export default function Home() {
               <span className="text-[10px] font-extrabold text-white leading-none">S</span>
             </div>
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-[#1A1A1A] leading-none truncate">
-                {lang === 'ko' ? '부산외국어대학교' : 'Busan Univ. of Foreign Studies'}
+              <div className="text-[14px] font-bold text-[#1A1A1A] leading-none truncate">
+                {t.schoolNameShort}
               </div>
               <div className="text-[10px] text-[#AAAAAA] mt-[3px]">BUFS Community</div>
             </div>
           </div>
 
-          {/* 오른쪽: 언어토글 + 아이콘 3개 */}
-          <div className="flex items-center shrink-0 ml-2 gap-1.5">
-
-            {/* KR / EN 토글 */}
-            <div className="flex items-center border border-[#F6C21A] rounded-full overflow-hidden text-[11px] font-bold">
-              <button
-                onClick={() => setLang('ko')}
-                className={`px-2.5 py-1 border-none cursor-pointer transition-colors
-                  ${lang === 'ko' ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#F6C21A]'}`}
-              >
-                KR
-              </button>
-              <button
-                onClick={() => setLang('en')}
-                className={`px-2.5 py-1 border-none cursor-pointer transition-colors
-                  ${lang === 'en' ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#F6C21A]'}`}
-              >
-                EN
-              </button>
-            </div>
-
+          {/* 오른쪽: 아이콘 3개 */}
+          <div className="flex items-center shrink-0 ml-2">
             {/* 검색 */}
             <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="검색">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,22 +277,36 @@ export default function Home() {
                 </svg>
               </a>
             )}
-          </div>        {/* /오른쪽 */}
+          </div>
+        </div>
+
+        {/* Row 2: 언어 탭 */}
+        <div className="flex border-t border-[#F0F0F0]">
+          {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              className={`flex-1 py-[7px] text-[11px] font-bold border-none cursor-pointer border-b-2 transition-colors bg-transparent
+                ${lang === l ? 'text-[#F6C21A] border-b-[#F6C21A]' : 'text-[#CCCCCC] border-b-transparent'}`}
+            >
+              {LANG_LABELS[l]}
+            </button>
+          ))}
         </div>
       </header>
 
       {/* ══════════════════════════════════════════
           MOBILE BOARD TAB BAR  (xl 미만)
-          sticky: 모바일 헤더 바로 아래
+          sticky: 모바일 헤더(54px+30px=84px) 바로 아래
       ══════════════════════════════════════════ */}
-      <div className="xl:hidden sticky top-[54px] z-[150] bg-white border-b border-[#EBEBEB]">
+      <div className="xl:hidden sticky top-[84px] z-[150] bg-white border-b border-[#EBEBEB]">
         <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2">
           <button
             onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
             className={`px-3 py-2.5 text-[13px] whitespace-nowrap border-none bg-transparent cursor-pointer border-b-2 transition-colors
               ${activeBoard === 'home' ? 'text-[#F6C21A] border-b-[#F6C21A] font-bold' : 'text-[#888] border-b-transparent font-medium'}`}
           >
-            {lang === 'ko' ? '전체' : 'All'}
+            {t.all}
           </button>
           {BOARDS.map(b => (
             <button
@@ -245,7 +315,7 @@ export default function Home() {
               className={`px-3 py-2.5 text-[13px] whitespace-nowrap border-none bg-transparent cursor-pointer border-b-2 transition-colors
                 ${activeBoard === b.id ? 'text-[#F6C21A] border-b-[#F6C21A] font-bold' : 'text-[#888] border-b-transparent font-medium'}`}
             >
-              {lang === 'ko' ? b.ko : b.en}
+              {bLabel(b)}
             </button>
           ))}
         </div>
@@ -270,11 +340,11 @@ export default function Home() {
             </div>
             <div>
               <div className="font-normal text-[19px] text-white leading-[1.1]">
-                {lang === 'ko' ? '부산외국어대학교' : 'Busan University of Foreign Studies'}
+                {t.schoolName}
               </div>
               <div className="text-[11px] text-[#aaa] leading-[1.3]">Busan University of Foreign Studies</div>
               <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">
-                {lang === 'ko' ? '외국인 유학생을 위한 BUFS 생활 커뮤니티' : 'BUFS Community for International Students'}
+                {t.subSlogan}
               </div>
             </div>
           </div>
@@ -287,18 +357,25 @@ export default function Home() {
                 className={`px-[18px] h-[68px] border-none bg-transparent text-base cursor-pointer border-b-[3px] transition-colors
                   ${item.id === 'home' ? 'font-bold text-[#F6C21A] border-b-[#F6C21A]' : 'font-normal text-[#ccc] border-b-transparent'}`}
               >
-                {lang === 'ko' ? item.ko : item.en}
+                {bLabel(item)}
               </button>
             ))}
           </div>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <button
-              onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}
-              className="px-[14px] py-[7px] border border-[#666] rounded-full bg-transparent text-sm cursor-pointer font-medium text-[#ddd]"
-            >
-              {lang === 'ko' ? 'EN' : '한국어'}
-            </button>
+            {/* 4-language toggle */}
+            <div className="flex items-center border border-[#666] rounded-full overflow-hidden text-[12px]">
+              {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className={`px-2.5 py-1.5 border-none cursor-pointer transition-colors font-medium
+                    ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#999]'}`}
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
+            </div>
             {user ? (
               <div className="flex items-center gap-2">
                 <span className="text-[#F6C21A] text-sm font-semibold">{user.user_metadata?.nickname || user.email}</span>
@@ -306,12 +383,12 @@ export default function Home() {
                   onClick={handleLogout}
                   className="px-4 py-2 bg-transparent text-[#ddd] border border-[#666] rounded-full text-sm cursor-pointer"
                 >
-                  {lang === 'ko' ? '로그아웃' : 'Logout'}
+                  {t.logout}
                 </button>
               </div>
             ) : (
               <a href="/auth" className="px-[22px] py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-full text-[15px] font-bold no-underline">
-                {lang === 'ko' ? '로그인' : 'Sign In'}
+                {t.login}
               </a>
             )}
           </div>
@@ -325,7 +402,7 @@ export default function Home() {
               className={`px-[18px] py-[11px] border-none bg-transparent text-[15px] whitespace-nowrap cursor-pointer border-b-2 transition-colors
                 ${activeBoard === 'home' ? 'font-bold text-[#F6C21A] border-b-[#F6C21A]' : 'font-normal text-[#bbb] border-b-transparent'}`}
             >
-              {lang === 'ko' ? '전체' : 'All'}
+              {t.all}
             </button>
             {BOARDS.map(b => (
               <button
@@ -334,7 +411,7 @@ export default function Home() {
                 className={`px-[18px] py-[11px] border-none bg-transparent text-[15px] whitespace-nowrap cursor-pointer border-b-2 transition-colors
                   ${activeBoard === b.id ? 'font-bold text-[#F6C21A] border-b-[#F6C21A]' : 'font-normal text-[#bbb] border-b-transparent'}`}
               >
-                {lang === 'ko' ? b.ko : b.en}
+                {bLabel(b)}
               </button>
             ))}
           </div>
@@ -354,21 +431,21 @@ export default function Home() {
               {user ? '😊' : '👤'}
             </div>
             <div className="text-[15px] font-bold mb-[3px]">
-              {user ? (user.user_metadata?.nickname || user.email) : (lang === 'ko' ? '로그인이 필요해요' : 'Please sign in')}
+              {user ? (user.user_metadata?.nickname || user.email) : t.pleaseLogin}
             </div>
             <div className="text-xs text-[#6B7280] mb-4">BUFS International</div>
             <div className="flex gap-2">
               {user ? (
                 <button onClick={handleLogout} className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-sm font-bold cursor-pointer">
-                  {lang === 'ko' ? '로그아웃' : 'Logout'}
+                  {t.logout}
                 </button>
               ) : (
                 <>
                   <a href="/auth" className="flex-1 py-2 border border-[#E5E7EB] rounded-lg bg-white text-sm no-underline text-[#333333] flex items-center justify-center">
-                    {lang === 'ko' ? '회원가입' : 'Sign Up'}
+                    {t.signUp}
                   </a>
                   <a href="/auth" className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-lg text-sm font-bold no-underline flex items-center justify-center">
-                    {lang === 'ko' ? '로그인' : 'Sign In'}
+                    {t.login}
                   </a>
                 </>
               )}
@@ -377,20 +454,20 @@ export default function Home() {
 
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mb-4">
             {[
-              { icon: '📝', ko: '내가 쓴 글', en: 'My Posts' },
-              { icon: '💬', ko: '댓글 단 글', en: 'Commented' },
-              { icon: '⭐', ko: '내 스크랩', en: 'Scrapped' },
+              { icon: '📝', label: t.myPosts },
+              { icon: '💬', label: t.commented },
+              { icon: '⭐', label: t.scrapped },
             ].map((item, i) => (
               <div key={i} className={`flex items-center gap-2.5 px-4 py-[13px] cursor-pointer text-[15px] hover:bg-[#F5F5F5] transition-colors ${i < 2 ? 'border-b border-[#F5F5F5]' : ''}`}>
                 <span>{item.icon}</span>
-                <span>{lang === 'ko' ? item.ko : item.en}</span>
+                <span>{item.label}</span>
               </div>
             ))}
           </div>
 
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
             <div className="px-4 py-3 border-b border-[#F5F5F5] text-xs font-bold text-[#6B7280] tracking-[0.06em]">
-              {lang === 'ko' ? '게시판' : 'BOARDS'}
+              {t.boards}
             </div>
             {BOARDS.map((b, i) => (
               <div
@@ -401,7 +478,7 @@ export default function Home() {
                   ${activeBoard === b.id ? 'bg-[#FFFBEA] text-[#4A4A4A] font-bold' : 'hover:bg-[#F5F5F5] text-[#333333]'}`}
               >
                 <span>{b.icon}</span>
-                <span>{lang === 'ko' ? b.ko : b.en}</span>
+                <span>{bLabel(b)}</span>
                 {activeBoard === b.id && <span className="ml-auto w-2 h-2 bg-[#F6C21A] rounded-full" />}
               </div>
             ))}
@@ -412,7 +489,7 @@ export default function Home() {
         <div className="flex-1 min-w-0">
 
           {loading && (
-            <div className="text-center py-16 text-[#AAAAAA] text-sm">불러오는 중...</div>
+            <div className="text-center py-16 text-[#AAAAAA] text-sm">{t.loading}</div>
           )}
 
           {/* ── 홈: 소개 + 빠른메뉴 + 게시판 프리뷰 ── */}
@@ -422,14 +499,10 @@ export default function Home() {
               <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-4 mb-3 sm:mb-5">
                 <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-1">BUFS COMMUNITY</p>
                 <h2 className="text-white text-[16px] font-bold leading-snug mb-1.5">
-                  {lang === 'ko'
-                    ? <>부산외대 유학생을 위한<br/>학교생활 커뮤니티</>
-                    : <>Campus Life Community for<br/>BUFS International Students</>}
+                  {t.introLine1}<br/>{t.introLine2}
                 </h2>
                 <p className="text-white/60 text-[12px] leading-snug mb-4">
-                  {lang === 'ko'
-                    ? '비자, 집, 학교생활, 취업, 동아리, 친구 찾기까지 한곳에서'
-                    : 'Visa, Housing, Campus Life, Jobs, Clubs & Friends — all in one place'}
+                  {t.introSub}
                 </p>
                 {/* 빠른메뉴 4×2 */}
                 <div className="grid grid-cols-4 gap-2">
@@ -440,7 +513,7 @@ export default function Home() {
                     >
                       <span className="text-[22px] leading-none">{m.icon}</span>
                       <span className="text-[10px] text-white/90 font-medium leading-tight text-center whitespace-nowrap">
-                        {lang === 'ko' ? m.ko : m.en}
+                        {bLabel(m)}
                       </span>
                     </button>
                   ))}
@@ -460,14 +533,14 @@ export default function Home() {
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-[13px] shrink-0">{b.icon}</span>
                       <span className="text-[12px] sm:text-[13px] font-bold text-[#1A1A1A] truncate">
-                        {lang === 'ko' ? b.ko : b.en}
+                        {bLabel(b)}
                       </span>
                     </div>
                     <button
                       onClick={() => { setActiveBoard(b.id); setCurrentPost(null); }}
                       className="text-[11px] text-[#AAAAAA] bg-transparent border-none cursor-pointer shrink-0 ml-1"
                     >
-                      더보기
+                      {t.more}
                     </button>
                   </div>
 
@@ -475,7 +548,7 @@ export default function Home() {
                   <div className="px-3.5 py-2 pb-3">
                     {(boardPreviews[b.id] || []).length === 0 ? (
                       <p className="text-[11px] text-[#CCCCCC] py-1.5">
-                        {lang === 'ko' ? '게시글이 없습니다' : 'No posts yet'}
+                        {t.noPostCard}
                       </p>
                     ) : (
                       (boardPreviews[b.id] || []).slice(0, 3).map((p) => (
@@ -504,21 +577,21 @@ export default function Home() {
                   <span>{BOARDS.find(b => b.id === activeBoard)?.icon}</span>
                   <span>{boardName(activeBoard as BoardId)}</span>
                   <span className="text-[13px] text-[#AAAAAA] font-normal">
-                    {filteredPosts.length}{lang === 'ko' ? '개' : ''}
+                    {filteredPosts.length}{t.posts}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
                   <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder={lang === 'ko' ? '검색' : 'Search'}
+                    placeholder={t.searchPh}
                     className="px-3 py-1.5 border border-[#E5E7EB] rounded-full text-[13px] outline-none w-[110px] sm:w-[180px]"
                   />
                   <button
                     onClick={() => setShowWrite(v => !v)}
                     className="hidden sm:block px-5 py-[9px] bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-[15px] font-bold cursor-pointer"
                   >
-                    ✏️ {lang === 'ko' ? '글쓰기' : 'Write'}
+                    ✏️ {t.write}
                   </button>
                 </div>
               </div>
@@ -529,21 +602,21 @@ export default function Home() {
                   <input
                     value={newTitle}
                     onChange={e => setNewTitle(e.target.value)}
-                    placeholder={lang === 'ko' ? '제목을 입력하세요' : 'Title'}
+                    placeholder={t.titlePh}
                     className="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[14px] outline-none mb-2.5 box-border"
                   />
                   <textarea
                     value={newBody}
                     onChange={e => setNewBody(e.target.value)}
-                    placeholder={lang === 'ko' ? '내용을 입력하세요...' : 'Write your post...'}
+                    placeholder={t.bodyPh}
                     className="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[14px] outline-none h-[120px] resize-none box-border"
                   />
                   <div className="flex justify-end gap-2 mt-2.5">
                     <button onClick={() => setShowWrite(false)} className="px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[14px] cursor-pointer text-[#555]">
-                      {lang === 'ko' ? '취소' : 'Cancel'}
+                      {t.cancel}
                     </button>
                     <button onClick={submitPost} className="px-5 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-[14px] font-bold cursor-pointer">
-                      {lang === 'ko' ? '등록' : 'Post'}
+                      {t.submit}
                     </button>
                   </div>
                 </div>
@@ -553,7 +626,7 @@ export default function Home() {
               <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
                 {filteredPosts.length === 0 ? (
                   <div className="py-12 text-center text-[#AAAAAA] text-sm">
-                    {lang === 'ko' ? '게시글이 없습니다. 첫 글을 작성해보세요!' : 'No posts yet. Be the first!'}
+                    {t.noPosts}
                   </div>
                 ) : (
                   filteredPosts.map((p, i) => (
@@ -592,7 +665,7 @@ export default function Home() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6"/>
                 </svg>
-                {lang === 'ko' ? '목록으로' : 'Back'}
+                {t.back}
               </button>
 
               <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-7 py-5 mb-2.5">
@@ -636,7 +709,7 @@ export default function Home() {
               {/* 댓글 */}
               <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-7 py-5">
                 <div className="text-[14px] font-bold mb-3 text-[#1A1A1A]">
-                  {lang === 'ko' ? '댓글' : 'Comments'}
+                  {t.comments}
                   <span className="text-[#F6C21A] ml-1.5">{comments.length}</span>
                 </div>
                 {comments.map((c) => (
@@ -652,14 +725,14 @@ export default function Home() {
                   <textarea
                     value={cmtInput}
                     onChange={e => setCmtInput(e.target.value)}
-                    placeholder={lang === 'ko' ? '댓글을 입력하세요...' : 'Write a comment...'}
+                    placeholder={t.commentPh}
                     className="flex-1 px-3.5 py-2.5 border border-[#E5E7EB] rounded-xl text-[13px] resize-none h-[72px] outline-none box-border"
                   />
                   <button
                     onClick={submitComment}
                     className="px-4 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-xl text-[13px] font-bold cursor-pointer shrink-0 h-[72px]"
                   >
-                    {lang === 'ko' ? '등록' : 'Post'}
+                    {t.submit}
                   </button>
                 </div>
               </div>
@@ -671,13 +744,13 @@ export default function Home() {
         <div className="hidden lg:block w-[240px] shrink-0">
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
             <div className="px-[18px] py-[13px] bg-[#2F2F2F] border-b-2 border-b-[#F6C21A]">
-              <span className="text-base font-bold text-white">📅 {lang === 'ko' ? '학사 일정' : 'Calendar'}</span>
+              <span className="text-base font-bold text-white">📅 {t.calendar}</span>
             </div>
             {[
-              { date: '05.26', event: lang === 'ko' ? '중간고사 성적 발표' : 'Midterm Results' },
-              { date: '06.01', event: lang === 'ko' ? '수강변경 기간' : 'Course Change' },
-              { date: '06.15', event: lang === 'ko' ? '체육대회' : 'Sports Day' },
-              { date: '06.20', event: lang === 'ko' ? '기말고사 시작' : 'Finals Start' },
+              { date: '05.26', event: t.midtermResults },
+              { date: '06.01', event: t.courseChange },
+              { date: '06.15', event: t.sportsDay },
+              { date: '06.20', event: t.finalsStart },
             ].map((item, i) => (
               <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < 3 ? 'border-b border-[#F5F5F5]' : ''}`}>
                 <span className="text-[13px] text-[#F6C21A] font-bold shrink-0 bg-[#2F2F2F] px-[7px] py-0.5 rounded">{item.date}</span>
@@ -704,7 +777,7 @@ export default function Home() {
             <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
             <polyline points="9 21 9 12 15 12 15 21"/>
           </svg>
-          <span className="text-[9px] font-medium">{lang === 'ko' ? '홈' : 'Home'}</span>
+          <span className="text-[9px] font-medium">{t.tabHome}</span>
         </button>
 
         {/* 생활정보 */}
@@ -718,7 +791,7 @@ export default function Home() {
             <line x1="2" y1="12" x2="22" y2="12"/>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          <span className="text-[9px] font-medium">{lang === 'ko' ? '생활정보' : 'Life'}</span>
+          <span className="text-[9px] font-medium">{t.tabLife}</span>
         </button>
 
         {/* 글쓰기 – 강조 버튼 */}
@@ -732,7 +805,7 @@ export default function Home() {
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
           </div>
-          <span className="text-[9px] font-medium">{lang === 'ko' ? '글쓰기' : 'Write'}</span>
+          <span className="text-[9px] font-medium">{t.tabWrite}</span>
         </button>
 
         {/* 커뮤니티 */}
@@ -747,7 +820,7 @@ export default function Home() {
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-          <span className="text-[9px] font-medium">{lang === 'ko' ? '커뮤니티' : 'Community'}</span>
+          <span className="text-[9px] font-medium">{t.tabCommunity}</span>
         </button>
 
         {/* MY */}
@@ -760,7 +833,7 @@ export default function Home() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            <span className="text-[9px] font-medium">MY</span>
+            <span className="text-[9px] font-medium">{t.tabMy}</span>
           </button>
         ) : (
           <a href="/auth" className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] text-[#BBBBBB] no-underline">
@@ -768,7 +841,7 @@ export default function Home() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
-            <span className="text-[9px] font-medium">MY</span>
+            <span className="text-[9px] font-medium">{t.tabMy}</span>
           </a>
         )}
       </div>
@@ -789,7 +862,7 @@ export default function Home() {
             {/* 헤더 */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
               <span className="text-[15px] font-bold text-[#1A1A1A]">
-                {lang === 'ko' ? '게시판 선택' : 'Select Board'}
+                {t.selectBoard}
               </span>
               <button onClick={() => setShowBoardSheet(false)} className="w-8 h-8 flex items-center justify-center text-[#888] bg-transparent border-none cursor-pointer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -806,7 +879,7 @@ export default function Home() {
             >
               <span className="text-[16px]">🏠</span>
               <span className={`text-[14px] ${activeBoard === 'home' ? 'font-bold text-[#D4A800]' : 'text-[#1A1A1A]'}`}>
-                {lang === 'ko' ? '전체' : 'All Boards'}
+                {t.allBoards}
               </span>
               {activeBoard === 'home' && <span className="ml-auto w-1.5 h-1.5 bg-[#F6C21A] rounded-full" />}
             </button>
@@ -821,7 +894,7 @@ export default function Home() {
               >
                 <span className="text-[16px]">{b.icon}</span>
                 <span className={`text-[14px] ${activeBoard === b.id ? 'font-bold text-[#D4A800]' : 'text-[#1A1A1A]'}`}>
-                  {lang === 'ko' ? b.ko : b.en}
+                  {bLabel(b)}
                 </span>
                 {activeBoard === b.id && <span className="ml-auto w-1.5 h-1.5 bg-[#F6C21A] rounded-full" />}
               </button>
