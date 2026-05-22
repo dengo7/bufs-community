@@ -169,8 +169,27 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 오른쪽 아이콘 3개 */}
-          <div className="flex items-center shrink-0 ml-2">
+          {/* 오른쪽: 언어토글 + 아이콘 3개 */}
+          <div className="flex items-center shrink-0 ml-2 gap-1.5">
+
+            {/* KR / EN 토글 */}
+            <div className="flex items-center border border-[#F6C21A] rounded-full overflow-hidden text-[11px] font-bold">
+              <button
+                onClick={() => setLang('ko')}
+                className={`px-2.5 py-1 border-none cursor-pointer transition-colors
+                  ${lang === 'ko' ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#F6C21A]'}`}
+              >
+                KR
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`px-2.5 py-1 border-none cursor-pointer transition-colors
+                  ${lang === 'en' ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#F6C21A]'}`}
+              >
+                EN
+              </button>
+            </div>
+
             {/* 검색 */}
             <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="검색">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -200,7 +219,7 @@ export default function Home() {
                 </svg>
               </a>
             )}
-          </div>
+          </div>        {/* /오른쪽 */}
         </div>
       </header>
 
