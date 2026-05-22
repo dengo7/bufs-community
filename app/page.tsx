@@ -108,6 +108,19 @@ const NAV_ITEMS = [
   { id: 'campus',    ko: '캠퍼스픽',   en: 'Campus',    zh: '校园',     ja: 'キャンパス' },
 ];
 
+function QuickIcon({ i }: { i: number }) {
+  const p = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  if (i === 0) return <svg {...p}><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/><circle cx="15" cy="15" r="2"/></svg>;
+  if (i === 1) return <svg {...p}><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>;
+  if (i === 2) return <svg {...p}><line x1="3" y1="22" x2="21" y2="22"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="5" y1="11" x2="5" y2="21"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/><line x1="19" y1="11" x2="19" y2="21"/><path d="M12 2L3 11h18L12 2z"/></svg>;
+  if (i === 3) return <svg {...p}><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/></svg>;
+  if (i === 4) return <svg {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>;
+  if (i === 5) return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg>;
+  if (i === 6) return <svg {...p}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="2" y1="13" x2="22" y2="13"/></svg>;
+  if (i === 7) return <svg {...p}><path d="M2 10l10-7 10 7-10 7-10-7z"/><path d="M6 12v5c0 2 2.5 4 6 4s6-2 6-4v-5"/><line x1="22" y1="10" x2="22" y2="16"/></svg>;
+  return null;
+}
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
   const [activeBoard, setActiveBoard] = useState<BoardId | 'home'>('home');
@@ -220,17 +233,14 @@ export default function Home() {
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
       {/* ══════════════════════════════════════════
-          MOBILE HEADER  (xl 미만)
-          Row 1: 로고 + 아이콘 (54px)
-          Row 2: 언어 탭 4개 (~30px)
+          MOBILE HEADER  (xl 미만)  – 단일 행 54px
       ══════════════════════════════════════════ */}
       <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        {/* Row 1 */}
-        <div className="flex items-center h-[54px] px-4">
+        <div className="flex items-center h-[54px] px-3 gap-2">
 
           {/* 로고 + 학교명 */}
           <div
-            className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
+            className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
             onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
           >
             <div className="bg-[#2F2F2F] rounded-[5px] px-[7px] py-[5px] grid grid-cols-2 gap-px shrink-0">
@@ -239,40 +249,46 @@ export default function Home() {
               <span className="text-[10px] font-extrabold text-white leading-none">F</span>
               <span className="text-[10px] font-extrabold text-white leading-none">S</span>
             </div>
-            <div className="min-w-0">
-              <div className="text-[14px] font-bold text-[#1A1A1A] leading-none truncate">
-                {t.schoolNameShort}
-              </div>
-              <div className="text-[10px] text-[#AAAAAA] mt-[3px]">BUFS Community</div>
-            </div>
+            <span className="text-[13px] font-bold text-[#1A1A1A] truncate">{t.schoolNameShort}</span>
           </div>
 
-          {/* 오른쪽: 아이콘 3개 */}
-          <div className="flex items-center shrink-0 ml-2">
-            {/* 검색 */}
-            <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="검색">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {/* 언어 토글 – 헤더 통합 */}
+          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
+            {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
+                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
+              >
+                {l === 'ko' ? 'KR' : l === 'en' ? 'EN' : l === 'zh' ? '中' : '日'}
+              </button>
+            ))}
+          </div>
+
+          {/* 아이콘 3개 */}
+          <div className="flex items-center shrink-0">
+            <button className="w-8 h-8 flex items-center justify-center text-[#555] bg-transparent border-none cursor-pointer" aria-label="검색">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </button>
-            {/* 알림 */}
-            <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="알림">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button className="w-8 h-8 flex items-center justify-center text-[#555] bg-transparent border-none cursor-pointer" aria-label="알림">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
             </button>
-            {/* 프로필 */}
             {user ? (
-              <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="프로필">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <button className="w-8 h-8 flex items-center justify-center text-[#555] bg-transparent border-none cursor-pointer" aria-label="프로필">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
               </button>
             ) : (
-              <a href="/auth" className="w-9 h-9 flex items-center justify-center text-[#444] no-underline" aria-label="로그인">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <a href="/auth" className="w-8 h-8 flex items-center justify-center text-[#555] no-underline" aria-label="로그인">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
@@ -280,27 +296,13 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {/* Row 2: 언어 탭 */}
-        <div className="flex border-t border-[#F0F0F0]">
-          {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
-            <button
-              key={l}
-              onClick={() => setLang(l)}
-              className={`flex-1 py-[7px] text-[11px] font-bold border-none cursor-pointer border-b-2 transition-colors bg-transparent
-                ${lang === l ? 'text-[#F6C21A] border-b-[#F6C21A]' : 'text-[#CCCCCC] border-b-transparent'}`}
-            >
-              {LANG_LABELS[l]}
-            </button>
-          ))}
-        </div>
       </header>
 
       {/* ══════════════════════════════════════════
           MOBILE BOARD TAB BAR  (xl 미만)
-          sticky: 모바일 헤더(54px+30px=84px) 바로 아래
+          sticky: 모바일 헤더(54px) 바로 아래
       ══════════════════════════════════════════ */}
-      <div className="xl:hidden sticky top-[84px] z-[150] bg-white border-b border-[#EBEBEB]">
+      <div className="xl:hidden sticky top-[54px] z-[150] bg-white border-b border-[#EBEBEB]">
         <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2">
           <button
             onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
@@ -512,7 +514,7 @@ export default function Home() {
                       key={i}
                       className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl py-3 border-none cursor-pointer transition-colors"
                     >
-                      <span className="text-[22px] leading-none">{m.icon}</span>
+                      <span className="text-white/90"><QuickIcon i={i} /></span>
                       <span className="text-[10px] text-white/90 font-medium leading-tight text-center whitespace-nowrap">
                         {bLabel(m)}
                       </span>
@@ -521,7 +523,7 @@ export default function Home() {
                 </div>
               </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
               {BOARDS.map((b, idx) => (
                 <div
                   key={b.id}
@@ -530,7 +532,7 @@ export default function Home() {
                 >
 
                   {/* 카드 헤더 */}
-                  <div className="flex items-center justify-between px-3.5 pt-3.5 pb-2.5 border-b border-[#F0F0F0]">
+                  <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[#F0F0F0]">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-[13px] shrink-0">{b.icon}</span>
                       <span className="text-[12px] sm:text-[13px] font-bold text-[#1A1A1A] truncate">
@@ -546,7 +548,7 @@ export default function Home() {
                   </div>
 
                   {/* 게시글 목록 – 제목만 간결하게 */}
-                  <div className="px-3.5 py-2 pb-3">
+                  <div className="px-4 py-2.5 pb-3.5">
                     {(boardPreviews[b.id] || []).length === 0 ? (
                       <p className="text-[11px] text-[#CCCCCC] py-1.5">
                         {t.noPostCard}
@@ -556,7 +558,7 @@ export default function Home() {
                         <div
                           key={p.id}
                           onClick={() => openPost(p)}
-                          className="py-[5px] cursor-pointer"
+                          className="py-[7px] cursor-pointer"
                         >
                           <p className="text-[12px] text-[#333] leading-[1.4] truncate">{p.title}</p>
                         </div>
