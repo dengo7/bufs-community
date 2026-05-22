@@ -79,6 +79,7 @@ const BOARDS = [
   { id: 'career',     ko: '취업·진로',   en: 'Career',      zh: '就业·进路', ja: '就職·進路',        icon: '💼' },
   { id: 'club',       ko: '동아리·모임', en: 'Clubs',       zh: '社团·聚会', ja: 'サークル·集い',    icon: '🤝' },
   { id: 'korea',      ko: '한국소식',    en: 'Korea News',  zh: '韩国资讯',  ja: '韓国ニュース',      icon: '🇰🇷' },
+  { id: 'world',      ko: '세계소식',    en: 'World News',  zh: '世界新闻',  ja: '世界のニュース',    icon: '🌍' },
 ] as const;
 
 const QUICK_MENUS = [
