@@ -417,9 +417,16 @@ export default function Home() {
               {/* 소개 섹션 */}
               <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-4 mb-3 sm:mb-5">
                 <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-1">BUFS COMMUNITY</p>
-                <h2 className="text-white text-[16px] font-bold leading-snug mb-4">
-                  부산외대 유학생을 위한<br/>학교생활 커뮤니티
+                <h2 className="text-white text-[16px] font-bold leading-snug mb-1.5">
+                  {lang === 'ko'
+                    ? <>부산외대 유학생을 위한<br/>학교생활 커뮤니티</>
+                    : <>Campus Life Community for<br/>BUFS International Students</>}
                 </h2>
+                <p className="text-white/60 text-[12px] leading-snug mb-4">
+                  {lang === 'ko'
+                    ? '비자, 집, 학교생활, 취업, 동아리, 친구 찾기까지 한곳에서'
+                    : 'Visa, Housing, Campus Life, Jobs, Clubs & Friends — all in one place'}
+                </p>
                 {/* 빠른메뉴 4×2 */}
                 <div className="grid grid-cols-4 gap-2">
                   {QUICK_MENUS.map((m, i) => (
