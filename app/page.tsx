@@ -138,17 +138,102 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-base text-[#333333]">
+    <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
-      {/* ───── NAV ───── */}
-      <nav className="bg-[#2F2F2F] sticky top-0 z-[200] shadow-[0_2px_8px_rgba(0,0,0,0.18)]">
+      {/* ══════════════════════════════════════════
+          MOBILE HEADER  (xl 미만)
+          에브리타임 스타일: 흰 배경 + 로고 + 아이콘
+      ══════════════════════════════════════════ */}
+      <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+        <div className="flex items-center h-[54px] px-4">
 
-        {/* Top bar */}
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-7 flex items-center h-[68px]">
-
-          {/* Logo */}
+          {/* 로고 + 학교명 */}
           <div
-            className="flex items-center gap-3 xl:mr-11 cursor-pointer shrink-0"
+            className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
+            onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
+          >
+            <div className="bg-[#2F2F2F] rounded-[5px] px-[7px] py-[5px] grid grid-cols-2 gap-px shrink-0">
+              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">B</span>
+              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">U</span>
+              <span className="text-[10px] font-extrabold text-white leading-none">F</span>
+              <span className="text-[10px] font-extrabold text-white leading-none">S</span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[15px] font-bold text-[#1A1A1A] leading-none truncate">부산외국어대학교</div>
+              <div className="text-[10px] text-[#AAAAAA] mt-[3px]">BUFS Community</div>
+            </div>
+          </div>
+
+          {/* 오른쪽 아이콘 3개 */}
+          <div className="flex items-center shrink-0 ml-2">
+            {/* 검색 */}
+            <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="검색">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
+            {/* 알림 */}
+            <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="알림">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </button>
+            {/* 프로필 */}
+            {user ? (
+              <button className="w-9 h-9 flex items-center justify-center text-[#444] bg-transparent border-none cursor-pointer" aria-label="프로필">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </button>
+            ) : (
+              <a href="/auth" className="w-9 h-9 flex items-center justify-center text-[#444] no-underline" aria-label="로그인">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ══════════════════════════════════════════
+          MOBILE BOARD TAB BAR  (xl 미만)
+          sticky: 모바일 헤더 바로 아래
+      ══════════════════════════════════════════ */}
+      <div className="xl:hidden sticky top-[54px] z-[150] bg-white border-b border-[#EBEBEB]">
+        <div className="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2">
+          <button
+            onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
+            className={`px-3 py-2.5 text-[13px] whitespace-nowrap border-none bg-transparent cursor-pointer border-b-2 transition-colors
+              ${activeBoard === 'home' ? 'text-[#F6C21A] border-b-[#F6C21A] font-bold' : 'text-[#888] border-b-transparent font-medium'}`}
+          >
+            {lang === 'ko' ? '전체' : 'All'}
+          </button>
+          {BOARDS.map(b => (
+            <button
+              key={b.id}
+              onClick={() => { setActiveBoard(b.id); setCurrentPost(null); }}
+              className={`px-3 py-2.5 text-[13px] whitespace-nowrap border-none bg-transparent cursor-pointer border-b-2 transition-colors
+                ${activeBoard === b.id ? 'text-[#F6C21A] border-b-[#F6C21A] font-bold' : 'text-[#888] border-b-transparent font-medium'}`}
+            >
+              {lang === 'ko' ? b.ko : b.en}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
+          DESKTOP NAV  (xl 이상)
+          기존 다크 네비게이션 유지
+      ══════════════════════════════════════════ */}
+      <nav className="hidden xl:block bg-[#2F2F2F] sticky top-0 z-[200] shadow-[0_2px_8px_rgba(0,0,0,0.18)]">
+        <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
+
+          <div
+            className="flex items-center gap-3 mr-11 cursor-pointer shrink-0"
             onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
           >
             <div className="bg-[#4A4A4A] rounded-[6px] px-2 py-1 grid grid-cols-2 gap-px">
@@ -157,7 +242,7 @@ export default function Home() {
               <span className="text-[13px] font-extrabold text-white leading-none">F</span>
               <span className="text-[13px] font-extrabold text-white leading-none">S</span>
             </div>
-            <div className="hidden sm:block">
+            <div>
               <div className="font-normal text-[19px] text-white leading-[1.1]">부산외국어대학교</div>
               <div className="text-[11px] text-[#aaa] leading-[1.3]">Busan University of Foreign Studies</div>
               <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">
@@ -166,8 +251,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Desktop nav links – xl 이상에서만 표시 */}
-          <div className="hidden xl:flex">
+          <div className="flex">
             {NAV_ITEMS.map(item => (
               <button
                 key={item.id}
@@ -180,19 +264,15 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Right side */}
           <div className="ml-auto flex items-center gap-2.5">
-            {/* 언어 토글 – sm 이상 */}
             <button
               onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}
-              className="hidden sm:block px-[14px] py-[7px] border border-[#666] rounded-full bg-transparent text-sm cursor-pointer font-medium text-[#ddd]"
+              className="px-[14px] py-[7px] border border-[#666] rounded-full bg-transparent text-sm cursor-pointer font-medium text-[#ddd]"
             >
               {lang === 'ko' ? 'EN' : '한국어'}
             </button>
-
-            {/* 로그인 상태 – sm 이상 */}
             {user ? (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <span className="text-[#F6C21A] text-sm font-semibold">{user.user_metadata?.nickname || user.email}</span>
                 <button
                   onClick={handleLogout}
@@ -202,69 +282,16 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              <a
-                href="/auth"
-                className="hidden sm:inline-block px-[22px] py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-full text-[15px] font-bold no-underline"
-              >
+              <a href="/auth" className="px-[22px] py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-full text-[15px] font-bold no-underline">
                 {lang === 'ko' ? '로그인' : 'Sign In'}
               </a>
             )}
-
-            {/* 햄버거 – xl 미만 */}
-            <button
-              className="xl:hidden flex items-center justify-center w-10 h-10 bg-transparent border-none text-white text-2xl cursor-pointer"
-              onClick={() => setMobileMenuOpen(v => !v)}
-              aria-label="메뉴"
-            >
-              {mobileMenuOpen ? '✕' : '☰'}
-            </button>
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="xl:hidden bg-[#2F2F2F] border-t border-[#555]">
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (item.id === 'home') { setActiveBoard('home'); setCurrentPost(null); }
-                  setMobileMenuOpen(false);
-                }}
-                className="block w-full text-left px-6 py-3 text-base text-[#ccc] border-b border-[#444] bg-transparent cursor-pointer"
-              >
-                {lang === 'ko' ? item.ko : item.en}
-              </button>
-            ))}
-            <div className="px-6 py-3 flex items-center gap-3">
-              <button
-                onClick={() => setLang(l => l === 'ko' ? 'en' : 'ko')}
-                className="px-[14px] py-[7px] border border-[#666] rounded-full bg-transparent text-sm text-[#ddd] cursor-pointer"
-              >
-                {lang === 'ko' ? 'EN' : '한국어'}
-              </button>
-              {user ? (
-                <button
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="px-4 py-2 bg-transparent text-[#ddd] border border-[#666] rounded-full text-sm cursor-pointer"
-                >
-                  {lang === 'ko' ? '로그아웃' : 'Logout'}
-                </button>
-              ) : (
-                <a
-                  href="/auth"
-                  className="px-5 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-full text-sm font-bold no-underline"
-                >
-                  {lang === 'ko' ? '로그인' : 'Sign In'}
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 게시판 탭바 – overflow-x-auto 스크롤 */}
+        {/* 데스크톱 게시판 탭바 */}
         <div className="bg-[#3a3a3a] border-t border-[#555]">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-7 flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="max-w-[1400px] mx-auto px-7 flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
               className={`px-[18px] py-[11px] border-none bg-transparent text-[15px] whitespace-nowrap cursor-pointer border-b-2 transition-colors
@@ -286,14 +313,14 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* ───── BODY ───── */}
-      {/* pb-20 xl:pb-6 : 하단 탭바 높이만큼 여백 확보 */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-7 py-6 flex gap-6 pb-20 xl:pb-6">
+      {/* ══════════════════════════════════════════
+          BODY LAYOUT
+      ══════════════════════════════════════════ */}
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-7 pt-3 sm:pt-6 pb-[76px] xl:pb-8 flex gap-6">
 
-        {/* ── LEFT SIDEBAR – xl 이상만 표시 ── */}
+        {/* ── LEFT SIDEBAR (xl 이상) ── */}
         <div className="hidden xl:block w-[220px] shrink-0">
 
-          {/* 프로필 카드 */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-[22px_16px] mb-4 text-center">
             <div className="w-[68px] h-[68px] bg-[#F5F5F5] rounded-full mx-auto mb-[10px] flex items-center justify-center text-[30px] border-2 border-[#E5E7EB]">
               {user ? '😊' : '👤'}
@@ -304,24 +331,15 @@ export default function Home() {
             <div className="text-xs text-[#6B7280] mb-4">BUFS International</div>
             <div className="flex gap-2">
               {user ? (
-                <button
-                  onClick={handleLogout}
-                  className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-sm font-bold cursor-pointer"
-                >
+                <button onClick={handleLogout} className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-sm font-bold cursor-pointer">
                   {lang === 'ko' ? '로그아웃' : 'Logout'}
                 </button>
               ) : (
                 <>
-                  <a
-                    href="/auth"
-                    className="flex-1 py-2 border border-[#E5E7EB] rounded-lg bg-white text-sm no-underline text-[#333333] flex items-center justify-center"
-                  >
+                  <a href="/auth" className="flex-1 py-2 border border-[#E5E7EB] rounded-lg bg-white text-sm no-underline text-[#333333] flex items-center justify-center">
                     {lang === 'ko' ? '회원가입' : 'Sign Up'}
                   </a>
-                  <a
-                    href="/auth"
-                    className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-lg text-sm font-bold no-underline flex items-center justify-center"
-                  >
+                  <a href="/auth" className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-lg text-sm font-bold no-underline flex items-center justify-center">
                     {lang === 'ko' ? '로그인' : 'Sign In'}
                   </a>
                 </>
@@ -329,25 +347,19 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 활동 링크 */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mb-4">
             {[
               { icon: '📝', ko: '내가 쓴 글', en: 'My Posts' },
               { icon: '💬', ko: '댓글 단 글', en: 'Commented' },
               { icon: '⭐', ko: '내 스크랩', en: 'Scrapped' },
             ].map((item, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-2.5 px-4 py-[13px] cursor-pointer text-[15px] hover:bg-[#F5F5F5] transition-colors
-                  ${i < 2 ? 'border-b border-[#F5F5F5]' : ''}`}
-              >
+              <div key={i} className={`flex items-center gap-2.5 px-4 py-[13px] cursor-pointer text-[15px] hover:bg-[#F5F5F5] transition-colors ${i < 2 ? 'border-b border-[#F5F5F5]' : ''}`}>
                 <span>{item.icon}</span>
                 <span>{lang === 'ko' ? item.ko : item.en}</span>
               </div>
             ))}
           </div>
 
-          {/* 게시판 목록 */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
             <div className="px-4 py-3 border-b border-[#F5F5F5] text-xs font-bold text-[#6B7280] tracking-[0.06em]">
               {lang === 'ko' ? '게시판' : 'BOARDS'}
@@ -358,7 +370,7 @@ export default function Home() {
                 onClick={() => { setActiveBoard(b.id); setCurrentPost(null); }}
                 className={`flex items-center gap-[9px] px-4 py-[11px] cursor-pointer text-[15px] transition-colors
                   ${i < BOARDS.length - 1 ? 'border-b border-[#F5F5F5]' : ''}
-                  ${activeBoard === b.id ? 'bg-[#FFFBEA] text-[#4A4A4A] font-bold' : 'hover:bg-[#F5F5F5] font-normal text-[#333333]'}`}
+                  ${activeBoard === b.id ? 'bg-[#FFFBEA] text-[#4A4A4A] font-bold' : 'hover:bg-[#F5F5F5] text-[#333333]'}`}
               >
                 <span>{b.icon}</span>
                 <span>{lang === 'ko' ? b.ko : b.en}</span>
@@ -368,64 +380,76 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── MAIN ── */}
+        {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
+
           {loading && (
-            <div className="text-center py-[60px] text-[#6B7280]">불러오는 중...</div>
+            <div className="text-center py-16 text-[#AAAAAA] text-sm">불러오는 중...</div>
           )}
 
-          {/* 홈 그리드 – 1열(모바일) / 2열(sm 이상) */}
+          {/* ── 홈: 게시판 프리뷰 그리드 (에브리타임 스타일) ── */}
           {!loading && activeBoard === 'home' && !currentPost && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-5">
               {BOARDS.map(b => (
-                <div key={b.id} className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-                  <div className="flex items-center justify-between px-[18px] py-[14px] border-b-2 border-b-[#F6C21A] bg-[#FFFBEA]">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[18px]">{b.icon}</span>
-                      <span className="text-[17px] font-bold text-[#2F2F2F]">{lang === 'ko' ? b.ko : b.en}</span>
+                <div key={b.id} className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
+
+                  {/* 카드 헤더 */}
+                  <div className="flex items-center justify-between px-3.5 pt-3.5 pb-2.5 border-b border-[#F0F0F0]">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[13px] shrink-0">{b.icon}</span>
+                      <span className="text-[12px] sm:text-[13px] font-bold text-[#1A1A1A] truncate">
+                        {lang === 'ko' ? b.ko : b.en}
+                      </span>
                     </div>
                     <button
                       onClick={() => { setActiveBoard(b.id); setCurrentPost(null); }}
-                      className="text-[13px] text-[#6B7280] bg-transparent border-none cursor-pointer"
+                      className="text-[11px] text-[#AAAAAA] bg-transparent border-none cursor-pointer shrink-0 ml-1"
                     >
-                      {lang === 'ko' ? '더보기 ›' : 'More ›'}
+                      더보기
                     </button>
                   </div>
-                  {(boardPreviews[b.id] || []).length === 0
-                    ? <div className="px-[18px] py-[14px] text-sm text-[#6B7280]">{lang === 'ko' ? '아직 게시글이 없습니다.' : 'No posts yet.'}</div>
-                    : (boardPreviews[b.id] || []).map((p, i) => (
-                      <div
-                        key={p.id}
-                        onClick={() => openPost(p)}
-                        className={`flex items-center justify-between px-[18px] py-[10px] cursor-pointer hover:bg-[#F5F5F5] transition-colors
-                          ${i < (boardPreviews[b.id] || []).length - 1 ? 'border-b border-[#F5F5F5]' : ''}`}
-                      >
-                        <span className="text-[15px] flex-1 overflow-hidden text-ellipsis whitespace-nowrap pr-2.5">{p.title}</span>
-                        <span className="text-[13px] text-[#bbb] shrink-0">{formatTime(p.created_at)}</span>
-                      </div>
-                    ))}
+
+                  {/* 게시글 목록 – 제목만 간결하게 */}
+                  <div className="px-3.5 py-2 pb-3">
+                    {(boardPreviews[b.id] || []).length === 0 ? (
+                      <p className="text-[11px] text-[#CCCCCC] py-1.5">
+                        {lang === 'ko' ? '게시글이 없습니다' : 'No posts yet'}
+                      </p>
+                    ) : (
+                      (boardPreviews[b.id] || []).slice(0, 3).map((p) => (
+                        <div
+                          key={p.id}
+                          onClick={() => openPost(p)}
+                          className="py-[5px] cursor-pointer"
+                        >
+                          <p className="text-[12px] text-[#333] leading-[1.4] truncate">{p.title}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* 게시판 목록 뷰 */}
+          {/* ── 게시판 목록 뷰 ── */}
           {!loading && activeBoard !== 'home' && !currentPost && (
             <div>
-              <div className="bg-white rounded-xl border border-[#E5E7EB] px-[22px] py-[18px] mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div className="text-xl font-bold flex items-center gap-2">
+              {/* 게시판 헤더 */}
+              <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-[22px] py-3.5 sm:py-[18px] mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-[16px] sm:text-xl font-bold flex items-center gap-2">
                   <span>{BOARDS.find(b => b.id === activeBoard)?.icon}</span>
                   <span>{boardName(activeBoard as BoardId)}</span>
-                  <span className="text-[15px] text-[#6B7280] font-normal">
-                    · {filteredPosts.length}{lang === 'ko' ? '개' : ' posts'}
+                  <span className="text-[13px] text-[#AAAAAA] font-normal">
+                    {filteredPosts.length}{lang === 'ko' ? '개' : ''}
                   </span>
                 </div>
-                <div className="flex gap-2.5 items-center">
+                <div className="flex gap-2 items-center">
                   <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder={lang === 'ko' ? '검색...' : 'Search...'}
-                    className="px-[14px] py-2 border border-[#E5E7EB] rounded-full text-sm outline-none w-[140px] sm:w-[180px]"
+                    placeholder={lang === 'ko' ? '검색' : 'Search'}
+                    className="px-3 py-1.5 border border-[#E5E7EB] rounded-full text-[13px] outline-none w-[110px] sm:w-[180px]"
                   />
                   <button
                     onClick={() => setShowWrite(v => !v)}
@@ -436,128 +460,151 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* 글쓰기 폼 */}
               {showWrite && (
-                <div className="bg-white rounded-xl border border-[#E5E7EB] px-[22px] py-[18px] mb-4">
+                <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-[22px] py-4 mb-2.5">
                   <input
                     value={newTitle}
                     onChange={e => setNewTitle(e.target.value)}
                     placeholder={lang === 'ko' ? '제목을 입력하세요' : 'Title'}
-                    className="w-full px-[14px] py-2.5 border border-[#E5E7EB] rounded-lg text-base outline-none mb-2.5 box-border"
+                    className="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[14px] outline-none mb-2.5 box-border"
                   />
                   <textarea
                     value={newBody}
                     onChange={e => setNewBody(e.target.value)}
                     placeholder={lang === 'ko' ? '내용을 입력하세요...' : 'Write your post...'}
-                    className="w-full px-[14px] py-2.5 border border-[#E5E7EB] rounded-lg text-[15px] outline-none h-[120px] resize-none box-border"
+                    className="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[14px] outline-none h-[120px] resize-none box-border"
                   />
-                  <div className="flex justify-end gap-2.5 mt-2.5">
-                    <button
-                      onClick={() => setShowWrite(false)}
-                      className="px-[18px] py-2 border border-[#E5E7EB] rounded-lg bg-white text-[15px] cursor-pointer"
-                    >
+                  <div className="flex justify-end gap-2 mt-2.5">
+                    <button onClick={() => setShowWrite(false)} className="px-4 py-2 border border-[#E5E7EB] rounded-lg bg-white text-[14px] cursor-pointer text-[#555]">
                       {lang === 'ko' ? '취소' : 'Cancel'}
                     </button>
-                    <button
-                      onClick={submitPost}
-                      className="px-[22px] py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-[15px] font-bold cursor-pointer"
-                    >
+                    <button onClick={submitPost} className="px-5 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-[14px] font-bold cursor-pointer">
                       {lang === 'ko' ? '등록' : 'Post'}
                     </button>
                   </div>
                 </div>
               )}
 
-              <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-                {filteredPosts.length === 0
-                  ? <div className="py-12 text-center text-[#6B7280] text-base">
-                      {lang === 'ko' ? '게시글이 없습니다. 첫 글을 작성해보세요!' : 'No posts yet. Be the first!'}
-                    </div>
-                  : filteredPosts.map((p, i) => (
+              {/* 게시글 목록 */}
+              <div className="bg-white rounded-xl border border-[#EBEBEB] overflow-hidden">
+                {filteredPosts.length === 0 ? (
+                  <div className="py-12 text-center text-[#AAAAAA] text-sm">
+                    {lang === 'ko' ? '게시글이 없습니다. 첫 글을 작성해보세요!' : 'No posts yet. Be the first!'}
+                  </div>
+                ) : (
+                  filteredPosts.map((p, i) => (
                     <div
                       key={p.id}
                       onClick={() => openPost(p)}
-                      className={`px-[22px] py-4 cursor-pointer hover:bg-[#F5F5F5] transition-colors
-                        ${i < filteredPosts.length - 1 ? 'border-b border-[#F5F5F5]' : ''}`}
+                      className={`px-4 sm:px-5 py-3.5 cursor-pointer hover:bg-[#F8F9FA] transition-colors
+                        ${i < filteredPosts.length - 1 ? 'border-b border-[#F2F2F2]' : ''}`}
                     >
-                      <div className="text-base font-medium mb-[5px]">{p.title}</div>
-                      <div className="text-sm text-[#6B7280] flex gap-3.5">
+                      <div className="text-[14px] font-medium text-[#1A1A1A] mb-1.5 leading-snug">{p.title}</div>
+                      <div className="flex items-center gap-2.5 text-[11px] text-[#AAAAAA]">
                         <span>{p.author}</span>
+                        <span>·</span>
                         <span>{formatTime(p.created_at)}</span>
-                        <span className="ml-auto">👍 {p.likes}</span>
+                        <span className="ml-auto flex items-center gap-1">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                          </svg>
+                          {p.likes}
+                        </span>
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
             </div>
           )}
 
-          {/* 게시글 상세 뷰 */}
+          {/* ── 게시글 상세 ── */}
           {currentPost && (
             <div>
               <button
                 onClick={closePost}
-                className="flex items-center gap-1.5 py-2.5 bg-transparent border-none text-[15px] text-[#6B7280] cursor-pointer mb-3"
+                className="flex items-center gap-1.5 py-2 mb-2 bg-transparent border-none text-[14px] text-[#888] cursor-pointer"
               >
-                ← {lang === 'ko' ? '목록으로' : 'Back'}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                {lang === 'ko' ? '목록으로' : 'Back'}
               </button>
 
-              <div className="bg-white rounded-xl border border-[#E5E7EB] px-5 sm:px-[30px] py-[26px] mb-4">
-                <div className="text-[13px] text-[#4A4A4A] font-semibold mb-2">
+              <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-7 py-5 mb-2.5">
+                <div className="text-[11px] text-[#888] font-medium mb-2">
                   {BOARDS.find(b => b.id === currentPost.board)?.icon} {boardName(currentPost.board)}
                 </div>
-                <div className="text-xl sm:text-[22px] font-bold mb-2.5 leading-[1.4]">{currentPost.title}</div>
-                <div className="text-sm text-[#6B7280] mb-[22px]">{currentPost.author} · {formatTime(currentPost.created_at)}</div>
-                <div className="text-base leading-[1.9] pb-[22px] border-b border-[#E5E7EB] whitespace-pre-line">{currentPost.body}</div>
-                <div className="flex gap-2.5 pt-4 flex-wrap">
+                <div className="text-[18px] sm:text-[20px] font-bold mb-2 leading-snug">{currentPost.title}</div>
+                <div className="text-[12px] text-[#AAAAAA] mb-5 flex items-center gap-1.5">
+                  <span>{currentPost.author}</span>
+                  <span>·</span>
+                  <span>{formatTime(currentPost.created_at)}</span>
+                </div>
+                <div className="text-[14px] leading-[1.9] pb-5 border-b border-[#F0F0F0] whitespace-pre-line text-[#2A2A2A]">
+                  {currentPost.body}
+                </div>
+                <div className="flex gap-2 pt-4 flex-wrap">
                   <button
                     onClick={toggleLike}
-                    className={`px-[22px] py-2 rounded-full text-[15px] cursor-pointer border-2 transition-colors
-                      ${liked ? 'border-[#F6C21A] bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'border-[#E5E7EB] bg-white text-[#6B7280]'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] cursor-pointer border transition-colors
+                      ${liked ? 'border-[#F6C21A] bg-[#FFF9E6] text-[#D4A800] font-bold' : 'border-[#E5E7EB] bg-white text-[#888]'}`}
                   >
-                    👍 {currentPost.likes}
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                    </svg>
+                    {currentPost.likes}
                   </button>
-                  <button className="px-[22px] py-2 border border-[#E5E7EB] bg-white rounded-full text-[15px] cursor-pointer text-[#6B7280]">
-                    💬 {comments.length}
+                  <button className="flex items-center gap-1.5 px-4 py-2 border border-[#E5E7EB] bg-white rounded-full text-[13px] cursor-pointer text-[#888]">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    {comments.length}
                   </button>
-                  <button className="px-[22px] py-2 border border-[#E5E7EB] bg-white rounded-full text-[15px] cursor-pointer text-[#6B7280]">🔖</button>
+                  <button className="flex items-center gap-1.5 px-4 py-2 border border-[#E5E7EB] bg-white rounded-full text-[13px] cursor-pointer text-[#888]">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-[#E5E7EB] px-5 sm:px-[30px] py-[22px]">
-                <div className="text-[17px] font-bold mb-4">
-                  {lang === 'ko' ? '댓글' : 'Comments'} {comments.length}
+              {/* 댓글 */}
+              <div className="bg-white rounded-xl border border-[#EBEBEB] px-4 sm:px-7 py-5">
+                <div className="text-[14px] font-bold mb-3 text-[#1A1A1A]">
+                  {lang === 'ko' ? '댓글' : 'Comments'}
+                  <span className="text-[#F6C21A] ml-1.5">{comments.length}</span>
                 </div>
                 {comments.map((c) => (
-                  <div key={c.id} className="py-3.5 border-b border-[#F5F5F5]">
-                    <div className="flex justify-between mb-1.5">
-                      <span className="text-[15px] font-semibold">{c.author}</span>
-                      <span className="text-[13px] text-[#6B7280]">{formatTime(c.created_at)}</span>
+                  <div key={c.id} className="py-3 border-b border-[#F2F2F2]">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-[13px] font-semibold text-[#1A1A1A]">{c.author}</span>
+                      <span className="text-[11px] text-[#AAAAAA]">{formatTime(c.created_at)}</span>
                     </div>
-                    <div className="text-[15px] leading-[1.6]">{c.body}</div>
+                    <div className="text-[13px] leading-[1.6] text-[#333]">{c.body}</div>
                   </div>
                 ))}
-                <div className="mt-4">
+                <div className="mt-3 flex gap-2 items-end">
                   <textarea
                     value={cmtInput}
                     onChange={e => setCmtInput(e.target.value)}
                     placeholder={lang === 'ko' ? '댓글을 입력하세요...' : 'Write a comment...'}
-                    className="w-full px-4 py-3 border border-[#E5E7EB] rounded-xl text-[15px] resize-none h-20 outline-none box-border"
+                    className="flex-1 px-3.5 py-2.5 border border-[#E5E7EB] rounded-xl text-[13px] resize-none h-[72px] outline-none box-border"
                   />
-                  <div className="flex justify-end mt-2.5">
-                    <button
-                      onClick={submitComment}
-                      className="px-[26px] py-[9px] bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-[15px] font-bold cursor-pointer"
-                    >
-                      {lang === 'ko' ? '등록' : 'Submit'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={submitComment}
+                    className="px-4 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-xl text-[13px] font-bold cursor-pointer shrink-0 h-[72px]"
+                  >
+                    {lang === 'ko' ? '등록' : 'Post'}
+                  </button>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* ── RIGHT SIDEBAR – lg 이상만 표시 ── */}
+        {/* ── RIGHT SIDEBAR (lg 이상) ── */}
         <div className="hidden lg:block w-[240px] shrink-0">
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
             <div className="px-[18px] py-[13px] bg-[#2F2F2F] border-b-2 border-b-[#F6C21A]">
@@ -569,10 +616,7 @@ export default function Home() {
               { date: '06.15', event: lang === 'ko' ? '체육대회' : 'Sports Day' },
               { date: '06.20', event: lang === 'ko' ? '기말고사 시작' : 'Finals Start' },
             ].map((item, i) => (
-              <div
-                key={i}
-                className={`flex gap-3 px-[18px] py-2.5 items-center ${i < 3 ? 'border-b border-[#F5F5F5]' : ''}`}
-              >
+              <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < 3 ? 'border-b border-[#F5F5F5]' : ''}`}>
                 <span className="text-[13px] text-[#F6C21A] font-bold shrink-0 bg-[#2F2F2F] px-[7px] py-0.5 rounded">{item.date}</span>
                 <span className="text-sm">{item.event}</span>
               </div>
@@ -582,90 +626,129 @@ export default function Home() {
 
       </div>
 
-      {/* ───── BOTTOM TAB BAR – xl 미만에서만 표시 ───── */}
-      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-[300] bg-[#2F2F2F] border-t border-[#555] flex">
+      {/* ══════════════════════════════════════════
+          BOTTOM TAB BAR  (xl 미만)
+          에브리타임 스타일: 흰 배경, SVG 아이콘
+      ══════════════════════════════════════════ */}
+      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-[300] bg-white border-t border-[#EBEBEB] flex">
+
+        {/* 홈 */}
         <button
-          className={`flex-1 flex flex-col items-center py-2 gap-0.5 bg-transparent border-none cursor-pointer transition-colors
-            ${activeBoard === 'home' && !currentPost ? 'text-[#F6C21A]' : 'text-[#bbb]'}`}
           onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); }}
+          className={`flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer transition-colors
+            ${activeBoard === 'home' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
         >
-          <span className="text-xl">🏠</span>
-          <span className="text-[11px]">{lang === 'ko' ? '홈' : 'Home'}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+            <polyline points="9 21 9 12 15 12 15 21"/>
+          </svg>
+          <span className="text-[10px] font-medium">{lang === 'ko' ? '홈' : 'Home'}</span>
         </button>
+
+        {/* 게시판 */}
         <button
-          className="flex-1 flex flex-col items-center py-2 gap-0.5 text-[#bbb] bg-transparent border-none cursor-pointer"
           onClick={() => setShowBoardSheet(true)}
+          className={`flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer transition-colors
+            ${activeBoard !== 'home' && !currentPost ? 'text-[#F6C21A]' : 'text-[#BBBBBB]'}`}
         >
-          <span className="text-xl">📋</span>
-          <span className="text-[11px]">{lang === 'ko' ? '게시판' : 'Boards'}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          <span className="text-[10px] font-medium">{lang === 'ko' ? '게시판' : 'Boards'}</span>
         </button>
+
+        {/* 글쓰기 */}
         <button
-          className="flex-1 flex flex-col items-center py-2 gap-0.5 text-[#bbb] bg-transparent border-none cursor-pointer"
           onClick={() => { if (activeBoard === 'home') setActiveBoard('free'); setShowWrite(v => !v); }}
+          className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB] transition-colors"
         >
-          <span className="text-xl">✏️</span>
-          <span className="text-[11px]">{lang === 'ko' ? '글쓰기' : 'Write'}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <span className="text-[10px] font-medium">{lang === 'ko' ? '글쓰기' : 'Write'}</span>
         </button>
+
+        {/* MY */}
         {user ? (
           <button
-            className="flex-1 flex flex-col items-center py-2 gap-0.5 text-[#bbb] bg-transparent border-none cursor-pointer"
+            className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB] transition-colors"
             onClick={handleLogout}
           >
-            <span className="text-xl">👤</span>
-            <span className="text-[11px]">MY</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span className="text-[10px] font-medium">MY</span>
           </button>
         ) : (
-          <a
-            href="/auth"
-            className="flex-1 flex flex-col items-center py-2 gap-0.5 text-[#bbb] no-underline"
-          >
-            <span className="text-xl">👤</span>
-            <span className="text-[11px]">MY</span>
+          <a href="/auth" className="flex-1 flex flex-col items-center pt-2.5 pb-3 gap-[3px] text-[#BBBBBB] no-underline">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span className="text-[10px] font-medium">MY</span>
           </a>
         )}
       </div>
 
-      {/* ───── 게시판 슬라이드업 시트 – 모바일 게시판 선택 ───── */}
+      {/* ══════════════════════════════════════════
+          BOARD SLIDE-UP SHEET  (모바일 게시판 선택)
+      ══════════════════════════════════════════ */}
       {showBoardSheet && (
         <div className="xl:hidden fixed inset-0 z-[400]">
-          {/* 백드롭 */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowBoardSheet(false)}
-          />
-          {/* 시트 */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[70vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white flex items-center justify-between px-5 py-4 border-b border-[#E5E7EB]">
-              <span className="text-lg font-bold">{lang === 'ko' ? '게시판 선택' : 'Select Board'}</span>
-              <button
-                onClick={() => setShowBoardSheet(false)}
-                className="text-[#6B7280] bg-transparent border-none text-xl cursor-pointer"
-              >
-                ✕
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowBoardSheet(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[72vh] overflow-y-auto">
+
+            {/* 핸들 바 */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-[#DDDDDD] rounded-full" />
+            </div>
+
+            {/* 헤더 */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#F0F0F0]">
+              <span className="text-[15px] font-bold text-[#1A1A1A]">
+                {lang === 'ko' ? '게시판 선택' : 'Select Board'}
+              </span>
+              <button onClick={() => setShowBoardSheet(false)} className="w-8 h-8 flex items-center justify-center text-[#888] bg-transparent border-none cursor-pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
+
             {/* 전체 */}
             <button
               onClick={() => { setActiveBoard('home'); setCurrentPost(null); loadBoardPreviews(); setShowBoardSheet(false); }}
-              className={`w-full flex items-center gap-3 px-5 py-4 border-b border-[#F5F5F5] cursor-pointer text-left text-[15px] transition-colors
-                ${activeBoard === 'home' ? 'bg-[#FFFBEA] font-bold text-[#4A4A4A]' : 'bg-transparent text-[#333333]'}`}
+              className={`w-full flex items-center gap-3 px-5 py-3.5 border-b border-[#F5F5F5] cursor-pointer text-left transition-colors
+                ${activeBoard === 'home' ? 'bg-[#FFFBEA]' : 'bg-transparent'}`}
             >
-              <span>🏠</span>
-              <span>{lang === 'ko' ? '전체' : 'All Boards'}</span>
-              {activeBoard === 'home' && <span className="ml-auto w-2 h-2 bg-[#F6C21A] rounded-full" />}
+              <span className="text-[16px]">🏠</span>
+              <span className={`text-[14px] ${activeBoard === 'home' ? 'font-bold text-[#D4A800]' : 'text-[#1A1A1A]'}`}>
+                {lang === 'ko' ? '전체' : 'All Boards'}
+              </span>
+              {activeBoard === 'home' && <span className="ml-auto w-1.5 h-1.5 bg-[#F6C21A] rounded-full" />}
             </button>
+
+            {/* 게시판 목록 */}
             {BOARDS.map(b => (
               <button
                 key={b.id}
                 onClick={() => { setActiveBoard(b.id); setCurrentPost(null); setShowBoardSheet(false); }}
-                className={`w-full flex items-center gap-3 px-5 py-4 border-b border-[#F5F5F5] cursor-pointer text-left text-[15px] transition-colors
-                  ${activeBoard === b.id ? 'bg-[#FFFBEA] font-bold text-[#4A4A4A]' : 'bg-transparent text-[#333333]'}`}
+                className={`w-full flex items-center gap-3 px-5 py-3.5 border-b border-[#F5F5F5] cursor-pointer text-left transition-colors
+                  ${activeBoard === b.id ? 'bg-[#FFFBEA]' : 'bg-transparent'}`}
               >
-                <span>{b.icon}</span>
-                <span>{lang === 'ko' ? b.ko : b.en}</span>
-                {activeBoard === b.id && <span className="ml-auto w-2 h-2 bg-[#F6C21A] rounded-full" />}
+                <span className="text-[16px]">{b.icon}</span>
+                <span className={`text-[14px] ${activeBoard === b.id ? 'font-bold text-[#D4A800]' : 'text-[#1A1A1A]'}`}>
+                  {lang === 'ko' ? b.ko : b.en}
+                </span>
+                {activeBoard === b.id && <span className="ml-auto w-1.5 h-1.5 bg-[#F6C21A] rounded-full" />}
               </button>
             ))}
+
+            {/* 안전 영역 여백 */}
+            <div className="h-6" />
           </div>
         </div>
       )}
