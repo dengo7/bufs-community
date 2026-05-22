@@ -164,7 +164,9 @@ export default function Home() {
               <span className="text-[10px] font-extrabold text-white leading-none">S</span>
             </div>
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-[#1A1A1A] leading-none truncate">부산외국어대학교</div>
+              <div className="text-[15px] font-bold text-[#1A1A1A] leading-none truncate">
+                {lang === 'ko' ? '부산외국어대학교' : 'Busan Univ. of Foreign Studies'}
+              </div>
               <div className="text-[10px] text-[#AAAAAA] mt-[3px]">BUFS Community</div>
             </div>
           </div>
@@ -267,7 +269,9 @@ export default function Home() {
               <span className="text-[13px] font-extrabold text-white leading-none">S</span>
             </div>
             <div>
-              <div className="font-normal text-[19px] text-white leading-[1.1]">부산외국어대학교</div>
+              <div className="font-normal text-[19px] text-white leading-[1.1]">
+                {lang === 'ko' ? '부산외국어대학교' : 'Busan University of Foreign Studies'}
+              </div>
               <div className="text-[11px] text-[#aaa] leading-[1.3]">Busan University of Foreign Studies</div>
               <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">
                 {lang === 'ko' ? '외국인 유학생을 위한 BUFS 생활 커뮤니티' : 'BUFS Community for International Students'}
