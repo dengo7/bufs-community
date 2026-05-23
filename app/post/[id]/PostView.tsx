@@ -110,7 +110,7 @@ export default function PostView({
     setShowMenu(false);
     const { data, error } = await getSupabaseClient()
       .from('posts')
-      .update({ is_deleted: true })
+      .delete()
       .eq('id', post.id)
       .select('id');
 
