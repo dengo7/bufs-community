@@ -27,7 +27,7 @@ const T = {
     headerSub: '외국인 유학생을 위한 커뮤니티',
   },
   en: {
-    schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ. of Foreign Studies',
+    schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ.',
     subSlogan: 'BUFS Community for International Students',
     login: 'Sign In', logout: 'Logout', signUp: 'Sign Up',
     pleaseLogin: 'Please sign in',
@@ -130,7 +130,7 @@ export default function Home() {
               <span className="text-[10px] font-extrabold text-white leading-none">S</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-medium text-[#1A1A1A] truncate leading-tight">{t.schoolNameShort}</span>
+              <span className="text-[13px] font-medium text-[#1A1A1A] leading-tight">{t.schoolNameShort}</span>
               <span className="text-[10px] text-gray-500 truncate leading-tight">{t.headerSub}</span>
             </div>
           </Link>
@@ -284,12 +284,12 @@ export default function Home() {
                 <Link
                   key={slug}
                   href={`/category/${slug}`}
-                  className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl py-3 no-underline transition-colors"
+                  className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl py-3 overflow-hidden no-underline transition-colors"
                 >
-                  <span className="text-white/90">
-                    <Icon size={26} strokeWidth={1.7} />
+                  <span className="text-white/90 shrink-0">
+                    <Icon size={22} strokeWidth={1.7} />
                   </span>
-                  <span className="text-[10px] sm:text-[11px] text-white/90 font-medium leading-tight text-center px-1 break-keep">
+                  <span className="text-[9px] sm:text-[10px] text-white/90 font-medium leading-tight text-center px-0.5 break-words w-full">
                     {bLabel(labels)}
                   </span>
                 </Link>
@@ -305,12 +305,12 @@ export default function Home() {
                 href={`/category/${slug}`}
                 className="bg-white rounded-2xl border border-gray-100 p-4 no-underline hover:border-gray-300 active:scale-[0.98] transition-all"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Icon size={16} className="text-gray-700" strokeWidth={1.8} />
-                    <span className="text-[13px] font-medium text-gray-900">{bLabel(labels)}</span>
+                <div className="flex items-center justify-between gap-1 mb-2">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+                    <Icon size={16} className="text-gray-700 shrink-0" strokeWidth={1.8} />
+                    <span className="text-[13px] font-medium text-gray-900 truncate">{bLabel(labels)}</span>
                   </div>
-                  <span className="text-[11px] text-gray-400">{t.more} ›</span>
+                  <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">{t.more} ›</span>
                 </div>
                 <div className="space-y-1.5">
                   {recentPosts[slug].length > 0 ? (
