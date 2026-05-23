@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "PowerShell(npx tsc --noEmit --project \"C:\\\\Users\\\\user\\\\unitalk\\\\tsconfig.json\" 2>&1; if \\($LASTEXITCODE -eq 0\\) { \"No TS errors\" } else { \"TS errors found\" })",
+      "PowerShell(git *)",
+      "PowerShell(npx tsc --noEmit --project \"C:\\\\Users\\\\user\\\\unitalk\\\\tsconfig.json\" 2>&1; if \\($LASTEXITCODE -eq 0\\) { \"✓ No TS errors\" } else { \"✗ errors above\" })",
+      "Bash(git -C \"C:/Users/user/unitalk\" log --oneline -3)",
+      "Bash(git -C \"C:/Users/user/unitalk\" status)",
+      "Bash(git -C \"C:/Users/user/unitalk\" add app/page.tsx)",
+      "Bash(git -C C:/Users/user/unitalk commit -m ' *)",
+      "Bash(git *)",
+      "Bash(npm install *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(& npx tsc --noEmit --project C:\\\\Users\\\\user\\\\unitalk\\\\tsconfig.json 2>&1 | Select-Object -First 40)",
+      "PowerShell(& npx next build --project C:\\\\Users\\\\user\\\\unitalk 2>&1 | Select-Object -Last 20)",
+      "PowerShell(& npx tsc --noEmit --project C:\\\\Users\\\\user\\\\unitalk\\\\tsconfig.json 2>&1)"
+    ]
+  }
+}

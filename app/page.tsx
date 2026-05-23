@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
+import { getSupabaseClient } from './lib/supabase/client';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
@@ -149,13 +150,15 @@ export default function Home() {
   const filteredPosts = posts.filter(p => search === '' || p.title.includes(search));
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    const client = getSupabaseClient();
+    client.auth.getUser().then(({ data }: { data: { user: any } }) => {
+      setUser(data.user ?? null);
     });
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
       setUser(session?.user ?? null);
     });
     loadBoardPreviews();
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -217,7 +220,7 @@ export default function Home() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await getSupabaseClient().auth.signOut();
     setUser(null);
   }
 
@@ -430,29 +433,36 @@ export default function Home() {
         <div className="hidden xl:block w-[220px] shrink-0">
 
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-[22px_16px] mb-4 text-center">
-            <div className="w-[68px] h-[68px] bg-[#F5F5F5] rounded-full mx-auto mb-[10px] flex items-center justify-center text-[30px] border-2 border-[#E5E7EB]">
-              {user ? '😊' : '👤'}
-            </div>
-            <div className="text-[15px] font-bold mb-[3px]">
-              {user ? (user.user_metadata?.nickname || user.email) : t.pleaseLogin}
-            </div>
-            <div className="text-xs text-[#6B7280] mb-4">BUFS International</div>
-            <div className="flex gap-2">
-              {user ? (
-                <button onClick={handleLogout} className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] border-none rounded-lg text-sm font-bold cursor-pointer">
+            {user ? (
+              <>
+                <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-3" />
+                <div className="text-[15px] font-bold mb-4">
+                  {user.user_metadata?.nickname || user.email}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full py-2 border border-[#E5E7EB] rounded-lg text-sm text-[#555] cursor-pointer bg-white hover:bg-[#F5F5F5] transition-colors"
+                >
                   {t.logout}
                 </button>
-              ) : (
-                <>
+              </>
+            ) : (
+              <>
+                <div className="w-[68px] h-[68px] bg-[#F5F5F5] rounded-full mx-auto mb-[10px] flex items-center justify-center text-[30px] border-2 border-[#E5E7EB]">
+                  👤
+                </div>
+                <div className="text-[15px] font-bold mb-[3px]">{t.pleaseLogin}</div>
+                <div className="text-xs text-[#6B7280] mb-4">BUFS International</div>
+                <div className="flex gap-2">
                   <a href="/auth" className="flex-1 py-2 border border-[#E5E7EB] rounded-lg bg-white text-sm no-underline text-[#333333] flex items-center justify-center">
                     {t.signUp}
                   </a>
                   <a href="/auth" className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-lg text-sm font-bold no-underline flex items-center justify-center">
                     {t.login}
                   </a>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden mb-4">
