@@ -159,12 +159,29 @@ export default function CommentSection({
   const deleteComment = async (commentId: string) => {
     if (!confirm(t.confirmDelete)) return;
     setMenuOpenId(null);
-    const { error } = await getSupabaseClient()
-      .from('comments').update({ is_deleted: true }).eq('id', commentId);
-    if (!error) {
-      setComments(prev => prev.filter(c => c.id !== commentId));
-      onCommentRemoved();
+
+    const { data, error } = await getSupabaseClient()
+      .from('comments')
+      .delete()
+      .eq('id', commentId)
+      .select('id');
+
+    console.log('[deleteComment] data:', data, 'error:', error);
+
+    if (error) {
+      alert(`댓글 삭제 실패: ${error.message}`);
+      return;
     }
+    if (!data || data.length === 0) {
+      alert('삭제 권한이 없거나 이미 삭제된 댓글입니다.');
+      return;
+    }
+
+    // 부모 댓글 삭제 시 대댓글도 DB에서 cascade 삭제됨 → 상태에서도 제거
+    const replyIds = comments.filter(c => c.parent_id === commentId).map(c => c.id);
+    const removeSet = new Set([commentId, ...replyIds]);
+    setComments(prev => prev.filter(c => !removeSet.has(c.id)));
+    removeSet.forEach(() => onCommentRemoved());
   };
 
   // render 함수 — 컴포넌트 내부 정의 시 remount 문제 방지
