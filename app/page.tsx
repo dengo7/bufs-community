@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSupabaseClient } from './lib/supabase/client';
+import BottomTabBar from './components/BottomTabBar';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
@@ -196,7 +197,7 @@ export default function Home() {
       </nav>
 
       {/* ── BODY LAYOUT ── */}
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-7 pt-3 sm:pt-6 pb-[76px] xl:pb-8 flex gap-6">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-7 pt-3 sm:pt-6 pb-[76px] md:pb-8 flex gap-6">
 
         {/* ── LEFT SIDEBAR (xl 이상) ── */}
         <div className="hidden xl:block w-[220px] shrink-0">
@@ -303,40 +304,7 @@ export default function Home() {
 
       </div>
 
-      {/* ── MOBILE BOTTOM TAB BAR ── */}
-      <div className="xl:hidden fixed bottom-0 left-0 right-0 z-[300] bg-white border-t border-[#EBEBEB] flex">
-        <Link
-          href="/"
-          className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] text-[#F6C21A] no-underline"
-        >
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
-            <polyline points="9 21 9 12 15 12 15 21"/>
-          </svg>
-          <span className="text-[9px] font-medium">{t.tabHome}</span>
-        </Link>
-
-        {user ? (
-          <button
-            onClick={handleLogout}
-            className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer text-[#BBBBBB]"
-          >
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span className="text-[9px] font-medium">{t.tabMy}</span>
-          </button>
-        ) : (
-          <a href="/auth" className="flex-1 flex flex-col items-center pt-2 pb-[11px] gap-[3px] text-[#BBBBBB] no-underline">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span className="text-[9px] font-medium">{t.tabMy}</span>
-          </a>
-        )}
-      </div>
+      <BottomTabBar lang={lang} user={user} />
 
     </div>
   );
