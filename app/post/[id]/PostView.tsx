@@ -108,9 +108,23 @@ export default function PostView({
   const handleDelete = async () => {
     if (!confirm(t.confirmDelete)) return;
     setShowMenu(false);
-    const { error } = await getSupabaseClient()
-      .from('posts').update({ is_deleted: true }).eq('id', post.id);
-    if (!error) router.push(`/category/${post.category}`);
+    const { data, error } = await getSupabaseClient()
+      .from('posts')
+      .update({ is_deleted: true })
+      .eq('id', post.id)
+      .select('id');
+
+    console.log('[PostDelete] data:', data, 'error:', error);
+
+    if (error) {
+      alert(`삭제 실패: ${error.message}`);
+      return;
+    }
+    if (!data || data.length === 0) {
+      alert('삭제 권한이 없거나 이미 삭제된 글입니다.\n(RLS policy를 확인하세요)');
+      return;
+    }
+    router.push(`/category/${post.category}`);
   };
 
   return (
