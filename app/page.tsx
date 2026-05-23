@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
 import {
@@ -77,23 +78,18 @@ const CATEGORIES = [
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
 
-// TODO: Supabase에서 카테고리별 최근 게시글 가져올 예정
-const recentPosts: Record<string, string[]> = {
-  'school-life': [],
-  'announcements': [],
-  'translation-help': [],
-  'visa': [],
-  'housing': [],
-  'bank': [],
-  'telecom': [],
-  'insurance': [],
-  'medical': [],
-  'part-time': [],
-};
+type PostPreview = { id: string; title: string };
 
 export default function Home() {
+  const router = useRouter();
   const [lang, setLang] = useState<Lang>('ko');
   const [user, setUser] = useState<any>(null);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [recentPosts, setRecentPosts] = useState<Record<string, PostPreview[]>>(() => {
+    const init: Record<string, PostPreview[]> = {};
+    CATEGORIES.forEach(c => { init[c.slug] = []; });
+    return init;
+  });
 
   const t = T[lang];
   const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
@@ -108,6 +104,31 @@ export default function Home() {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  // 카테고리별 최근 게시글 2개씩 병렬 페치
+  useEffect(() => {
+    const client = getSupabaseClient();
+    Promise.all(
+      CATEGORIES.map(({ slug }) =>
+        client
+          .from('posts')
+          .select('id, title')
+          .eq('category', slug)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false })
+          .limit(2)
+      )
+    )
+      .then(results => {
+        const next: Record<string, PostPreview[]> = {};
+        CATEGORIES.forEach(({ slug }, i) => {
+          next[slug] = (results[i].data ?? []) as PostPreview[];
+        });
+        setRecentPosts(next);
+      })
+      .catch(() => { /* 에러 시 빈 상태 유지 */ })
+      .finally(() => setPostsLoading(false));
   }, []);
 
   async function handleLogout() {
@@ -313,9 +334,20 @@ export default function Home() {
                   <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">{t.more} ›</span>
                 </div>
                 <div className="space-y-1.5">
-                  {recentPosts[slug].length > 0 ? (
-                    recentPosts[slug].slice(0, 2).map((title, i) => (
-                      <p key={i} className="text-[12px] text-gray-700 truncate m-0">{title}</p>
+                  {postsLoading ? (
+                    <>
+                      <div className="h-3 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5" />
+                    </>
+                  ) : recentPosts[slug]?.length > 0 ? (
+                    recentPosts[slug].map(post => (
+                      <p
+                        key={post.id}
+                        onClick={e => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
+                        className="text-[12px] text-gray-700 truncate m-0 cursor-pointer hover:text-gray-900"
+                      >
+                        {post.title}
+                      </p>
                     ))
                   ) : (
                     <p className="text-[12px] text-gray-400 text-center my-3 m-0">{t.noPosts}</p>
