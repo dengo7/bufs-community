@@ -7,6 +7,7 @@ import BottomTabBar from './components/BottomTabBar';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
+  Search, Bell, User,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -22,6 +23,8 @@ const T = {
     calendar: '학사 일정',
     midtermResults: '중간고사 성적 발표', courseChange: '수강변경 기간', sportsDay: '체육대회', finalsStart: '기말고사 시작',
     tabHome: '홈', tabMy: 'MY',
+    noPosts: '아직 게시글이 없어요', more: '더보기',
+    headerSub: '외국인 유학생을 위한 커뮤니티',
   },
   en: {
     schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ. of Foreign Studies',
@@ -32,6 +35,8 @@ const T = {
     calendar: 'Calendar',
     midtermResults: 'Midterm Results', courseChange: 'Course Change', sportsDay: 'Sports Day', finalsStart: 'Finals Start',
     tabHome: 'Home', tabMy: 'MY',
+    noPosts: 'No posts yet', more: 'More',
+    headerSub: 'Community for Int\'l Students',
   },
   zh: {
     schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
@@ -42,6 +47,8 @@ const T = {
     calendar: '学校日程',
     midtermResults: '期中考试成绩发布', courseChange: '选课变更期间', sportsDay: '运动会', finalsStart: '期末考试开始',
     tabHome: '首页', tabMy: '我的',
+    noPosts: '暂无帖子', more: '更多',
+    headerSub: '留学生社区',
   },
   ja: {
     schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
@@ -52,6 +59,8 @@ const T = {
     calendar: '学事日程',
     midtermResults: '中間試験成績発表', courseChange: '履修変更期間', sportsDay: '体育祭', finalsStart: '期末試験開始',
     tabHome: 'ホーム', tabMy: 'MY',
+    noPosts: 'まだ投稿がありません', more: 'もっと見る',
+    headerSub: '留学生コミュニティ',
   },
 } as const;
 
@@ -67,6 +76,20 @@ const CATEGORIES = [
   { slug: 'medical',          Icon: HeartPulse,     ko: '병원',          en: 'Medical',          zh: '医院',      ja: '病院' },
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
+
+// TODO: Supabase에서 카테고리별 최근 게시글 가져올 예정
+const recentPosts: Record<string, string[]> = {
+  'school-life': [],
+  'announcements': [],
+  'translation-help': [],
+  'visa': [],
+  'housing': [],
+  'bank': [],
+  'telecom': [],
+  'insurance': [],
+  'medical': [],
+  'part-time': [],
+};
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
@@ -97,7 +120,7 @@ export default function Home() {
 
       {/* ── MOBILE HEADER ── */}
       <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="flex items-center h-[54px] px-3 gap-2">
+        <div className="flex items-center h-[58px] px-4 gap-2">
 
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <div className="bg-[#2F2F2F] rounded-[5px] px-[7px] py-[5px] grid grid-cols-2 gap-px shrink-0">
@@ -106,7 +129,10 @@ export default function Home() {
               <span className="text-[10px] font-extrabold text-white leading-none">F</span>
               <span className="text-[10px] font-extrabold text-white leading-none">S</span>
             </div>
-            <span className="text-[13px] font-bold text-[#1A1A1A] truncate">{t.schoolNameShort}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[13px] font-medium text-[#1A1A1A] truncate leading-tight">{t.schoolNameShort}</span>
+              <span className="text-[10px] text-gray-500 truncate leading-tight">{t.headerSub}</span>
+            </div>
           </Link>
 
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
@@ -122,26 +148,16 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="flex items-center shrink-0">
-            {user ? (
-              <button
-                onClick={handleLogout}
-                className="w-8 h-8 flex items-center justify-center text-[#555] bg-transparent border-none cursor-pointer"
-                aria-label="프로필"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </button>
-            ) : (
-              <a href="/auth" className="w-8 h-8 flex items-center justify-center text-[#555] no-underline" aria-label="로그인">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </a>
-            )}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/search" aria-label="검색" className="text-gray-700 no-underline flex items-center">
+              <Search size={20} strokeWidth={1.8} />
+            </Link>
+            <Link href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center">
+              <Bell size={20} strokeWidth={1.8} />
+            </Link>
+            <Link href="/my" aria-label="마이" className="text-gray-700 no-underline flex items-center">
+              <User size={20} strokeWidth={1.8} />
+            </Link>
           </div>
         </div>
       </header>
@@ -197,7 +213,7 @@ export default function Home() {
       </nav>
 
       {/* ── BODY LAYOUT ── */}
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-7 pt-3 sm:pt-6 pb-[76px] md:pb-8 flex gap-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-7 pt-4 sm:pt-6 pb-32 md:pb-8 flex gap-6">
 
         {/* ── LEFT SIDEBAR (xl 이상) ── */}
         <div className="hidden xl:block w-[220px] shrink-0">
@@ -259,7 +275,7 @@ export default function Home() {
         {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
           {/* BUFS COMMUNITY 메인 카테고리 */}
-          <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-5 mb-3 sm:mb-5">
+          <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-5 mt-1 mb-5 sm:mb-6">
             <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-3">BUFS COMMUNITY</p>
 
             {/* 5×2 그리드 */}
@@ -279,6 +295,34 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+          </div>
+
+          {/* 카테고리별 게시글 미리보기 (2×5 그리드) */}
+          <div className="grid grid-cols-2 gap-4">
+            {CATEGORIES.map(({ slug, Icon, ...labels }) => (
+              <Link
+                key={slug}
+                href={`/category/${slug}`}
+                className="bg-white rounded-2xl border border-gray-100 p-4 no-underline hover:border-gray-300 active:scale-[0.98] transition-all"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Icon size={16} className="text-gray-700" strokeWidth={1.8} />
+                    <span className="text-[13px] font-medium text-gray-900">{bLabel(labels)}</span>
+                  </div>
+                  <span className="text-[11px] text-gray-400">{t.more} ›</span>
+                </div>
+                <div className="space-y-1.5">
+                  {recentPosts[slug].length > 0 ? (
+                    recentPosts[slug].slice(0, 2).map((title, i) => (
+                      <p key={i} className="text-[12px] text-gray-700 truncate m-0">{title}</p>
+                    ))
+                  ) : (
+                    <p className="text-[12px] text-gray-400 text-center my-3 m-0">{t.noPosts}</p>
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
 
