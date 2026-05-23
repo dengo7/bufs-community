@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
 import {
@@ -81,7 +80,6 @@ const CATEGORIES = [
 type PostPreview = { id: string; title: string };
 
 export default function Home() {
-  const router = useRouter();
   const [lang, setLang] = useState<Lang>('ko');
   const [user, setUser] = useState<any>(null);
   const [postsLoading, setPostsLoading] = useState(true);
@@ -324,7 +322,7 @@ export default function Home() {
               <Link
                 key={slug}
                 href={`/category/${slug}`}
-                className="bg-white rounded-2xl border border-gray-100 p-4 no-underline hover:border-gray-300 active:scale-[0.98] transition-all"
+                className="bg-white rounded-2xl border border-gray-100 p-4 no-underline hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer block"
               >
                 <div className="flex items-center justify-between gap-1 mb-2">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
@@ -343,8 +341,7 @@ export default function Home() {
                     recentPosts[slug].map(post => (
                       <p
                         key={post.id}
-                        onClick={e => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
-                        className="text-[12px] text-gray-700 truncate m-0 cursor-pointer hover:text-gray-900"
+                        className="text-[12px] text-gray-700 truncate m-0"
                       >
                         {post.title}
                       </p>
