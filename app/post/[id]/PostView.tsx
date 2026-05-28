@@ -44,6 +44,7 @@ export type PostWithProfile = {
   comment_count: number;
   like_count: number;
   author_id: string;
+  image_urls: string[];
   profiles: {
     nickname: string;
     nationality: string | null;
@@ -219,6 +220,20 @@ export default function PostView({
         <p className="text-base whitespace-pre-wrap leading-relaxed text-gray-800">
           {post.content}
         </p>
+
+        {/* 첨부 이미지 */}
+        {post.image_urls?.length > 0 && (
+          <div className="space-y-2 mt-4">
+            {post.image_urls.map((url, i) => (
+              <img
+                key={i}
+                src={url}
+                alt=""
+                className="w-full h-auto rounded-lg border border-gray-100 object-contain"
+              />
+            ))}
+          </div>
+        )}
 
         <div className="border-b border-gray-100 my-5" />
 
