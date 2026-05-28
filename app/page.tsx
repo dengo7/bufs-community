@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
+import { formatTimeAgo } from './lib/utils';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
   Search, Bell, User,
+  Clock, Heart, MessageCircle,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -77,7 +79,15 @@ const CATEGORIES = [
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
 
-type PostPreview = { id: string; title: string };
+type PostPreview = {
+  id: string;
+  title: string;
+  created_at: string;
+  like_count: number;
+  comment_count: number;
+  view_count: number;
+  profiles: { nickname: string; nationality: string | null } | null;
+};
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
@@ -111,7 +121,7 @@ export default function Home() {
       CATEGORIES.map(({ slug }) =>
         client
           .from('posts')
-          .select('id, title')
+          .select('id, title, created_at, like_count, comment_count, view_count, profiles(nickname, nationality)')
           .eq('category', slug)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
@@ -331,20 +341,50 @@ export default function Home() {
                   </div>
                   <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">{t.more} ›</span>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {postsLoading ? (
                     <>
                       <div className="h-3 bg-gray-200 rounded animate-pulse" />
                       <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5" />
                     </>
                   ) : recentPosts[slug]?.length > 0 ? (
-                    recentPosts[slug].map(post => (
-                      <p
+                    recentPosts[slug].map((post, idx) => (
+                      <div
                         key={post.id}
-                        className="text-[12px] text-gray-700 truncate m-0"
+                        className={`flex flex-col gap-0.5${idx > 0 ? ' border-t border-gray-100 pt-2' : ''}`}
                       >
-                        {post.title}
-                      </p>
+                        <p className="text-[12px] font-medium text-gray-900 truncate m-0 leading-snug">
+                          {post.title}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
+                          {post.like_count > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <Heart size={12} strokeWidth={1.6} />
+                              {post.like_count}
+                            </span>
+                          )}
+                          {post.comment_count > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <MessageCircle size={12} strokeWidth={1.6} />
+                              {post.comment_count}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-0.5">
+                            <Clock size={12} strokeWidth={1.6} />
+                            {formatTimeAgo(post.created_at, lang)}
+                          </span>
+                          <span className="border border-gray-200 rounded-full flex items-center gap-1 px-1.5 py-px">
+                            <span className="text-[11px] font-medium text-gray-900 leading-none">
+                              {post.profiles?.nickname ?? '—'}
+                            </span>
+                            {post.profiles?.nationality && (
+                              <span className="text-[11px] text-gray-400 leading-none">
+                                {post.profiles.nationality}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <p className="text-[12px] text-gray-400 text-center my-3 m-0">{t.noPosts}</p>
