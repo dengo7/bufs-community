@@ -109,7 +109,8 @@ export default function PostView({
   const handleDelete = async () => {
     if (!confirm(t.confirmDelete)) return;
     setShowMenu(false);
-    const { data, error } = await getSupabaseClient()
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
       .from('posts')
       .delete()
       .eq('id', post.id)
@@ -125,6 +126,20 @@ export default function PostView({
       alert('삭제 권한이 없거나 이미 삭제된 글입니다.\n(RLS policy를 확인하세요)');
       return;
     }
+
+    if (post.image_urls?.length > 0) {
+      const paths = post.image_urls
+        .map(url => url.split('post-images/')[1])
+        .filter(Boolean);
+      if (paths.length > 0) {
+        try {
+          await supabase.storage.from('post-images').remove(paths);
+        } catch (storageErr) {
+          console.error('[PostDelete] Storage 삭제 실패:', storageErr);
+        }
+      }
+    }
+
     router.push(`/category/${post.category}`);
   };
 
