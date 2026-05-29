@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
 import { formatTimeAgo } from './lib/utils';
+import { fetchUnreadCount } from './lib/notifications';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
@@ -92,6 +93,7 @@ type PostPreview = {
 export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
   const [user, setUser] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [postsLoading, setPostsLoading] = useState(true);
   const [recentPosts, setRecentPosts] = useState<Record<string, PostPreview[]>>(() => {
     const init: Record<string, PostPreview[]> = {};
@@ -106,10 +108,15 @@ export default function Home() {
   useEffect(() => {
     const client = getSupabaseClient();
     client.auth.getUser().then(({ data }: { data: { user: any } }) => {
-      setUser(data.user ?? null);
+      const u = data.user ?? null;
+      setUser(u);
+      if (u) fetchUnreadCount(u.id).then(setUnreadCount);
     });
     const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) fetchUnreadCount(u.id).then(setUnreadCount);
+      else setUnreadCount(0);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -181,8 +188,13 @@ export default function Home() {
             <Link href="/search" aria-label="검색" className="text-gray-700 no-underline flex items-center">
               <Search size={20} strokeWidth={1.8} />
             </Link>
-            <Link href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center">
+            <Link href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center relative">
               <Bell size={20} strokeWidth={1.8} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
             <Link href="/my" aria-label="마이" className="text-gray-700 no-underline flex items-center">
               <User size={20} strokeWidth={1.8} />
