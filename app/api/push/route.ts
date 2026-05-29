@@ -4,12 +4,6 @@ import webpush from 'web-push';
 
 export const runtime = 'nodejs';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,6 +24,12 @@ function buildMessage(type: string, nickname: string): { title: string; body: st
 }
 
 export async function POST(request: NextRequest) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT!.trim(),
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.trim(),
+    process.env.VAPID_PRIVATE_KEY!.trim()
+  );
+
   // 인증
   const secret =
     request.headers.get('x-webhook-secret') ??
