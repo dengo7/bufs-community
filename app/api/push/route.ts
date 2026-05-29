@@ -6,8 +6,8 @@ export const runtime = 'nodejs';
 
 function getSupabaseAdmin() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+    process.env.SUPABASE_SERVICE_ROLE_KEY!.trim(),
     { auth: { persistSession: false } }
   );
 }
@@ -31,11 +31,12 @@ export async function POST(request: NextRequest) {
   );
 
   // 인증
-  const secret =
+  const secret = (
     request.headers.get('x-webhook-secret') ??
-    request.headers.get('authorization')?.replace('Bearer ', '');
+    request.headers.get('authorization')?.replace('Bearer ', '')
+  )?.trim();
 
-  if (secret !== process.env.PUSH_WEBHOOK_SECRET) {
+  if (secret !== process.env.PUSH_WEBHOOK_SECRET!.trim()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
