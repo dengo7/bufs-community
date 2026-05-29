@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import BottomTabBar from '../components/BottomTabBar';
+import PushNotificationToggle from './PushNotificationToggle';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
@@ -52,6 +53,11 @@ export default function MyPage() {
           <h1 className="text-2xl font-bold mb-2">{t.title}</h1>
           <p className="text-white/60 text-sm">{t.comingSoon}</p>
         </div>
+
+        <div className="text-left mb-6">
+          <PushNotificationToggle lang={lang} />
+        </div>
+
         <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#F6C21A] text-[#2F2F2F] rounded-full font-bold no-underline text-sm hover:opacity-90 transition-opacity">
           ← {t.backHome}
         </Link>

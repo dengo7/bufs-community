@@ -25,6 +25,11 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // dev 환경에서는 캐시 로직 전부 건너뜀
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    return;
+  }
+
   // Supabase / API 요청은 절대 캐시하지 않음
   if (
     url.hostname.includes('supabase') ||
@@ -60,4 +65,57 @@ self.addEventListener('fetch', event => {
   }
 
   // 그 외(JS/CSS 등): network-first, 캐시 없음
+});
+
+// ── push ──────────────────────────────────────────────────
+self.addEventListener('push', event => {
+  let title = 'BUFS Community';
+  let body = '새 알림이 도착했습니다.';
+  let url = '/';
+  let tag = 'bufs-push';
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.title || title;
+      body = data.body || body;
+      url = data.url || url;
+      tag = data.tag || tag;
+    } catch {
+      // 파싱 실패 시 기본값 사용
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icon-192x192.png',
+      data: { url },
+      tag,
+      renotify: false,
+    })
+  );
+});
+
+// ── notificationclick ─────────────────────────────────────
+self.addEventListener('notificationclick', event => {
+  const raw = (event.notification.data && event.notification.data.url)
+    ? event.notification.data.url
+    : '/';
+  const targetUrl = new URL(raw, self.location.origin).href;
+
+  event.notification.close();
+
+  event.waitUntil((async () => {
+    console.log('[push click] targetUrl =', targetUrl);
+
+    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existing = allClients.find(client => client.url === targetUrl);
+
+    if (existing) {
+      return existing.focus();
+    }
+
+    return clients.openWindow(targetUrl);
+  })());
 });
