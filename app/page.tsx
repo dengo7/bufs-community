@@ -234,6 +234,14 @@ export default function Home() {
                 </button>
               ))}
             </div>
+            <Link href="/notifications" aria-label="알림" className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
+              <Bell size={20} strokeWidth={1.8} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
             {user ? (
               <div className="flex items-center gap-2">
                 <span className="text-[#F6C21A] text-sm font-semibold">{user.user_metadata?.nickname || user.email}</span>
