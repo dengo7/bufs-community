@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, MessageCircle, Eye,
   MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
+  Bookmark, BookmarkCheck,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
@@ -85,6 +86,8 @@ export default function PostView({
   const [adminModal, setAdminModal] = useState<AdminModal>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
   const t = T[lang];
   const categoryLabel = getCategoryLabel(post.category, uiLangToLanguage(lang));
@@ -197,6 +200,67 @@ export default function PostView({
     }
   };
 
+  // 북마크 초기화 — maybeSingle() 대신 limit(1) 사용(버전별 동작 차이 방지)
+  useEffect(() => {
+    if (!currentUserId || !post.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await getSupabaseClient()
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+        .limit(1);
+      if (cancelled) return;
+      if (error) {
+        console.error('[bookmark] init error — code:', error.code,
+          '| msg:', error.message, '| details:', error.details);
+      }
+      setIsBookmarked(Array.isArray(data) && data.length > 0);
+    })();
+    return () => { cancelled = true; };
+  }, [currentUserId, post.id]);
+
+  const handleBookmark = async () => {
+    if (!currentUserId) { showToast(false, '로그인이 필요해요'); return; }
+    if (!post.id || bookmarkBusy) return;
+    const was = isBookmarked;
+    setIsBookmarked(!was);
+    setBookmarkBusy(true);
+    try {
+      const supabase = getSupabaseClient();
+      if (was) {
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('post_id', post.id);
+        if (error) {
+          console.error('[bookmark] delete — code:', error.code,
+            '| msg:', error.message, '| details:', error.details);
+          throw new Error(error.message);
+        }
+        showToast(true, '저장을 해제했어요');
+      } else {
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert({ user_id: currentUserId, post_id: post.id });
+        if (error) {
+          console.error('[bookmark] insert — code:', error.code,
+            '| msg:', error.message, '| details:', error.details);
+          throw new Error(error.message);
+        }
+        showToast(true, '저장했어요');
+      }
+    } catch (err: unknown) {
+      setIsBookmarked(was);
+      const msg = err instanceof Error ? err.message : '오류가 발생했어요';
+      showToast(false, msg);
+    } finally {
+      setBookmarkBusy(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
 
@@ -216,21 +280,59 @@ export default function PostView({
             {categoryLabel}
           </span>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {/* 언어 선택 */}
-            <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px]">
-              {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => setLang(l)}
-                  className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                    ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-                >
-                  {LANG_LABELS[l]}
-                </button>
-              ))}
-            </div>
+          {/* 언어 선택 */}
+          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
+            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
+                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
+              >
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* ── 본문 ── */}
+      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-44">
+
+        {/* 제목 */}
+        <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
+
+        {/* 작성자 행 */}
+        <div className="flex items-center gap-2 mt-3">
+          <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0" />
+          <span className="text-sm font-medium">{post.profiles?.nickname ?? '?'}</span>
+          {post.profiles?.role === 'admin' && (
+            <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+          )}
+          {post.profiles?.nationality && (
+            <>
+              <span className="text-sm text-gray-400">·</span>
+              <span className="text-sm text-gray-500">{post.profiles.nationality}</span>
+            </>
+          )}
+          <span className="text-sm text-gray-400">·</span>
+          <span className="text-sm text-gray-500 shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
+
+          {/* 저장 + ⋯ 메뉴 */}
+          <div className="flex items-center gap-0.5 ml-auto shrink-0">
+
+            {/* 북마크 */}
+            <button
+              type="button"
+              onClick={handleBookmark}
+              className="p-1 bg-transparent border-none cursor-pointer"
+              aria-label={isBookmarked ? '저장 해제' : '저장'}
+            >
+              {isBookmarked
+                ? <BookmarkCheck size={18} strokeWidth={1.8} className="text-[#F6C21A]" />
+                : <Bookmark size={18} strokeWidth={1.8} className="text-gray-400" />}
+            </button>
 
             {/* 관리자 ⋯ 메뉴 */}
             {isCurrentUserAdmin && (
@@ -241,7 +343,7 @@ export default function PostView({
                   className="p-1 text-gray-500 bg-transparent border-none cursor-pointer"
                   aria-label="관리자 메뉴"
                 >
-                  <MoreHorizontal size={20} strokeWidth={1.8} />
+                  <MoreHorizontal size={18} strokeWidth={1.8} />
                 </button>
                 {showMenu && (
                   <>
@@ -290,7 +392,7 @@ export default function PostView({
                   className="p-1 text-gray-500 bg-transparent border-none cursor-pointer"
                   aria-label="메뉴"
                 >
-                  <MoreHorizontal size={20} strokeWidth={1.8} />
+                  <MoreHorizontal size={18} strokeWidth={1.8} />
                 </button>
                 {showMenu && (
                   <>
@@ -308,31 +410,8 @@ export default function PostView({
                 )}
               </div>
             )}
+
           </div>
-        </div>
-      </header>
-
-      {/* ── 본문 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-44">
-
-        {/* 제목 */}
-        <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
-
-        {/* 작성자 행 */}
-        <div className="flex items-center gap-2 mt-3">
-          <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0" />
-          <span className="text-sm font-medium">{post.profiles?.nickname ?? '?'}</span>
-          {post.profiles?.role === 'admin' && (
-            <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
-          )}
-          {post.profiles?.nationality && (
-            <>
-              <span className="text-sm text-gray-400">·</span>
-              <span className="text-sm text-gray-500">{post.profiles.nationality}</span>
-            </>
-          )}
-          <span className="text-sm text-gray-400">·</span>
-          <span className="text-sm text-gray-500 shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
         </div>
 
         <div className="border-b border-gray-100 my-4" />

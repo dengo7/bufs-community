@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Bell, SquarePen, Bookmark, Compass, Headphones,
   FileText, ShieldCheck, LogOut, ChevronRight,
@@ -110,6 +111,8 @@ export default function MyPage() {
   const [pushBusy, setPushBusy]         = useState(false);
 
   // ── 토스트 ────────────────────────────────────────────────
+  const router = useRouter();
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
@@ -285,7 +288,7 @@ export default function MyPage() {
             {/* ── 활동 ── */}
             <SectionCard label="활동">
               <MenuRow icon={SquarePen}  title="내가 쓴 글"  desc="내가 작성한 글을 관리해요"           onClick={comingSoon} />
-              <MenuRow icon={Bookmark}   title="저장한 글"   desc="북마크한 게시글을 관리해요"           onClick={comingSoon} />
+              <MenuRow icon={Bookmark}   title="저장한 글"   desc="북마크한 게시글을 관리해요"           onClick={() => router.push('/my/saved')} />
               <MenuRow icon={Compass}    title="앱 사용법"   desc="주요 기능을 다시 확인할 수 있어요"    onClick={comingSoon} />
               <MenuRow icon={Headphones} title="문의하기"    desc="운영팀에 의견을 남겨요"               onClick={comingSoon} />
             </SectionCard>
