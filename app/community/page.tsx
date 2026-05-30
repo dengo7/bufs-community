@@ -166,7 +166,7 @@ export default function CommunityPage() {
       </div>
 
       {/* ── 피드 리스트 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-32">
+      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-44">
         {loading ? (
           <div className="space-y-2.5">
             {Array.from({ length: 6 }).map((_, i) => (

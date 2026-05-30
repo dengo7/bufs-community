@@ -7,15 +7,17 @@ import BottomTabBar from './components/BottomTabBar';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
+import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
-  Search, Bell, User,
-  Clock, Heart, MessageCircle,
+  Search, Bell, User, Eye, Heart, MessageCircle,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
+
+const PAGE_SIZE = 20;
 
 const T = {
   ko: {
@@ -25,10 +27,11 @@ const T = {
     pleaseLogin: '로그인이 필요해요',
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
     calendar: '학사 일정',
-    midtermResults: '중간고사 성적 발표', courseChange: '수강변경 기간', sportsDay: '체육대회', finalsStart: '기말고사 시작',
+    recentPosts: '최근 게시글',
     tabHome: '홈', tabMy: 'MY',
     noPosts: '아직 게시글이 없어요', more: '더보기',
     headerSub: '외국인 유학생을 위한 커뮤니티',
+    loadingMore: '불러오는 중...',
   },
   en: {
     schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ.',
@@ -37,10 +40,11 @@ const T = {
     pleaseLogin: 'Please sign in',
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
     calendar: 'Calendar',
-    midtermResults: 'Midterm Results', courseChange: 'Course Change', sportsDay: 'Sports Day', finalsStart: 'Finals Start',
+    recentPosts: 'Recent Posts',
     tabHome: 'Home', tabMy: 'MY',
     noPosts: 'No posts yet', more: 'More',
     headerSub: 'Community for Int\'l Students',
+    loadingMore: 'Loading...',
   },
   zh: {
     schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
@@ -49,10 +53,11 @@ const T = {
     pleaseLogin: '请先登录',
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
     calendar: '学校日程',
-    midtermResults: '期中考试成绩发布', courseChange: '选课变更期间', sportsDay: '运动会', finalsStart: '期末考试开始',
+    recentPosts: '最新帖子',
     tabHome: '首页', tabMy: '我的',
     noPosts: '暂无帖子', more: '更多',
     headerSub: '留学生社区',
+    loadingMore: '加载中...',
   },
   ja: {
     schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
@@ -61,10 +66,11 @@ const T = {
     pleaseLogin: 'ログインしてください',
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
     calendar: '学事日程',
-    midtermResults: '中間試験成績発表', courseChange: '履修変更期間', sportsDay: '体育祭', finalsStart: '期末試験開始',
+    recentPosts: '最新投稿',
     tabHome: 'ホーム', tabMy: 'MY',
     noPosts: 'まだ投稿がありません', more: 'もっと見る',
     headerSub: '留学生コミュニティ',
+    loadingMore: '読み込み中...',
   },
 } as const;
 
@@ -81,13 +87,15 @@ const CATEGORIES = [
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
 
-type PostPreview = {
+type FeedPost = {
   id: string;
   title: string;
+  content: string;
+  category: string;
   created_at: string;
-  like_count: number;
-  comment_count: number;
   view_count: number;
+  comment_count: number;
+  like_count: number;
   profiles: { nickname: string; nationality: string | null; role: string | null } | null;
 };
 
@@ -95,17 +103,17 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
   const [user, setUser] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [postsLoading, setPostsLoading] = useState(true);
-  const [recentPosts, setRecentPosts] = useState<Record<string, PostPreview[]>>(() => {
-    const init: Record<string, PostPreview[]> = {};
-    CATEGORIES.forEach(c => { init[c.slug] = []; });
-    return init;
-  });
+  const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
+  const [feedOffset, setFeedOffset] = useState(0);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedLoadingMore, setFeedLoadingMore] = useState(false);
+  const [feedHasMore, setFeedHasMore] = useState(true);
 
   const t = T[lang];
   const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
     lang === 'ko' ? c.ko : lang === 'en' ? c.en : lang === 'zh' ? c.zh : c.ja;
 
+  // 인증 상태
   useEffect(() => {
     const client = getSupabaseClient();
     client.auth.getUser().then(({ data }: { data: { user: any } }) => {
@@ -122,30 +130,44 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // 카테고리별 최근 게시글 2개씩 병렬 페치
+  // 피드 초기 로드
   useEffect(() => {
-    const client = getSupabaseClient();
-    Promise.all(
-      CATEGORIES.map(({ slug }) =>
-        client
-          .from('posts')
-          .select('id, title, created_at, like_count, comment_count, view_count, profiles(nickname, nationality, role)')
-          .eq('category', slug)
-          .eq('is_deleted', false)
-          .order('created_at', { ascending: false })
-          .limit(2)
-      )
-    )
-      .then(results => {
-        const next: Record<string, PostPreview[]> = {};
-        CATEGORIES.forEach(({ slug }, i) => {
-          next[slug] = (results[i].data ?? []) as PostPreview[];
-        });
-        setRecentPosts(next);
-      })
-      .catch(() => { /* 에러 시 빈 상태 유지 */ })
-      .finally(() => setPostsLoading(false));
+    let cancelled = false;
+    setFeedLoading(true);
+    const load = async () => {
+      const { data } = await getSupabaseClient()
+        .from('posts')
+        .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .range(0, PAGE_SIZE - 1);
+      if (!cancelled && data) {
+        setFeedPosts(data as unknown as FeedPost[]);
+        setFeedOffset(data.length);
+        setFeedHasMore(data.length === PAGE_SIZE);
+        setFeedLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
+
+  const handleFeedLoadMore = async () => {
+    if (feedLoadingMore || !feedHasMore) return;
+    setFeedLoadingMore(true);
+    const { data } = await getSupabaseClient()
+      .from('posts')
+      .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .range(feedOffset, feedOffset + PAGE_SIZE - 1);
+    if (data) {
+      setFeedPosts(prev => [...prev, ...(data as unknown as FeedPost[])]);
+      setFeedOffset(prev => prev + data.length);
+      setFeedHasMore(data.length === PAGE_SIZE);
+    }
+    setFeedLoadingMore(false);
+  };
 
   async function handleLogout() {
     await getSupabaseClient().auth.signOut();
@@ -263,7 +285,7 @@ export default function Home() {
       </nav>
 
       {/* ── BODY LAYOUT ── */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-7 pt-4 sm:pt-6 pb-32 md:pb-8 flex gap-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-7 pt-4 sm:pt-6 pb-28 md:pb-10 flex gap-6">
 
         {/* ── LEFT SIDEBAR (xl 이상) ── */}
         <div className="hidden xl:block w-[220px] shrink-0">
@@ -324,11 +346,10 @@ export default function Home() {
 
         {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
-          {/* BUFS COMMUNITY 메인 카테고리 */}
+
+          {/* BUFS COMMUNITY 카테고리 그리드 */}
           <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-5 mt-1 mb-5 sm:mb-6">
             <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-3">BUFS COMMUNITY</p>
-
-            {/* 5×2 그리드 */}
             <div className="grid grid-cols-5 gap-2">
               {CATEGORIES.map(({ slug, Icon, ...labels }) => (
                 <Link
@@ -347,75 +368,100 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 카테고리별 게시글 미리보기 (2×5 그리드) */}
-          <div className="grid grid-cols-2 gap-4">
-            {CATEGORIES.map(({ slug, Icon, ...labels }) => (
-              <Link
-                key={slug}
-                href={`/category/${slug}`}
-                className="bg-white rounded-2xl border border-gray-100 p-4 no-underline hover:border-gray-300 active:scale-[0.98] transition-all cursor-pointer block"
-              >
-                <div className="flex items-center justify-between gap-1 mb-2">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-                    <Icon size={16} className="text-gray-700 shrink-0" strokeWidth={1.8} />
-                    <span className="text-[13px] font-medium text-gray-900 truncate">{bLabel(labels)}</span>
+          {/* ── 최근 게시글 피드 ── */}
+          <div>
+            <p className="text-[13px] font-bold text-[#1A1A1A] mb-3">{t.recentPosts}</p>
+
+            {feedLoading ? (
+              <div className="space-y-2.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 space-y-2.5">
+                    <div className="h-3 bg-gray-100 rounded-full animate-pulse w-1/5" />
+                    <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
+                    <div className="h-3 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
                   </div>
-                  <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">{t.more} ›</span>
-                </div>
-                <div className="space-y-2">
-                  {postsLoading ? (
-                    <>
-                      <div className="h-3 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-4/5" />
-                    </>
-                  ) : recentPosts[slug]?.length > 0 ? (
-                    recentPosts[slug].map((post, idx) => (
-                      <div
-                        key={post.id}
-                        className={`flex flex-col gap-0.5${idx > 0 ? ' border-t border-gray-100 pt-2' : ''}`}
-                      >
-                        <p className="text-[12px] font-medium text-gray-900 truncate m-0 leading-snug">
-                          {post.title}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
-                          {post.like_count > 0 && (
-                            <span className="flex items-center gap-0.5">
-                              <Heart size={12} strokeWidth={1.6} />
-                              {post.like_count}
-                            </span>
-                          )}
-                          {post.comment_count > 0 && (
-                            <span className="flex items-center gap-0.5">
-                              <MessageCircle size={12} strokeWidth={1.6} />
-                              {post.comment_count}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-0.5">
-                            <Clock size={12} strokeWidth={1.6} />
-                            {formatTimeAgo(post.created_at, lang)}
+                ))}
+              </div>
+            ) : feedPosts.length === 0 ? (
+              <p className="text-center text-gray-400 text-sm py-10">{t.noPosts}</p>
+            ) : (
+              <>
+                <div className="space-y-2.5">
+                  {feedPosts.map(post => (
+                    <Link
+                      key={post.id}
+                      href={`/post/${post.id}`}
+                      className="block bg-white rounded-xl border border-gray-100 p-4 no-underline
+                                 hover:border-gray-300 active:scale-[0.99] transition-all"
+                    >
+                      {/* 카테고리 필 */}
+                      <span className="inline-block text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full mb-2">
+                        {getCategoryLabel(post.category, uiLangToLanguage(lang))}
+                      </span>
+
+                      {/* 제목 */}
+                      <h2 className="text-[15px] font-semibold text-[#1A1A1A] truncate leading-snug mb-1">
+                        {post.title}
+                      </h2>
+
+                      {/* 본문 미리보기 */}
+                      <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed mb-2.5">
+                        {post.content}
+                      </p>
+
+                      {/* 하단 메타 */}
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-gray-400">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <span className="font-medium text-gray-600 truncate max-w-[80px]">
+                            {post.profiles?.nickname ?? '?'}
                           </span>
-                          <span className="border border-gray-200 rounded-full flex items-center gap-1 px-1.5 py-px">
-                            <span className="text-[11px] font-medium text-gray-900 leading-none">
-                              {post.profiles?.nickname ?? '—'}
-                            </span>
-                            {post.profiles?.role === 'admin' && (
-                              <ShieldCheck size={9} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
-                            )}
-                            {post.profiles?.nationality && (
-                              <span className="text-[11px] text-gray-400 leading-none">
-                                {post.profiles.nationality}
-                              </span>
-                            )}
+                          {post.profiles?.role === 'admin' && (
+                            <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+                          )}
+                          {post.profiles?.nationality && (
+                            <>
+                              <span className="text-gray-300">·</span>
+                              <span className="truncate">{post.profiles.nationality}</span>
+                            </>
+                          )}
+                          <span className="text-gray-300 shrink-0">·</span>
+                          <span className="shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
+                        </div>
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="flex items-center gap-0.5">
+                            <Heart size={11} strokeWidth={1.6} />
+                            {post.like_count}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <MessageCircle size={11} strokeWidth={1.6} />
+                            {post.comment_count}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <Eye size={11} strokeWidth={1.6} />
+                            {post.view_count}
                           </span>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-[12px] text-gray-400 text-center my-3 m-0">{t.noPosts}</p>
-                  )}
+                    </Link>
+                  ))}
                 </div>
-              </Link>
-            ))}
+
+                {feedHasMore && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      type="button"
+                      onClick={handleFeedLoadMore}
+                      disabled={feedLoadingMore}
+                      className="px-6 py-2.5 text-[13px] text-gray-600 bg-white border border-gray-200 rounded-full
+                                 cursor-pointer hover:border-gray-400 disabled:opacity-40 transition-colors"
+                    >
+                      {feedLoadingMore ? t.loadingMore : t.more}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 

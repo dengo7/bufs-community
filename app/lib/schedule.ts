@@ -1,4 +1,33 @@
+import {
+  Pencil, CalendarOff, ClipboardList, CalendarDays,
+  type LucideIcon,
+} from 'lucide-react';
+
 export type ScheduleItem = { start: string; end?: string; title: string };
+
+// ── 타입 분류 ──────────────────────────────────────────────────
+export type ScheduleType = 'exam' | 'holiday' | 'apply' | 'etc';
+
+export function getScheduleType(title: string): ScheduleType {
+  if (title.includes('고사')) return 'exam';
+  if (/공휴일|휴업|방학|휴무/.test(title)) return 'holiday';
+  if (/신청|등록|수강|장바구니|열람|확인/.test(title)) return 'apply';
+  return 'etc';
+}
+
+export interface ScheduleStyle {
+  chipBg: string;
+  chipText: string;
+  iconColor: string;
+  Icon: LucideIcon; // 방학 → Sun 오버라이드는 컴포넌트에서 처리
+}
+
+export const SCHEDULE_STYLES: Record<ScheduleType, ScheduleStyle> = {
+  exam:    { chipBg: '#FAECE7', chipText: '#993C1D', iconColor: '#D85A30', Icon: Pencil },
+  holiday: { chipBg: '#E6F1FB', chipText: '#0C447C', iconColor: '#378ADD', Icon: CalendarOff },
+  apply:   { chipBg: '#FAEEDA', chipText: '#854F0B', iconColor: '#BA7517', Icon: ClipboardList },
+  etc:     { chipBg: '#F1EFE8', chipText: '#444441', iconColor: '#888780', Icon: CalendarDays },
+};
 
 export const SCHEDULE: ScheduleItem[] = [
   { start: "2026-01-05", end: "2026-01-09",  title: "학사학위 취득 유예 신청" },
