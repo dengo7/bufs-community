@@ -6,6 +6,7 @@ import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
+import { getUpcoming, fmtRange } from './lib/schedule';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
@@ -424,15 +425,12 @@ export default function Home() {
             <div className="px-[18px] py-[13px] bg-[#2F2F2F] border-b-2 border-b-[#F6C21A]">
               <span className="text-base font-bold text-white">📅 {t.calendar}</span>
             </div>
-            {[
-              { date: '05.26', event: t.midtermResults },
-              { date: '06.01', event: t.courseChange },
-              { date: '06.15', event: t.sportsDay },
-              { date: '06.20', event: t.finalsStart },
-            ].map((item, i) => (
-              <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < 3 ? 'border-b border-[#F5F5F5]' : ''}`}>
-                <span className="text-[13px] text-[#F6C21A] font-bold shrink-0 bg-[#2F2F2F] px-[7px] py-0.5 rounded">{item.date}</span>
-                <span className="text-sm">{item.event}</span>
+            {getUpcoming(4).map((item, i, arr) => (
+              <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < arr.length - 1 ? 'border-b border-[#F5F5F5]' : ''}`}>
+                <span className="text-[12px] text-[#F6C21A] font-bold shrink-0 bg-[#2F2F2F] px-[7px] py-0.5 rounded whitespace-nowrap">
+                  {fmtRange(item)}
+                </span>
+                <span className="text-sm line-clamp-1">{item.title}</span>
               </div>
             ))}
           </div>
