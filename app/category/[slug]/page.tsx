@@ -21,7 +21,7 @@ export default async function CategoryPage({
       title,
       content,
       created_at,
-      profiles ( nickname, nationality, avatar_url )
+      profiles ( nickname, nationality, avatar_url, role )
     `)
     .eq('category', slug)
     .eq('is_deleted', false)

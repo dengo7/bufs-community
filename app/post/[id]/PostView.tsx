@@ -2,10 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, MessageCircle, Eye, MoreVertical } from 'lucide-react';
+import {
+  ArrowLeft, Heart, MessageCircle, Eye,
+  MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
+} from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
 import CommentSection from './CommentSection';
+import AdminConfirmModal from '../../components/AdminConfirmModal';
 import { getCategoryLabel, uiLangToLanguage, type UILang } from '../../lib/categories';
 import { formatTimeAgo } from '../../lib/utils';
 
@@ -62,6 +66,8 @@ interface Props {
   initialComments: CommentRow[];
 }
 
+type AdminModal = 'deletePost' | 'banUser' | null;
+
 export default function PostView({
   post,
   currentUserId,
@@ -76,16 +82,21 @@ export default function PostView({
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0);
   const [commentCount, setCommentCount] = useState(post.comment_count ?? 0);
   const [showMenu, setShowMenu] = useState(false);
+  const [adminModal, setAdminModal] = useState<AdminModal>(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
 
   const t = T[lang];
   const categoryLabel = getCategoryLabel(post.category, uiLangToLanguage(lang));
-  const canDelete = currentUserId === post.author_id || isCurrentUserAdmin;
+  const isOwnPost = currentUserId === post.author_id;
+
+  const showToast = (ok: boolean, text: string) => {
+    setToast({ ok, text });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleLike = async () => {
-    if (!currentUserId) {
-      router.push('/auth');
-      return;
-    }
+    if (!currentUserId) { router.push('/auth'); return; }
     const wasLiked = liked;
     setLiked(!wasLiked);
     setLikeCount(c => wasLiked ? c - 1 : c + 1);
@@ -106,41 +117,84 @@ export default function PostView({
     }
   };
 
+  // 비관리자 본인 글 삭제 (기존 Supabase 클라이언트 경로)
   const handleDelete = async () => {
     if (!confirm(t.confirmDelete)) return;
     setShowMenu(false);
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
-      .from('posts')
-      .delete()
-      .eq('id', post.id)
-      .select('id');
+      .from('posts').delete().eq('id', post.id).select('id');
 
-    console.log('[PostDelete] data:', data, 'error:', error);
-
-    if (error) {
-      alert(`삭제 실패: ${error.message}`);
-      return;
-    }
+    if (error) { alert(`삭제 실패: ${error.message}`); return; }
     if (!data || data.length === 0) {
-      alert('삭제 권한이 없거나 이미 삭제된 글입니다.\n(RLS policy를 확인하세요)');
+      alert('삭제 권한이 없거나 이미 삭제된 글입니다.');
       return;
     }
 
     if (post.image_urls?.length > 0) {
-      const paths = post.image_urls
-        .map(url => url.split('post-images/')[1])
-        .filter(Boolean);
+      const paths = post.image_urls.map(url => url.split('post-images/')[1]).filter(Boolean);
       if (paths.length > 0) {
-        try {
-          await supabase.storage.from('post-images').remove(paths);
-        } catch (storageErr) {
-          console.error('[PostDelete] Storage 삭제 실패:', storageErr);
-        }
+        try { await supabase.storage.from('post-images').remove(paths); } catch { /* no-op */ }
       }
     }
-
     router.push(`/category/${post.category}`);
+  };
+
+  // 관리자 글 하드 삭제 (API 경로)
+  const handleAdminDeletePost = async () => {
+    setAdminLoading(true);
+    try {
+      const res = await fetch('/api/admin/delete-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId: post.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '삭제 실패');
+      router.push('/');
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '삭제 실패');
+      setAdminModal(null);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // 관리자 밴
+  const handleAdminBan = async () => {
+    setAdminLoading(true);
+    try {
+      const res = await fetch('/api/admin/ban-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: post.author_id, action: 'ban' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '밴 처리 실패');
+      showToast(true, '밴 처리 완료');
+      setAdminModal(null);
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      setAdminModal(null);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // 관리자 밴 해제 (확인 없이 즉시 실행)
+  const handleAdminUnban = async () => {
+    try {
+      const res = await fetch('/api/admin/ban-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: post.author_id, action: 'unban' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '밴 해제 실패');
+      showToast(true, '밴 해제 완료');
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '처리 실패');
+    }
   };
 
   return (
@@ -178,8 +232,57 @@ export default function PostView({
               ))}
             </div>
 
-            {/* ⋯ 메뉴 — 본인/admin만 */}
-            {canDelete && (
+            {/* 관리자 ⋯ 메뉴 */}
+            {isCurrentUserAdmin && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMenu(v => !v)}
+                  className="p-1 text-gray-500 bg-transparent border-none cursor-pointer"
+                  aria-label="관리자 메뉴"
+                >
+                  <MoreHorizontal size={20} strokeWidth={1.8} />
+                </button>
+                {showMenu && (
+                  <>
+                    <div className="fixed inset-0 z-[290]" onClick={() => setShowMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[130px]">
+                      <button
+                        type="button"
+                        onClick={() => { setShowMenu(false); setAdminModal('deletePost'); }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                      >
+                        <Trash2 size={14} strokeWidth={1.8} />
+                        게시물 삭제
+                      </button>
+                      {!isOwnPost && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => { setShowMenu(false); setAdminModal('banUser'); }}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                          >
+                            <Ban size={14} strokeWidth={1.8} />
+                            작성자 밴
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setShowMenu(false); handleAdminUnban(); }}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-gray-600 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                          >
+                            <ShieldOff size={14} strokeWidth={1.8} />
+                            밴 해제
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* 비관리자 본인 삭제 메뉴 */}
+            {!isCurrentUserAdmin && isOwnPost && (
               <div className="relative">
                 <button
                   type="button"
@@ -187,12 +290,12 @@ export default function PostView({
                   className="p-1 text-gray-500 bg-transparent border-none cursor-pointer"
                   aria-label="메뉴"
                 >
-                  <MoreVertical size={20} strokeWidth={1.8} />
+                  <MoreHorizontal size={20} strokeWidth={1.8} />
                 </button>
                 {showMenu && (
                   <>
                     <div className="fixed inset-0 z-[290]" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[90px]">
+                    <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[90px]">
                       <button
                         type="button"
                         onClick={handleDelete}
@@ -219,6 +322,9 @@ export default function PostView({
         <div className="flex items-center gap-2 mt-3">
           <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0" />
           <span className="text-sm font-medium">{post.profiles?.nickname ?? '?'}</span>
+          {post.profiles?.role === 'admin' && (
+            <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+          )}
           {post.profiles?.nationality && (
             <>
               <span className="text-sm text-gray-400">·</span>
@@ -295,6 +401,38 @@ export default function PostView({
       </div>
 
       <BottomTabBar lang={lang} user={currentUserId ? { id: currentUserId } : undefined} />
+
+      {/* ── 관리자 확인 모달 ── */}
+      {adminModal === 'deletePost' && (
+        <AdminConfirmModal
+          title="게시물을 삭제할까요?"
+          description="댓글·좋아요·알림까지 모두 삭제되며 복구할 수 없습니다."
+          confirmLabel="삭제"
+          loading={adminLoading}
+          onConfirm={handleAdminDeletePost}
+          onCancel={() => setAdminModal(null)}
+        />
+      )}
+      {adminModal === 'banUser' && (
+        <AdminConfirmModal
+          title="이 작성자를 밴할까요?"
+          description="로그인이 차단됩니다."
+          confirmLabel="밴"
+          loading={adminLoading}
+          onConfirm={handleAdminBan}
+          onCancel={() => setAdminModal(null)}
+        />
+      )}
+
+      {/* ── 토스트 ── */}
+      {toast && (
+        <div className={`fixed top-[62px] left-1/2 -translate-x-1/2 z-[400] whitespace-nowrap
+          px-4 py-2 rounded-2xl text-sm font-medium shadow-lg pointer-events-none
+          ${toast.ok ? 'bg-[#2F2F2F] text-white' : 'bg-red-500 text-white'}`}
+        >
+          {toast.text}
+        </div>
+      )}
     </div>
   );
 }

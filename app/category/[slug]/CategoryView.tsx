@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, PenLine } from 'lucide-react';
+import { ChevronLeft, PenLine, ShieldCheck } from 'lucide-react';
 import BottomTabBar from '../../components/BottomTabBar';
 import {
   getCategoryBySlug,
@@ -49,6 +49,7 @@ export interface PostRow {
     nickname: string;
     nationality: string | null;
     avatar_url: string | null;
+    role: string | null;
   } | null;
 }
 
@@ -167,6 +168,9 @@ export default function CategoryView({ slug, posts }: Props) {
                     <span className="font-medium text-gray-600">
                       {post.profiles?.nickname ?? '?'}
                     </span>
+                    {post.profiles?.role === 'admin' && (
+                      <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+                    )}
                     {post.profiles?.nationality && (
                       <span className="text-gray-400">· {post.profiles.nationality}</span>
                     )}

@@ -87,7 +87,7 @@ type PostPreview = {
   like_count: number;
   comment_count: number;
   view_count: number;
-  profiles: { nickname: string; nationality: string | null } | null;
+  profiles: { nickname: string; nationality: string | null; role: string | null } | null;
 };
 
 export default function Home() {
@@ -128,7 +128,7 @@ export default function Home() {
       CATEGORIES.map(({ slug }) =>
         client
           .from('posts')
-          .select('id, title, created_at, like_count, comment_count, view_count, profiles(nickname, nationality)')
+          .select('id, title, created_at, like_count, comment_count, view_count, profiles(nickname, nationality, role)')
           .eq('category', slug)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
@@ -397,6 +397,9 @@ export default function Home() {
                             <span className="text-[11px] font-medium text-gray-900 leading-none">
                               {post.profiles?.nickname ?? '—'}
                             </span>
+                            {post.profiles?.role === 'admin' && (
+                              <ShieldCheck size={9} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+                            )}
                             {post.profiles?.nationality && (
                               <span className="text-[11px] text-gray-400 leading-none">
                                 {post.profiles.nationality}

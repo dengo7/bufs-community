@@ -2,9 +2,10 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreVertical } from 'lucide-react';
+import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { formatTimeAgo } from '../../lib/utils';
+import AdminConfirmModal from '../../components/AdminConfirmModal';
 import type { CommentRow } from './PostView';
 import type { UILang } from '../../lib/categories';
 
@@ -80,6 +81,12 @@ interface Props {
   onCommentRemoved: () => void;
 }
 
+type CommentAdminModal = {
+  type: 'banUser';
+  userId: string;
+  nickname: string;
+} | null;
+
 export default function CommentSection({
   postId,
   currentUserId,
@@ -97,6 +104,9 @@ export default function CommentSection({
   const [replyText, setReplyText]   = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [commentAdminModal, setCommentAdminModal] = useState<CommentAdminModal>(null);
+  const [commentAdminLoading, setCommentAdminLoading] = useState(false);
+  const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
   const mainTextareaRef  = useRef<HTMLTextAreaElement>(null);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -105,6 +115,11 @@ export default function CommentSection({
   const repliesOf = (parentId: string) => comments.filter(c => c.parent_id === parentId);
   const canModify = (c: CommentRow) =>
     currentUserId === c.author_id || isCurrentUserAdmin;
+
+  const showToast = (ok: boolean, text: string) => {
+    setToast({ ok, text });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = 'auto';
@@ -124,7 +139,9 @@ export default function CommentSection({
       content: text.trim(),
       is_deleted: false,
       created_at: new Date().toISOString(),
-      profiles: currentUserProfile ? { ...currentUserProfile, role: 'user' } : null,
+      profiles: currentUserProfile
+        ? { ...currentUserProfile, role: isCurrentUserAdmin ? 'admin' : 'user' }
+        : null,
     };
 
     setComments(prev => [...prev, optimistic]);
@@ -161,30 +178,55 @@ export default function CommentSection({
     setMenuOpenId(null);
 
     const { data, error } = await getSupabaseClient()
-      .from('comments')
-      .delete()
-      .eq('id', commentId)
-      .select('id');
+      .from('comments').delete().eq('id', commentId).select('id');
 
-    console.log('[deleteComment] data:', data, 'error:', error);
-
-    if (error) {
-      alert(`댓글 삭제 실패: ${error.message}`);
-      return;
-    }
+    if (error) { alert(`댓글 삭제 실패: ${error.message}`); return; }
     if (!data || data.length === 0) {
       alert('삭제 권한이 없거나 이미 삭제된 댓글입니다.');
       return;
     }
 
-    // 부모 댓글 삭제 시 대댓글도 DB에서 cascade 삭제됨 → 상태에서도 제거
     const replyIds = comments.filter(c => c.parent_id === commentId).map(c => c.id);
     const removeSet = new Set([commentId, ...replyIds]);
     setComments(prev => prev.filter(c => !removeSet.has(c.id)));
     removeSet.forEach(() => onCommentRemoved());
   };
 
-  // render 함수 — 컴포넌트 내부 정의 시 remount 문제 방지
+  const handleCommentBan = async (userId: string) => {
+    setCommentAdminLoading(true);
+    try {
+      const res = await fetch('/api/admin/ban-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'ban' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '밴 처리 실패');
+      showToast(true, '밴 처리 완료');
+      setCommentAdminModal(null);
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      setCommentAdminModal(null);
+    } finally {
+      setCommentAdminLoading(false);
+    }
+  };
+
+  const handleCommentUnban = async (userId: string) => {
+    try {
+      const res = await fetch('/api/admin/ban-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'unban' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '밴 해제 실패');
+      showToast(true, '밴 해제 완료');
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '처리 실패');
+    }
+  };
+
   const renderComment = (comment: CommentRow, isReply = false) => (
     <div key={comment.id} className="flex gap-2.5 py-3">
       <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0 mt-0.5" />
@@ -194,6 +236,9 @@ export default function CommentSection({
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
             <span className="text-[13px] font-medium">{comment.profiles?.nickname ?? '?'}</span>
+            {comment.profiles?.role === 'admin' && (
+              <ShieldCheck size={13} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+            )}
             {comment.profiles?.nationality && (
               <>
                 <span className="text-[12px] text-gray-400">·</span>
@@ -212,19 +257,50 @@ export default function CommentSection({
                 onClick={() => setMenuOpenId(menuOpenId === comment.id ? null : comment.id)}
                 className="p-1 text-gray-400 bg-transparent border-none cursor-pointer"
               >
-                <MoreVertical size={15} strokeWidth={1.8} />
+                <MoreHorizontal size={15} strokeWidth={1.8} />
               </button>
               {menuOpenId === comment.id && (
                 <>
                   <div className="fixed inset-0 z-[290]" onClick={() => setMenuOpenId(null)} />
-                  <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[80px]">
+                  <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[110px]">
                     <button
                       type="button"
                       onClick={() => deleteComment(comment.id)}
-                      className="w-full px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                     >
+                      <Trash2 size={13} strokeWidth={1.8} />
                       {t.delete}
                     </button>
+                    {isCurrentUserAdmin && comment.author_id !== currentUserId && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuOpenId(null);
+                            setCommentAdminModal({
+                              type: 'banUser',
+                              userId: comment.author_id,
+                              nickname: comment.profiles?.nickname ?? '?',
+                            });
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                        >
+                          <Ban size={13} strokeWidth={1.8} />
+                          작성자 밴
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuOpenId(null);
+                            handleCommentUnban(comment.author_id);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-gray-600 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                        >
+                          <ShieldOff size={13} strokeWidth={1.8} />
+                          밴 해제
+                        </button>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -378,6 +454,28 @@ export default function CommentSection({
           )}
         </div>
       </div>
+
+      {/* ── 댓글 관리자 확인 모달 ── */}
+      {commentAdminModal?.type === 'banUser' && (
+        <AdminConfirmModal
+          title="이 작성자를 밴할까요?"
+          description="로그인이 차단됩니다."
+          confirmLabel="밴"
+          loading={commentAdminLoading}
+          onConfirm={() => handleCommentBan(commentAdminModal.userId)}
+          onCancel={() => setCommentAdminModal(null)}
+        />
+      )}
+
+      {/* ── 토스트 ── */}
+      {toast && (
+        <div className={`fixed top-[62px] left-1/2 -translate-x-1/2 z-[400] whitespace-nowrap
+          px-4 py-2 rounded-2xl text-sm font-medium shadow-lg pointer-events-none
+          ${toast.ok ? 'bg-[#2F2F2F] text-white' : 'bg-red-500 text-white'}`}
+        >
+          {toast.text}
+        </div>
+      )}
     </>
   );
 }
