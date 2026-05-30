@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Home, MessageCircle, Calendar, User } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -18,9 +18,8 @@ interface Props {
   user?: any;
 }
 
-export default function BottomTabBar({ lang = 'ko', user }: Props) {
+export default function BottomTabBar({ lang = 'ko' }: Props) {
   const pathname = usePathname();
-  const router   = useRouter();
 
   const label = (key: keyof typeof TAB_LABELS) => TAB_LABELS[key][lang];
 
@@ -35,11 +34,6 @@ export default function BottomTabBar({ lang = 'ko', user }: Props) {
 
   const labelCls = (path: string) =>
     `text-[11px] ${isActive(path) ? 'font-medium' : ''}`;
-
-  const goAuth = (path: string) => {
-    if (!user) router.push('/auth');
-    else router.push(path);
-  };
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
@@ -64,15 +58,10 @@ export default function BottomTabBar({ lang = 'ko', user }: Props) {
         </Link>
 
         {/* 내정보 */}
-        <button
-          type="button"
-          onClick={() => goAuth('/my')}
-          className={`flex-1 flex flex-col items-center justify-end pb-[11px] gap-[3px] bg-transparent border-none cursor-pointer
-            ${isActive('/my') ? 'text-[#F6C21A]' : 'text-gray-400'}`}
-        >
+        <Link href="/my" className={tabCls('/my')}>
           <User size={24} strokeWidth={iconW('/my')} />
           <span className={labelCls('/my')}>{label('my')}</span>
-        </button>
+        </Link>
 
       </div>
     </div>
