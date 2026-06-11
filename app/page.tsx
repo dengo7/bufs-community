@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSupabaseClient } from './lib/supabase/client';
 import BottomTabBar from './components/BottomTabBar';
+import HeroBanner from './components/HeroBanner';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
@@ -11,7 +12,7 @@ import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
-  Search, Bell, User, Eye, Heart, MessageCircle,
+  Search, Bell, User, Eye, Heart, MessageCircle, Bookmark,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -77,7 +78,7 @@ const T = {
 const CATEGORIES = [
   { slug: 'school-life',      Icon: GraduationCap, ko: '학교생활',      en: 'Campus Life',      zh: '校园生活',  ja: 'キャンパスライフ' },
   { slug: 'announcements',    Icon: Megaphone,      ko: '학교공지',      en: 'Announcements',    zh: '学校公告',  ja: 'お知らせ' },
-  { slug: 'translation-help', Icon: Languages,      ko: '번역·도움요청', en: 'Translation·Help', zh: '翻译·求助', ja: '翻訳·助け' },
+  { slug: 'translation-help', Icon: Languages,      ko: '번역요청', en: 'Translation·Help', zh: '翻译·求助', ja: '翻訳·助け' },
   { slug: 'visa',             Icon: FileText,       ko: '비자',          en: 'Visa',             zh: '签证',      ja: 'ビザ' },
   { slug: 'housing',          Icon: HomeIcon,       ko: '부동산',        en: 'Housing',          zh: '房地产',    ja: '不動産' },
   { slug: 'bank',             Icon: Landmark,       ko: '은행',          en: 'Bank',             zh: '银行',      ja: '銀行' },
@@ -175,22 +176,17 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
 
       {/* ── MOBILE HEADER ── */}
       <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="flex items-center h-[58px] px-4 gap-2">
 
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
-            <div className="bg-[#2F2F2F] rounded-[5px] px-[7px] py-[5px] grid grid-cols-2 gap-px shrink-0">
-              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">B</span>
-              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">U</span>
-              <span className="text-[10px] font-extrabold text-white leading-none">F</span>
-              <span className="text-[10px] font-extrabold text-white leading-none">S</span>
-            </div>
+            <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-medium text-[#1A1A1A] leading-tight">{t.schoolNameShort}</span>
-              <span className="text-[10px] text-gray-500 truncate leading-tight">{t.headerSub}</span>
+              <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
+              <span className="text-[11px] text-gray-500 truncate leading-tight">외국인 유학생을 위한 커뮤니티</span>
             </div>
           </Link>
 
@@ -231,15 +227,10 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
 
           <Link href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
-            <div className="bg-[#4A4A4A] rounded-[6px] px-2 py-1 grid grid-cols-2 gap-px">
-              <span className="text-[13px] font-extrabold text-[#F6C21A] leading-none">B</span>
-              <span className="text-[13px] font-extrabold text-[#F6C21A] leading-none">U</span>
-              <span className="text-[13px] font-extrabold text-white leading-none">F</span>
-              <span className="text-[13px] font-extrabold text-white leading-none">S</span>
-            </div>
+            <img src="/the-well-mark.png" alt="The Well" className="w-9 h-9 object-contain" />
             <div>
-              <div className="font-normal text-[19px] text-white leading-[1.1]">{t.schoolName}</div>
-              <div className="text-[11px] text-[#aaa] leading-[1.3]">Busan University of Foreign Studies</div>
+              <div className="text-[19px] text-[#1D4ED8] leading-[1.1]"><span className="font-normal">The</span> <span className="font-bold">Well</span></div>
+              <div className="text-[11px] text-[#aaa] leading-[1.3]">외국인 유학생을 위한 커뮤니티</div>
               <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">{t.subSlogan}</div>
             </div>
           </Link>
@@ -347,30 +338,53 @@ export default function Home() {
         {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
 
-          {/* BUFS COMMUNITY 카테고리 그리드 */}
-          <div className="bg-[#2F2F2F] rounded-2xl px-4 pt-5 pb-5 mt-1 mb-5 sm:mb-6">
-            <p className="text-[11px] text-[#F6C21A] font-semibold tracking-widest mb-3">BUFS COMMUNITY</p>
-            <div className="grid grid-cols-5 gap-2">
-              {CATEGORIES.map(({ slug, Icon, ...labels }) => (
-                <Link
-                  key={slug}
-                  href={`/category/${slug}`}
-                  className="flex flex-col items-center gap-1.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-xl py-3 overflow-hidden no-underline transition-colors"
-                >
-                  <span className="text-white/90 shrink-0">
-                    <Icon size={22} strokeWidth={1.7} />
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] text-white/90 font-medium leading-tight text-center px-0.5 break-words w-full">
-                    {bLabel(labels)}
-                  </span>
-                </Link>
-              ))}
+          {/* ── 히어로 배너 (카테고리 섹션 바로 위) ── */}
+          <HeroBanner />
+
+          {/* ── CAMPUS COMMUNITY 카테고리 ── */}
+          <div className="mt-4 mb-5 sm:mb-6">
+            {/* 섹션 헤더 */}
+            <div className="flex items-center justify-between mb-3 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="w-1 h-4 rounded-full bg-[#F6C21A]" />
+                <h2 className="text-[14px] font-bold tracking-wide text-[#111827]">CAMPUS COMMUNITY</h2>
+              </div>
+              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
+                전체보기 ›
+              </Link>
+            </div>
+            {/* 카드 */}
+            <div className="bg-white rounded-[22px] border border-[#E5E7EB] shadow-sm px-3 py-4">
+              <div className="grid grid-cols-5 gap-x-2 gap-y-4">
+                {CATEGORIES.map(({ slug, Icon, ...labels }) => (
+                  <Link
+                    key={slug}
+                    href={`/category/${slug}`}
+                    className="flex flex-col items-center gap-1.5 no-underline group"
+                  >
+                    <span className="flex h-9 items-center justify-center text-[#1D4ED8] group-active:scale-90 transition-transform shrink-0">
+                      <Icon size={25} strokeWidth={1.7} />
+                    </span>
+                    <span className="text-[10px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
+                      {bLabel(labels)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* ── 최근 게시글 피드 ── */}
           <div>
-            <p className="text-[13px] font-bold text-[#1A1A1A] mb-3">{t.recentPosts}</p>
+            <div className="flex items-center justify-between mb-3 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
+                <h2 className="text-[14px] font-bold text-[#111827]">{t.recentPosts}</h2>
+              </div>
+              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
+                {t.more} ›
+              </Link>
+            </div>
 
             {feedLoading ? (
               <div className="space-y-2.5">
@@ -392,13 +406,16 @@ export default function Home() {
                     <Link
                       key={post.id}
                       href={`/post/${post.id}`}
-                      className="block bg-white rounded-xl border border-gray-100 p-4 no-underline
+                      className="block bg-white rounded-[18px] border border-[#E5E7EB] shadow-sm p-4 no-underline
                                  hover:border-gray-300 active:scale-[0.99] transition-all"
                     >
-                      {/* 카테고리 필 */}
-                      <span className="inline-block text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full mb-2">
-                        {getCategoryLabel(post.category, uiLangToLanguage(lang))}
-                      </span>
+                      {/* 카테고리 필 + 북마크 */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="inline-block text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full">
+                          {getCategoryLabel(post.category, uiLangToLanguage(lang))}
+                        </span>
+                        <Bookmark size={16} strokeWidth={1.8} className="text-gray-300 shrink-0" />
+                      </div>
 
                       {/* 제목 */}
                       <h2 className="text-[15px] font-semibold text-[#1A1A1A] truncate leading-snug mb-1">

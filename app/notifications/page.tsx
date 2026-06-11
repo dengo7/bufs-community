@@ -114,13 +114,11 @@ export default function NotificationsPage() {
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="max-w-[1400px] mx-auto flex items-center h-[54px] px-4 gap-3">
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
-            <div className="bg-[#2F2F2F] rounded-[5px] px-[7px] py-[5px] grid grid-cols-2 gap-px shrink-0">
-              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">B</span>
-              <span className="text-[10px] font-extrabold text-[#F6C21A] leading-none">U</span>
-              <span className="text-[10px] font-extrabold text-white leading-none">F</span>
-              <span className="text-[10px] font-extrabold text-white leading-none">S</span>
+            <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
+              <span className="text-[11px] text-gray-500 truncate leading-tight">외국인 유학생을 위한 커뮤니티</span>
             </div>
-            <span className="text-[13px] font-bold text-[#1A1A1A] truncate">BUFS COMMUNITY</span>
           </Link>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
