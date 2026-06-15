@@ -88,6 +88,9 @@ const CATEGORIES = [
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
 
+const getCatIcon = (slug: string) =>
+  CATEGORIES.find(c => c.slug === slug)?.Icon ?? null;
+
 type FeedPost = {
   id: string;
   title: string;
@@ -411,7 +414,8 @@ export default function Home() {
                     >
                       {/* 카테고리 필 + 북마크 */}
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="inline-block text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full">
+                          {(() => { const CatIcon = getCatIcon(post.category); return CatIcon ? <CatIcon size={10} strokeWidth={2} className="shrink-0" /> : null; })()}
                           {getCategoryLabel(post.category, uiLangToLanguage(lang))}
                         </span>
                         <Bookmark size={16} strokeWidth={1.8} className="text-gray-300 shrink-0" />

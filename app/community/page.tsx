@@ -265,7 +265,8 @@ export default function CommunityPage() {
                              hover:border-gray-300 active:scale-[0.99] transition-all"
                 >
                   {/* 카테고리 필 */}
-                  <span className="inline-block text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full mb-2">
+                  <span className="inline-flex items-center gap-1 text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full mb-2">
+                    {(() => { const cat = CATEGORIES.find(c => c.slug === post.category); return cat?.Icon ? <cat.Icon size={10} strokeWidth={2} className="shrink-0" /> : null; })()}
                     {getCategoryLabel(post.category, uiLangToLanguage(lang))}
                   </span>
 
