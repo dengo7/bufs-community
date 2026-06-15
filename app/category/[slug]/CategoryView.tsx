@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, PenLine, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, PenLine, Pin, ShieldCheck } from 'lucide-react';
 import BottomTabBar from '../../components/BottomTabBar';
 import {
   getCategoryBySlug,
@@ -45,6 +45,9 @@ export interface PostRow {
   title: string;
   content: string;
   created_at: string;
+  pinned:    boolean;
+  pin_scope: 'global' | 'category' | null;
+  pinned_at: string | null;
   profiles: {
     nickname: string;
     nationality: string | null;
@@ -87,9 +90,10 @@ function formatRelativeTime(dateStr: string, lang: UILang): string {
 interface Props {
   slug: string;
   posts: PostRow[];
+  pinnedPosts: PostRow[];
 }
 
-export default function CategoryView({ slug, posts }: Props) {
+export default function CategoryView({ slug, posts, pinnedPosts }: Props) {
   const [lang, setLang] = useState<UILang>('ko');
 
   const t = T[lang];
@@ -136,20 +140,67 @@ export default function CategoryView({ slug, posts }: Props) {
 
       {/* 글 목록 */}
       <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
-        {posts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-[15px] text-gray-400 mb-2">{t.noPosts}</p>
-            <Link
-              href={`/write?category=${slug}`}
-              className="inline-flex items-center gap-1.5 mt-2 px-5 py-2.5 bg-[#F6C21A] text-[#2F2F2F]
-                         rounded-full text-[13px] font-bold no-underline hover:opacity-90 transition-opacity"
-            >
-              <PenLine size={15} strokeWidth={2} />
-              {t.writeFirst}
-            </Link>
+        {/* 공지 섹션 */}
+        {pinnedPosts.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-2 px-0.5">
+              <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
+              <span className="text-[12px] font-semibold text-[#1B7CC0]">공지</span>
+            </div>
+            <div className="space-y-2">
+              {pinnedPosts.map(post => (
+                <Link
+                  key={post.id}
+                  href={`/post/${post.id}`}
+                  className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline
+                             hover:border-blue-200 active:scale-[0.99] transition-all"
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-[#1B7CC0] bg-white border border-blue-100
+                                     px-2 py-0.5 rounded-full">
+                      <Pin size={10} strokeWidth={2.5} />
+                      공지
+                    </span>
+                  </div>
+                  <h2 className="text-[14px] font-semibold text-[#1A1A1A] truncate mb-1 leading-snug">
+                    {post.title}
+                  </h2>
+                  <p className="text-[13px] text-gray-500 line-clamp-2 mb-3 leading-relaxed">
+                    {post.content}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-gray-400">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-gray-600 truncate max-w-[80px]">
+                        {post.profiles?.nickname ?? '?'}
+                      </span>
+                      <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+                    </div>
+                    <span>{formatRelativeTime(post.created_at, lang)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* 일반 게시글 또는 빈 상태 */}
+        {posts.length === 0 ? (
+          pinnedPosts.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-[15px] text-gray-400 mb-2">{t.noPosts}</p>
+              <Link
+                href={`/write?category=${slug}`}
+                className="inline-flex items-center gap-1.5 mt-2 px-5 py-2.5 bg-[#F6C21A] text-[#2F2F2F]
+                           rounded-full text-[13px] font-bold no-underline hover:opacity-90 transition-opacity"
+              >
+                <PenLine size={15} strokeWidth={2} />
+                {t.writeFirst}
+              </Link>
+            </div>
+          )
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {posts.map(post => (
               <Link
                 key={post.id}

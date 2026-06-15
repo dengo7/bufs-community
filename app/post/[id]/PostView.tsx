@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, MessageCircle, Eye,
   MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
-  Bookmark, BookmarkCheck,
+  Bookmark, BookmarkCheck, Pin, PinOff,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
@@ -50,6 +50,9 @@ export type PostWithProfile = {
   like_count: number;
   author_id: string;
   image_urls: string[];
+  pinned:    boolean;
+  pin_scope: 'global' | 'category' | null;
+  pinned_at: string | null;
   profiles: {
     nickname: string;
     nationality: string | null;
@@ -88,6 +91,8 @@ export default function PostView({
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [isPinned, setIsPinned] = useState(post.pinned ?? false);
+  const [pinScope, setPinScope] = useState<'global' | 'category' | null>(post.pin_scope ?? null);
 
   const t = T[lang];
   const categoryLabel = getCategoryLabel(post.category, uiLangToLanguage(lang));
@@ -261,6 +266,28 @@ export default function PostView({
     }
   };
 
+  const handleTogglePin = async (scope: 'global' | 'category' | null) => {
+    setShowMenu(false);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.rpc('toggle_pin_post', {
+        p_post_id:   post.id,
+        p_pinned:    scope !== null,
+        p_pin_scope: scope,
+      });
+      if (error) throw error;
+      setIsPinned(scope !== null);
+      setPinScope(scope);
+      showToast(true,
+        scope === 'global'   ? '전체 공지로 고정됐어요' :
+        scope === 'category' ? '카테고리 공지로 고정됐어요' :
+                               '공지 해제됐어요'
+      );
+    } catch (err: unknown) {
+      showToast(false, err instanceof Error ? err.message : '처리 실패');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
 
@@ -299,6 +326,18 @@ export default function PostView({
 
       {/* ── 본문 ── */}
       <div className="max-w-[600px] mx-auto px-4 pt-5 pb-44">
+
+        {/* 핀 배지 */}
+        {isPinned && (
+          <div className="flex items-center gap-1.5 mb-3">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold
+                             text-[#1B7CC0] bg-[#EFF6FD] border border-blue-100
+                             px-2.5 py-1 rounded-full">
+              <Pin size={10} strokeWidth={2.5} />
+              {pinScope === 'global' ? '전체 공지' : '카테고리 공지'}
+            </span>
+          </div>
+        )}
 
         {/* 제목 */}
         <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
@@ -349,6 +388,40 @@ export default function PostView({
                   <>
                     <div className="fixed inset-0 z-[290]" onClick={() => setShowMenu(false)} />
                     <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[130px]">
+                      {/* 핀 토글 */}
+                      {isPinned ? (
+                        <button
+                          type="button"
+                          onClick={() => handleTogglePin(null)}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px]
+                                     text-[#1B7CC0] bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                        >
+                          <PinOff size={14} strokeWidth={1.8} />
+                          공지 해제
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePin('global')}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px]
+                                       text-[#1B7CC0] bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                          >
+                            <Pin size={14} strokeWidth={1.8} />
+                            전체 공지 고정
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePin('category')}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px]
+                                       text-[#1B7CC0] bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                          >
+                            <Pin size={14} strokeWidth={1.8} />
+                            카테고리 고정
+                          </button>
+                        </>
+                      )}
+                      <div className="border-t border-gray-100 my-1" />
                       <button
                         type="button"
                         onClick={() => { setShowMenu(false); setAdminModal('deletePost'); }}

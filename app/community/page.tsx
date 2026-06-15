@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Heart, MessageCircle, Eye, PenLine, ShieldCheck } from 'lucide-react';
+import { Search, Heart, MessageCircle, Eye, PenLine, ShieldCheck, Pin } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import {
@@ -29,6 +29,9 @@ type FeedPost = {
   view_count: number;
   comment_count: number;
   like_count: number;
+  pinned: boolean;
+  pin_scope: 'global' | 'category' | null;
+  pinned_at: string | null;
   profiles: { nickname: string; nationality: string | null; role: string | null } | null;
 };
 
@@ -37,10 +40,27 @@ export default function CommunityPage() {
   const [lang, setLang] = useState<UILang>('ko');
   const [selectedCategory, setSelectedCategory] = useState<CategorySlug | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [pinnedPosts, setPinnedPosts] = useState<FeedPost[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  // 전체 공지 로드
+  useEffect(() => {
+    const fetchPinned = async () => {
+      const client = getSupabaseClient();
+      const { data } = await client
+        .from('posts')
+        .select('id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
+        .eq('is_deleted', false)
+        .eq('pinned', true)
+        .eq('pin_scope', 'global')
+        .order('pinned_at', { ascending: false });
+      if (data) setPinnedPosts(data as unknown as FeedPost[]);
+    };
+    fetchPinned();
+  }, []);
 
   // 카테고리 변경 시 초기 로드
   useEffect(() => {
@@ -56,7 +76,8 @@ export default function CommunityPage() {
       let query = client
         .from('posts')
         .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
-        .eq('is_deleted', false);
+        .eq('is_deleted', false)
+        .eq('pinned', false);
 
       if (selectedCategory) query = query.eq('category', selectedCategory);
 
@@ -85,7 +106,8 @@ export default function CommunityPage() {
     let query = client
       .from('posts')
       .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
-      .eq('is_deleted', false);
+      .eq('is_deleted', false)
+      .eq('pinned', false);
 
     if (selectedCategory) query = query.eq('category', selectedCategory);
 
@@ -167,6 +189,58 @@ export default function CommunityPage() {
 
       {/* ── 피드 리스트 ── */}
       <div className="max-w-[600px] mx-auto px-4 pt-3 pb-44">
+        {!loading && pinnedPosts.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-2 px-0.5">
+              <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
+              <span className="text-[12px] font-semibold text-[#1B7CC0]">전체 공지</span>
+            </div>
+            <div className="space-y-2">
+              {pinnedPosts.map(post => (
+                <Link
+                  key={post.id}
+                  href={`/post/${post.id}`}
+                  className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline
+                             hover:border-blue-200 active:scale-[0.99] transition-all"
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold
+                                     text-[#1B7CC0] bg-white border border-blue-100
+                                     px-2 py-0.5 rounded-full">
+                      <Pin size={10} strokeWidth={2.5} />
+                      공지
+                    </span>
+                    <span className="text-[11px] text-gray-400">
+                      {getCategoryLabel(post.category, uiLangToLanguage(lang))}
+                    </span>
+                  </div>
+                  <h2 className="text-[15px] font-semibold text-[#1A1A1A] truncate leading-snug mb-1">
+                    {post.title}
+                  </h2>
+                  <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed mb-2.5">
+                    {post.content}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-gray-400">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-gray-600 truncate max-w-[80px]">
+                        {post.profiles?.nickname ?? '?'}
+                      </span>
+                      <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex items-center gap-0.5">
+                        <Heart size={11} strokeWidth={1.6} />{post.like_count}
+                      </span>
+                      <span className="flex items-center gap-0.5">
+                        <Eye size={11} strokeWidth={1.6} />{post.view_count}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
         {loading ? (
           <div className="space-y-2.5">
             {Array.from({ length: 6 }).map((_, i) => (

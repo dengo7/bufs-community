@@ -13,7 +13,9 @@ export default async function PostPage({
   const { data: post, error } = await supabase
     .from('posts')
     .select(`
-      id, title, content, category, created_at, view_count, comment_count, like_count, author_id, image_urls,
+      id, title, content, category, created_at, view_count,
+      comment_count, like_count, author_id, image_urls,
+      pinned, pin_scope, pinned_at,
       profiles ( nickname, nationality, avatar_url, role )
     `)
     .eq('id', id)

@@ -22,6 +22,11 @@ export interface Post {
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
+  comment_count: number;
+  like_count:    number;
+  pinned:        boolean;
+  pin_scope:     'global' | 'category' | null;
+  pinned_at:     string | null;
 }
 
 export interface PostWithAuthor extends Post {

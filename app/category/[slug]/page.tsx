@@ -9,28 +9,43 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
   if (!CATEGORY_SLUGS.includes(slug)) notFound();
 
   const supabase = await createSupabaseServerClient();
 
-  const { data, error } = await supabase
+  const SELECT_FIELDS = `
+    id, title, content, created_at,
+    pinned, pin_scope, pinned_at,
+    profiles ( nickname, nationality, avatar_url, role )
+  `;
+
+  // 카테고리 고정글
+  const { data: pinnedData } = await supabase
     .from('posts')
-    .select(`
-      id,
-      title,
-      content,
-      created_at,
-      profiles ( nickname, nationality, avatar_url, role )
-    `)
+    .select(SELECT_FIELDS)
     .eq('category', slug)
     .eq('is_deleted', false)
+    .eq('pinned', true)
+    .eq('pin_scope', 'category')
+    .order('pinned_at', { ascending: false });
+
+  // 일반 게시글
+  const { data: regularData, error } = await supabase
+    .from('posts')
+    .select(SELECT_FIELDS)
+    .eq('category', slug)
+    .eq('is_deleted', false)
+    .eq('pinned', false)
     .order('created_at', { ascending: false })
     .limit(50);
 
-  if (error) {
-    console.error('[CategoryPage] posts query error:', error.message);
-  }
+  if (error) console.error('[CategoryPage] posts query error:', error.message);
 
-  return <CategoryView slug={slug} posts={(data ?? []) as unknown as PostRow[]} />;
+  return (
+    <CategoryView
+      slug={slug}
+      posts={(regularData ?? []) as unknown as PostRow[]}
+      pinnedPosts={(pinnedData ?? []) as unknown as PostRow[]}
+    />
+  );
 }
