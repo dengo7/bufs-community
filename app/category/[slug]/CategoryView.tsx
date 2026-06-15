@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, PenLine, Pin, ShieldCheck } from 'lucide-react';
+import {
+  ChevronLeft, PenLine, Pin, ShieldCheck,
+  ListChecks, MapPin, ClipboardList, BookOpen, ChevronRight, ScrollText,
+} from 'lucide-react';
 import BottomTabBar from '../../components/BottomTabBar';
 import {
   getCategoryBySlug,
@@ -56,6 +59,25 @@ export interface PostRow {
   } | null;
 }
 
+export type GuideCard = {
+  id: string;
+  category_slug: string;
+  card_type: 'procedure' | 'places' | 'checklist' | 'info';
+  title: string;
+  content_type: 'rich_text' | 'structured';
+  rich_content: string | null;
+  content: Record<string, unknown>;
+  sort_order: number;
+  updated_at: string;
+};
+
+const GUIDE_CARD_ICONS = {
+  procedure: ListChecks,
+  places:    MapPin,
+  checklist: ClipboardList,
+  info:      ScrollText,
+} as const;
+
 function formatRelativeTime(dateStr: string, lang: UILang): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins  = Math.floor(diffMs / 60_000);
@@ -91,9 +113,10 @@ interface Props {
   slug: string;
   posts: PostRow[];
   pinnedPosts: PostRow[];
+  guideCards: GuideCard[];
 }
 
-export default function CategoryView({ slug, posts, pinnedPosts }: Props) {
+export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: Props) {
   const [lang, setLang] = useState<UILang>('ko');
 
   const t = T[lang];
@@ -140,6 +163,50 @@ export default function CategoryView({ slug, posts, pinnedPosts }: Props) {
 
       {/* 글 목록 */}
       <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+        {/* 가이드 섹션 */}
+        {guideCards.length > 0 && (
+          <div className="mb-5 bg-[#EFF6FD] rounded-2xl border border-blue-100 overflow-hidden">
+            {/* 헤더 */}
+            <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 border-b border-blue-100">
+              <BookOpen size={15} strokeWidth={2} className="text-[#1B7CC0]" />
+              <span className="text-[13px] font-semibold text-[#1B7CC0]">관리자 가이드</span>
+            </div>
+
+            {/* 카드 그리드 */}
+            <div className={`grid gap-2 p-3 ${guideCards.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {guideCards.map(card => {
+                const CardIcon = GUIDE_CARD_ICONS[card.card_type];
+                return (
+                  <Link
+                    key={card.id}
+                    href={`/guide/${card.id}`}
+                    className="bg-white rounded-xl border border-blue-100 p-3 no-underline
+                               hover:border-blue-200 active:scale-[0.98] transition-all
+                               flex items-center gap-2.5"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#EFF6FD] flex items-center justify-center shrink-0">
+                      <CardIcon size={16} strokeWidth={1.8} className="text-[#1B7CC0]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-[#1A1A1A] leading-tight truncate">
+                        {card.title}
+                      </p>
+                    </div>
+                    <ChevronRight size={14} strokeWidth={2} className="text-[#1B7CC0] shrink-0" />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* 최종 수정 */}
+            {guideCards[0]?.updated_at && (
+              <p className="text-[10px] text-[#1B7CC0] opacity-60 text-right px-4 pb-2.5">
+                최종 수정 {formatRelativeTime(guideCards[0].updated_at, lang)}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* 공지 섹션 */}
         {pinnedPosts.length > 0 && (
           <div className="mb-4">

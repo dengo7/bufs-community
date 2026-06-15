@@ -3,6 +3,20 @@ import { createSupabaseServerClient } from '../../lib/supabase/server';
 import { CATEGORY_SLUGS } from '../../lib/categories';
 import CategoryView, { type PostRow } from './CategoryView';
 
+const GUIDE_CATEGORY_SLUGS = ['housing','bank','telecom','insurance','medical'] as const;
+
+export type GuideCard = {
+  id: string;
+  category_slug: string;
+  card_type: 'procedure' | 'places' | 'checklist' | 'info';
+  title: string;
+  content_type: 'rich_text' | 'structured';
+  rich_content: string | null;
+  content: Record<string, unknown>;
+  sort_order: number;
+  updated_at: string;
+};
+
 export default async function CategoryPage({
   params,
 }: {
@@ -56,11 +70,23 @@ export default async function CategoryPage({
 
   if (error) console.error('[CategoryPage] posts query error:', error.message);
 
+  const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug as any);
+  let guideCards: GuideCard[] = [];
+  if (isGuideCategory) {
+    const { data: guideData } = await supabase
+      .from('category_guides')
+      .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at')
+      .eq('category_slug', slug)
+      .order('sort_order', { ascending: true });
+    guideCards = (guideData ?? []) as GuideCard[];
+  }
+
   return (
     <CategoryView
       slug={slug}
       posts={(regularData ?? []) as unknown as PostRow[]}
       pinnedPosts={(allPinnedData) as unknown as PostRow[]}
+      guideCards={guideCards}
     />
   );
 }
