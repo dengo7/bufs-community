@@ -19,8 +19,17 @@ export default async function CategoryPage({
     profiles ( nickname, nationality, avatar_url, role )
   `;
 
-  // 카테고리 고정글
-  const { data: pinnedData } = await supabase
+  // 전체 공지 (pin_scope='global') — 카테고리 무관하게 항상 표시
+  const { data: globalPinnedData } = await supabase
+    .from('posts')
+    .select(SELECT_FIELDS)
+    .eq('is_deleted', false)
+    .eq('pinned', true)
+    .eq('pin_scope', 'global')
+    .order('pinned_at', { ascending: false });
+
+  // 카테고리 고정글 (pin_scope='category')
+  const { data: categoryPinnedData } = await supabase
     .from('posts')
     .select(SELECT_FIELDS)
     .eq('category', slug)
@@ -28,6 +37,12 @@ export default async function CategoryPage({
     .eq('pinned', true)
     .eq('pin_scope', 'category')
     .order('pinned_at', { ascending: false });
+
+  // 전체 공지 먼저, 카테고리 고정글 뒤
+  const allPinnedData = [
+    ...(globalPinnedData ?? []),
+    ...(categoryPinnedData ?? []),
+  ];
 
   // 일반 게시글
   const { data: regularData, error } = await supabase
@@ -45,7 +60,7 @@ export default async function CategoryPage({
     <CategoryView
       slug={slug}
       posts={(regularData ?? []) as unknown as PostRow[]}
-      pinnedPosts={(pinnedData ?? []) as unknown as PostRow[]}
+      pinnedPosts={(allPinnedData) as unknown as PostRow[]}
     />
   );
 }

@@ -160,7 +160,7 @@ export default function CategoryView({ slug, posts, pinnedPosts }: Props) {
                                      text-[#1B7CC0] bg-white border border-blue-100
                                      px-2 py-0.5 rounded-full">
                       <Pin size={10} strokeWidth={2.5} />
-                      공지
+                      {post.pin_scope === 'global' ? '전체 공지' : '카테고리 공지'}
                     </span>
                   </div>
                   <h2 className="text-[14px] font-semibold text-[#1A1A1A] truncate mb-1 leading-snug">
