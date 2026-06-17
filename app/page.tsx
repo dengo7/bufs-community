@@ -91,6 +91,22 @@ const CATEGORIES = [
 const getCatIcon = (slug: string) =>
   CATEGORIES.find(c => c.slug === slug)?.Icon ?? null;
 
+// 최근 게시글 카테고리 칩의 연한 파스텔 색상 (slug별)
+const CATEGORY_CHIP: Record<string, string> = {
+  'school-life':      'bg-[#FEF3C7] text-[#A16207] border-[#FDE68A]',
+  'announcements':    'bg-orange-50 text-orange-700 border-orange-100',
+  'translation-help': 'bg-violet-50 text-violet-700 border-violet-100',
+  'visa':             'bg-blue-50 text-blue-700 border-blue-100',
+  'housing':          'bg-emerald-50 text-emerald-700 border-emerald-100',
+  'bank':             'bg-indigo-50 text-indigo-700 border-indigo-100',
+  'telecom':          'bg-sky-50 text-sky-700 border-sky-100',
+  'insurance':        'bg-cyan-50 text-cyan-700 border-cyan-100',
+  'medical':          'bg-rose-50 text-rose-700 border-rose-100',
+  'part-time':        'bg-purple-50 text-purple-700 border-purple-100',
+};
+const getCategoryChipClass = (slug: string) =>
+  CATEGORY_CHIP[slug] ?? 'bg-slate-50 text-slate-600 border-slate-100';
+
 type FeedPost = {
   id: string;
   title: string;
@@ -443,12 +459,11 @@ export default function Home() {
             </div>
 
             {feedLoading ? (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 space-y-2.5">
-                    <div className="h-3 bg-gray-100 rounded-full animate-pulse w-1/5" />
+                  <div key={i} className="bg-white rounded-xl border border-[#E5EAF2] p-3.5 space-y-2">
+                    <div className="h-3 bg-gray-100 rounded-full animate-pulse w-1/6" />
                     <div className="h-4 bg-gray-100 rounded animate-pulse w-3/4" />
-                    <div className="h-3 bg-gray-100 rounded animate-pulse" />
                     <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
                   </div>
                 ))}
@@ -457,37 +472,37 @@ export default function Home() {
               <p className="text-center text-gray-400 text-sm py-10">{t.noPosts}</p>
             ) : (
               <>
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {feedPosts.map(post => (
                     <Link
                       key={post.id}
                       href={`/post/${post.id}`}
-                      className="block bg-white rounded-[18px] border border-[#E5E7EB] shadow-sm p-4 no-underline
-                                 hover:border-gray-300 active:scale-[0.99] transition-all"
+                      className="block bg-white rounded-xl border border-[#E5EAF2] p-3.5 no-underline
+                                 hover:border-[#CBD5E1] transition-colors"
                     >
-                      {/* 카테고리 필 + 북마크 */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="inline-flex items-center gap-1 text-[11px] text-[#B8900E] font-semibold bg-[#FFF9E6] px-2 py-0.5 rounded-full">
-                          {(() => { const CatIcon = getCatIcon(post.category); return CatIcon ? <CatIcon size={10} strokeWidth={2} className="shrink-0" /> : null; })()}
+                      {/* 카테고리 칩 + 북마크 */}
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-[1px] rounded-md border ${getCategoryChipClass(post.category)}`}>
+                          {(() => { const CatIcon = getCatIcon(post.category); return CatIcon ? <CatIcon size={9} strokeWidth={2} className="shrink-0" /> : null; })()}
                           {getCategoryLabel(post.category, uiLangToLanguage(lang))}
                         </span>
-                        <Bookmark size={16} strokeWidth={1.8} className="text-gray-300 shrink-0" />
+                        <Bookmark size={14} strokeWidth={1.8} className="text-[#CBD5E1] shrink-0" />
                       </div>
 
                       {/* 제목 */}
-                      <h2 className="text-[15px] font-semibold text-[#1A1A1A] truncate leading-snug mb-1">
+                      <h2 className="text-[14.5px] font-semibold text-[#1A2236] truncate leading-snug">
                         {post.title}
                       </h2>
 
-                      {/* 본문 미리보기 */}
-                      <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed mb-2.5">
+                      {/* 본문 미리보기 (1줄) */}
+                      <p className="mt-1 text-[12.5px] text-slate-500 line-clamp-1 leading-relaxed">
                         {post.content}
                       </p>
 
-                      {/* 하단 메타 */}
-                      <div className="flex items-center justify-between gap-2 text-[11px] text-gray-400">
+                      {/* 하단 메타 (한 줄) */}
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
                         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          <span className="font-medium text-gray-600 truncate max-w-[80px]">
+                          <span className="font-medium text-slate-500 truncate max-w-[80px]">
                             {post.profiles?.nickname ?? '?'}
                           </span>
                           {post.profiles?.role === 'admin' && (
@@ -495,24 +510,24 @@ export default function Home() {
                           )}
                           {post.profiles?.nationality && (
                             <>
-                              <span className="text-gray-300">·</span>
+                              <span className="text-slate-300">·</span>
                               <span className="truncate">{post.profiles.nationality}</span>
                             </>
                           )}
-                          <span className="text-gray-300 shrink-0">·</span>
+                          <span className="text-slate-300 shrink-0">·</span>
                           <span className="shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
                         </div>
-                        <div className="flex items-center gap-2.5 shrink-0">
-                          <span className="flex items-center gap-0.5">
-                            <Heart size={11} strokeWidth={1.6} />
+                        <div className="flex items-center gap-3 shrink-0 text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Heart size={12} strokeWidth={1.6} />
                             {post.like_count}
                           </span>
-                          <span className="flex items-center gap-0.5">
-                            <MessageCircle size={11} strokeWidth={1.6} />
+                          <span className="flex items-center gap-1">
+                            <MessageCircle size={12} strokeWidth={1.6} />
                             {post.comment_count}
                           </span>
-                          <span className="flex items-center gap-0.5">
-                            <Eye size={11} strokeWidth={1.6} />
+                          <span className="flex items-center gap-1">
+                            <Eye size={12} strokeWidth={1.6} />
                             {post.view_count}
                           </span>
                         </div>
