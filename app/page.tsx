@@ -12,7 +12,7 @@ import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
-  Search, Bell, User, Eye, Heart, MessageCircle, Bookmark,
+  Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, Pin,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -112,6 +112,7 @@ export default function Home() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedLoadingMore, setFeedLoadingMore] = useState(false);
   const [feedHasMore, setFeedHasMore] = useState(true);
+  const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
 
   const t = T[lang];
   const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
@@ -134,6 +135,22 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // 전체 공지 로드
+  useEffect(() => {
+    const fetchPinned = async () => {
+      const client = getSupabaseClient();
+      const { data } = await client
+        .from('posts')
+        .select('id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
+        .eq('is_deleted', false)
+        .eq('pinned', true)
+        .eq('pin_scope', 'global')
+        .order('pinned_at', { ascending: false });
+      if (data) setPinnedPosts(data as any[]);
+    };
+    fetchPinned();
+  }, []);
+
   // 피드 초기 로드
   useEffect(() => {
     let cancelled = false;
@@ -143,6 +160,7 @@ export default function Home() {
         .from('posts')
         .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
+        .eq('pinned', false)
         .order('created_at', { ascending: false })
         .range(0, PAGE_SIZE - 1);
       if (!cancelled && data) {
@@ -163,6 +181,7 @@ export default function Home() {
       .from('posts')
       .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
       .eq('is_deleted', false)
+      .eq('pinned', false)
       .order('created_at', { ascending: false })
       .range(feedOffset, feedOffset + PAGE_SIZE - 1);
     if (data) {
@@ -376,6 +395,40 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {pinnedPosts.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-1.5 mb-2 px-0.5">
+                <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
+                <span className="text-[12px] font-semibold text-[#1B7CC0]">전체 공지</span>
+              </div>
+              <div className="space-y-2">
+                {pinnedPosts.map(post => (
+                  <Link key={post.id} href={`/post/${post.id}`}
+                    className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1B7CC0] bg-white border border-blue-100 px-2 py-0.5 rounded-full">
+                        <Pin size={10} strokeWidth={2.5} />
+                        공지
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        {post.category}
+                      </span>
+                    </div>
+                    <h2 className="text-[14px] font-semibold text-gray-900 mb-1 line-clamp-2">{post.title}</h2>
+                    <p className="text-[12px] text-gray-500 line-clamp-2 mb-2">{post.content}</p>
+                    <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                      <span>{post.profiles?.nickname ?? '익명'}</span>
+                      <span>·</span>
+                      <span>조회 {post.view_count ?? 0}</span>
+                      <span>·</span>
+                      <span>좋아요 {post.like_count ?? 0}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── 최근 게시글 피드 ── */}
           <div>

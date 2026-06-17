@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BUFS Community",
+  title: "The Well",
   description: "외국인 유학생을 위한 BUFS 생활 커뮤니티",
   appleWebApp: {
     capable: true,

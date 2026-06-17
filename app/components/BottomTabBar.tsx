@@ -23,12 +23,16 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
 
   const label = (key: keyof typeof TAB_LABELS) => TAB_LABELS[key][lang];
 
-  const isActive = (path: string) =>
-    path === '/' ? pathname === '/' : pathname.startsWith(path);
+  const COMMUNITY_PATHS = ['/community', '/category', '/post', '/guide', '/search'];
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === '/';
+    if (path === '/community') return COMMUNITY_PATHS.some(p => pathname.startsWith(p));
+    return pathname.startsWith(path);
+  };
 
   const tabCls = (path: string) =>
     `flex-1 flex flex-col items-center justify-end pb-[11px] gap-[3px] no-underline
-     ${isActive(path) ? 'text-[#F6C21A]' : 'text-gray-400'}`;
+     ${isActive(path) ? 'text-[#1B7CC0]' : 'text-gray-400'}`;
 
   const iconW = (path: string) => isActive(path) ? 2 : 1.8;
 

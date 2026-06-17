@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, MessageCircle, Eye,
   MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
-  Bookmark, BookmarkCheck, Pin, PinOff,
+  Bookmark, BookmarkCheck, Pin, PinOff, Pencil,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
@@ -93,6 +93,10 @@ export default function PostView({
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const [isPinned, setIsPinned] = useState(post.pinned ?? false);
   const [pinScope, setPinScope] = useState<'global' | 'category' | null>(post.pin_scope ?? null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const t = T[lang];
   const categoryLabel = getCategoryLabel(post.category, uiLangToLanguage(lang));
@@ -266,6 +270,25 @@ export default function PostView({
     }
   };
 
+  const handleEditSave = async () => {
+    if (!editTitle.trim() || !editContent.trim()) return;
+    setIsSaving(true);
+    try {
+      const client = getSupabaseClient();
+      const { error } = await client
+        .from('posts')
+        .update({ title: editTitle.trim(), content: editContent.trim() })
+        .eq('id', post.id);
+      if (!error) {
+        post.title = editTitle.trim();
+        post.content = editContent.trim();
+        setIsEditing(false);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleTogglePin = async (scope: 'global' | 'category' | null) => {
     setShowMenu(false);
     try {
@@ -340,7 +363,15 @@ export default function PostView({
         )}
 
         {/* 제목 */}
-        <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
+        {isEditing ? (
+          <input
+            value={editTitle}
+            onChange={e => setEditTitle(e.target.value)}
+            className="w-full text-xl font-bold leading-snug border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0]"
+          />
+        ) : (
+          <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
+        )}
 
         {/* 작성자 행 */}
         <div className="flex items-center gap-2 mt-3">
@@ -388,6 +419,18 @@ export default function PostView({
                   <>
                     <div className="fixed inset-0 z-[290]" onClick={() => setShowMenu(false)} />
                     <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[130px]">
+                      <button
+                        onClick={() => {
+                          setEditTitle(post.title);
+                          setEditContent(post.content ?? '');
+                          setIsEditing(true);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[14px] text-gray-700 hover:bg-gray-50"
+                      >
+                        <Pencil size={15} className="text-gray-500" />
+                        글 수정
+                      </button>
                       {/* 핀 토글 */}
                       {isPinned ? (
                         <button
@@ -490,9 +533,33 @@ export default function PostView({
         <div className="border-b border-gray-100 my-4" />
 
         {/* 본문 텍스트 */}
-        <p className="text-base whitespace-pre-wrap leading-relaxed text-gray-800">
-          {post.content}
-        </p>
+        {isEditing ? (
+          <div className="space-y-3">
+            <textarea
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              rows={10}
+              className="w-full text-[15px] leading-relaxed text-gray-800 border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0] resize-none"
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 text-[13px] text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleEditSave}
+                disabled={isSaving}
+                className="px-4 py-2 text-[13px] text-white bg-[#1B7CC0] rounded-lg hover:bg-[#1565a0] disabled:opacity-50"
+              >
+                {isSaving ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="whitespace-pre-wrap leading-relaxed text-gray-800">{post.content}</p>
+        )}
 
         {/* 첨부 이미지 */}
         {post.image_urls?.length > 0 && (
