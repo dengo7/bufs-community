@@ -205,10 +205,10 @@ export default function Home() {
         <div className="flex items-center h-[58px] px-4 gap-2">
 
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
-            <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
+            <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
-              <span className="text-[11px] text-gray-500 truncate leading-tight">외국인 유학생을 위한 커뮤니티</span>
+              <span className="text-[12px] text-[#64748B] truncate leading-snug">외국인 유학생을 위한 커뮤니티</span>
             </div>
           </Link>
 
@@ -249,7 +249,7 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
 
           <Link href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
-            <img src="/the-well-mark.png" alt="The Well" className="w-9 h-9 object-contain" />
+            <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-[19px] text-[#1D4ED8] leading-[1.1]"><span className="font-normal">The</span> <span className="font-bold">Well</span></div>
               <div className="text-[11px] text-[#aaa] leading-[1.3]">외국인 유학생을 위한 커뮤니티</div>
