@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "외국인 유학생을 위한 BUFS 생활 커뮤니티",
   appleWebApp: {
     capable: true,
-    title: "BUFS",
+    title: "The Well",
     statusBarStyle: "default",
   },
   icons: {
