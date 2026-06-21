@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'BUFS Community',
-    short_name: 'BUFS',
-    description: '외국인 유학생을 위한 BUFS 생활 커뮤니티',
+    name: 'The Well',
+    short_name: 'The Well',
+    description: '외국인 유학생을 위한 커뮤니티, The Well',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
