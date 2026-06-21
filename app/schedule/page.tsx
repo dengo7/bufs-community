@@ -58,6 +58,7 @@ type ProcessedItem = ScheduleItem & {
   idx: number;
   past: boolean;
   nearest: boolean;
+  ongoing: boolean;
   type: ScheduleType;
 };
 
@@ -66,7 +67,7 @@ type MonthGroup = { key: string; items: ProcessedItem[] };
 function buildGroups(today: string): MonthGroup[] {
   let nearestIdx = -1;
   for (let i = 0; i < SCHEDULE.length; i++) {
-    if ((SCHEDULE[i].end ?? SCHEDULE[i].start) >= today) { nearestIdx = i; break; }
+    if (SCHEDULE[i].start > today) { nearestIdx = i; break; }
   }
   const groups: MonthGroup[] = [];
   SCHEDULE.forEach((item, idx) => {
@@ -77,6 +78,7 @@ function buildGroups(today: string): MonthGroup[] {
       ...item,
       idx,
       past:    (item.end ?? item.start) < today,
+      ongoing: item.start <= today && (item.end ?? item.start) >= today,
       nearest: idx === nearestIdx,
       type:    getScheduleType(item.title),
     });
@@ -92,6 +94,7 @@ export default function SchedulePage() {
   const todayMD = `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`;
   const groups  = buildGroups(today);
   const labels  = SCHEDULE_LABELS[lang];
+  let todayLineShown = false;
   const nearRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -157,11 +160,13 @@ export default function SchedulePage() {
             <div className="flex flex-col gap-[7px]">
               {group.items.map(item => {
                 const style = SCHEDULE_STYLES[item.type];
+                const showTodayLine = (item.nearest || item.ongoing) && !todayLineShown;
+                if (showTodayLine) todayLineShown = true;
                 return (
                   <div key={item.idx}>
 
                     {/* 오늘 구분선 */}
-                    {item.nearest && (
+                    {showTodayLine && (
                       <div className="relative flex items-center gap-2.5 py-2 mb-1">
                         <div className="flex-1 h-px" style={{ backgroundColor: '#F6C21A' }} />
                         <span
@@ -206,8 +211,16 @@ export default function SchedulePage() {
                         {localTitle(item.title, lang)}
                       </span>
 
-                      {/* 다가옴 태그 */}
-                      {item.nearest && (
+                      {/* 진행중 / 다가옴 태그 */}
+                      {item.ongoing && (
+                        <span
+                          className="shrink-0 text-[10px] font-bold px-[6px] py-[2px] rounded whitespace-nowrap"
+                          style={{ backgroundColor: '#DBEAFE', color: '#1D4ED8' }}
+                        >
+                          진행중
+                        </span>
+                      )}
+                      {item.nearest && !item.ongoing && (
                         <span
                           className="shrink-0 text-[10px] font-bold px-[6px] py-[2px] rounded whitespace-nowrap"
                           style={{ backgroundColor: '#FFE9A8', color: '#854F0B' }}
