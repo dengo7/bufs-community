@@ -288,6 +288,16 @@ export default function PostView({
           reason: reportReason,
         });
       if (error) throw error;
+      fetch('/api/report-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_type: 'post',
+          target_id: post.id,
+          reason: reportReason,
+          reporter_id: currentUserId,
+        }),
+      });
       showToast(true, '신고가 접수됐어요');
       setShowReportModal(false);
       setReportReason('');
@@ -711,7 +721,6 @@ export default function PostView({
               {[
                 { value: 'spam',    label: '스팸 / 광고' },
                 { value: 'hate',    label: '욕설 / 혐오 표현' },
-                { value: 'obscene', label: '음란물' },
                 { value: 'privacy', label: '개인정보 노출' },
                 { value: 'other',   label: '기타' },
               ].map(({ value, label }) => (

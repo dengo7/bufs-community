@@ -245,6 +245,16 @@ export default function CommentSection({
           reason: reportReason,
         });
       if (error) throw error;
+      fetch('/api/report-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_type: 'comment',
+          target_id: reportTarget,
+          reason: reportReason,
+          reporter_id: currentUserId,
+        }),
+      });
       setReportTarget(null);
       setReportReason('');
     } catch (e: any) {
@@ -525,7 +535,6 @@ export default function CommentSection({
               {[
                 { value: 'spam',    label: '스팸 / 광고' },
                 { value: 'hate',    label: '욕설 / 혐오 표현' },
-                { value: 'obscene', label: '음란물' },
                 { value: 'privacy', label: '개인정보 노출' },
                 { value: 'other',   label: '기타' },
               ].map(({ value, label }) => (
