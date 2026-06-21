@@ -487,7 +487,7 @@ export default function Home() {
               <div className="space-y-2">
                 {pinnedPosts.map(post => (
                   <Link key={post.id} href={`/post/${post.id}`}
-                    className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline">
+                    className="block bg-[#DBEAFE] rounded-xl border border-[#93C5FD] p-4 no-underline">
                     <div className="flex items-center gap-1.5 mb-2">
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1B7CC0] bg-white border border-blue-100 px-2 py-0.5 rounded-full">
                         <Pin size={10} strokeWidth={2.5} />

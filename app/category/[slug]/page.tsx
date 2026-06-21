@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '../../lib/supabase/server';
 import { CATEGORY_SLUGS } from '../../lib/categories';
 import CategoryView, { type PostRow } from './CategoryView';
 
-const GUIDE_CATEGORY_SLUGS = ['housing','bank','telecom','insurance','medical'] as const;
+const GUIDE_CATEGORY_SLUGS = ['housing','bank','telecom','insurance','medical','visa','part-time'] as const;
 
 export type GuideCard = {
   id: string;
