@@ -23,7 +23,7 @@ const PAGE_SIZE = 20;
 const T = {
   ko: {
     schoolName: '부산외국어대학교', schoolNameShort: '부산외국어대학교',
-    subSlogan: '외국인 유학생을 위한 BUFS 생활 커뮤니티',
+    subSlogan: '외국인 유학생을 위한 커뮤니티',
     login: '로그인', logout: '로그아웃', signUp: '회원가입',
     pleaseLogin: '로그인이 필요해요',
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
@@ -33,10 +33,15 @@ const T = {
     noPosts: '아직 게시글이 없어요', more: '더보기',
     headerSub: '외국인 유학생을 위한 커뮤니티',
     loadingMore: '불러오는 중...',
+    lifeGuide: '생활 가이드',
+    lifeGuideDesc: '관리자가 직접 작성한 정착 가이드',
+    community: '커뮤니티',
+    allNotices: '전체 공지',
+    ongoing: '진행중',
   },
   en: {
     schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ.',
-    subSlogan: 'BUFS Community for International Students',
+    subSlogan: 'Community for International Students',
     login: 'Sign In', logout: 'Logout', signUp: 'Sign Up',
     pleaseLogin: 'Please sign in',
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
@@ -46,10 +51,15 @@ const T = {
     noPosts: 'No posts yet', more: 'More',
     headerSub: 'Community for Int\'l Students',
     loadingMore: 'Loading...',
+    lifeGuide: 'Life Guide',
+    lifeGuideDesc: 'Settlement guides written by admin',
+    community: 'Community',
+    allNotices: 'Notices',
+    ongoing: 'Ongoing',
   },
   zh: {
     schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
-    subSlogan: '为外国留学生打造的BUFS生活社区',
+    subSlogan: '为外国留学生打造的社区',
     login: '登录', logout: '退出', signUp: '注册',
     pleaseLogin: '请先登录',
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
@@ -59,10 +69,15 @@ const T = {
     noPosts: '暂无帖子', more: '更多',
     headerSub: '留学生社区',
     loadingMore: '加载中...',
+    lifeGuide: '生活指南',
+    lifeGuideDesc: '管理员撰写的定居指南',
+    community: '社区',
+    allNotices: '全体公告',
+    ongoing: '进行中',
   },
   ja: {
     schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
-    subSlogan: '外国人留学生のためのBUFS生活コミュニティ',
+    subSlogan: '外国人留学生のためのコミュニティ',
     login: 'ログイン', logout: 'ログアウト', signUp: '新規登録',
     pleaseLogin: 'ログインしてください',
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
@@ -72,6 +87,11 @@ const T = {
     noPosts: 'まだ投稿がありません', more: 'もっと見る',
     headerSub: '留学生コミュニティ',
     loadingMore: '読み込み中...',
+    lifeGuide: 'ライフガイド',
+    lifeGuideDesc: '管理者が作成した定住ガイド',
+    community: 'コミュニティ',
+    allNotices: 'お知らせ',
+    ongoing: '進行中',
   },
 } as const;
 
@@ -420,13 +440,13 @@ export default function Home() {
             <div className="flex items-center justify-between mb-3 px-0.5">
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
-                <h2 className="text-[14px] font-bold text-[#111827]">생활 가이드</h2>
+                <h2 className="text-[14px] font-bold text-[#111827]">{t.lifeGuide}</h2>
               </div>
             </div>
             <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
               <p className="text-[11px] text-[#1D4ED8] bg-[#EFF6FF] rounded-lg px-3 py-1.5 mb-3 inline-flex items-center gap-1.5">
                 <ShieldCheck size={12} strokeWidth={2} />
-                관리자가 직접 작성한 정착 가이드
+                {t.lifeGuideDesc}
               </p>
               <div className="grid grid-cols-3 gap-x-2 gap-y-4">
                 {LIFE_GUIDE_CATEGORIES.map(({ slug, Icon, ...labels }) => (
@@ -452,7 +472,7 @@ export default function Home() {
             <div className="flex items-center justify-between mb-3 px-0.5">
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
-                <h2 className="text-[14px] font-bold text-[#111827]">커뮤니티</h2>
+                <h2 className="text-[14px] font-bold text-[#111827]">{t.community}</h2>
               </div>
               <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
                 전체보기 ›
@@ -482,7 +502,7 @@ export default function Home() {
             <div className="mb-4">
               <div className="flex items-center gap-1.5 mb-2 px-0.5">
                 <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
-                <span className="text-[12px] font-semibold text-[#1B7CC0]">전체 공지</span>
+                <span className="text-[12px] font-semibold text-[#1B7CC0]">{t.allNotices}</span>
               </div>
               <div className="space-y-2">
                 {pinnedPosts.map(post => (

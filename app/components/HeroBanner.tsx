@@ -7,7 +7,43 @@ interface HeroBannerProps {
   user?: any;
 }
 
-export default function HeroBanner(_props: HeroBannerProps = {}) {
+const HERO_T = {
+  ko: {
+    badge: 'WELCOME TO THE WELL 👋',
+    title1: '외국인 유학생의',
+    title2: '즐겁고 안전한 대학생활,',
+    title3: '이 함께해요.',
+    desc: '비자, 집, 은행, 병원, 알바, 학교생활 정보를 함께 나눠요.',
+    cta: '커뮤니티 둘러보기 →',
+  },
+  en: {
+    badge: 'WELCOME TO THE WELL 👋',
+    title1: 'Your campus life,',
+    title2: 'safe and enjoyable —',
+    title3: 'is here for you.',
+    desc: 'Visa, housing, banking, hospital, part-time jobs and more.',
+    cta: 'Explore Community →',
+  },
+  zh: {
+    badge: 'WELCOME TO THE WELL 👋',
+    title1: '外国留学生的',
+    title2: '快乐安全的大学生活，',
+    title3: '与您同行。',
+    desc: '签证、住房、银行、医院、兼职等生活信息一网打尽。',
+    cta: '浏览社区 →',
+  },
+  ja: {
+    badge: 'WELCOME TO THE WELL 👋',
+    title1: '外国人留学生の',
+    title2: '楽しく安全なキャンパスライフを、',
+    title3: 'がサポートします。',
+    desc: 'ビザ、住居、銀行、病院、アルバイトなど生活情報をシェアしましょう。',
+    cta: 'コミュニティを見る →',
+  },
+} as const;
+
+export default function HeroBanner({ lang = 'ko' }: HeroBannerProps = {}) {
+  const ht = HERO_T[lang];
   return (
     <section className="relative mt-1 min-h-[206px] overflow-hidden rounded-[20px] border border-[#D6E8FB] bg-gradient-to-br from-[#E7F2FF] via-[#ECF5FE] to-[#F0F7FE] sm:min-h-[248px] lg:min-h-[272px]">
       {/* 구름 장식 (일러스트 뒤쪽 하늘 — 은은하게 블러 처리해 스티커처럼 보이지 않게) */}
@@ -46,24 +82,24 @@ export default function HeroBanner(_props: HeroBannerProps = {}) {
       {/* 좌측: 문구 + 버튼 (max-width + z-index로 보호) */}
       <div className="relative z-10 max-w-[60%] px-5 py-6 sm:max-w-[56%] sm:px-8 sm:py-9">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C9E3FB] bg-white/85 px-3 py-1 text-[10px] font-bold tracking-wide text-[#1D4ED8] backdrop-blur-sm">
-          WELCOME TO THE WELL <span aria-hidden>👋</span>
+          {ht.badge}
         </span>
 
         <h2 className="mt-3.5 break-keep text-[17px] font-extrabold leading-[1.45] tracking-[-0.01em] text-[#0F172A] sm:text-[25px]">
-          외국인 유학생의<br />
-          즐겁고 안전한 대학생활,<br />
-          <span className="text-[#1D4ED8]">The Well</span>이 함께해요.
+          {ht.title1}<br />
+          {ht.title2}<br />
+          <span className="text-[#1D4ED8]">The Well</span>{ht.title3}
         </h2>
 
         <p className="mt-3 max-w-[34ch] break-keep text-[12.5px] leading-relaxed text-[#475569] sm:text-[13.5px]">
-          비자, 집, 은행, 병원, 알바, 학교생활 정보를 함께 나눠요.
+          {ht.desc}
         </p>
 
         <Link
           href="/community"
           className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[#1D4ED8] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-sm shadow-[#1D4ED8]/20 transition-colors hover:bg-[#1A45BE]"
         >
-          커뮤니티 둘러보기 <span aria-hidden>→</span>
+          {ht.cta}
         </Link>
       </div>
     </section>
