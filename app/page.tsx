@@ -88,6 +88,14 @@ const CATEGORIES = [
   { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
 ] as const;
 
+const CAMPUS_CATEGORIES = CATEGORIES.filter(c =>
+  ['school-life', 'announcements', 'translation-help'].includes(c.slug)
+);
+
+const LIFE_GUIDE_CATEGORIES = CATEGORIES.filter(c =>
+  ['visa', 'housing', 'bank', 'telecom', 'medical', 'part-time'].includes(c.slug)
+);
+
 const getCatIcon = (slug: string) =>
   CATEGORIES.find(c => c.slug === slug)?.Icon ?? null;
 
@@ -407,31 +415,61 @@ export default function Home() {
           {/* ── 히어로 배너 ── */}
           <HeroBanner lang={lang} user={user} />
 
-          {/* ── CAMPUS COMMUNITY 카테고리 ── */}
-          <div className="mt-4 mb-5 sm:mb-6">
-            {/* 섹션 헤더 */}
+          {/* ── LIFE GUIDE ── */}
+          <div className="mt-4 mb-4">
             <div className="flex items-center justify-between mb-3 px-0.5">
               <div className="flex items-center gap-2">
-                <span className="w-1 h-4 rounded-full bg-[#F6C21A]" />
-                <h2 className="text-[14px] font-bold tracking-wide text-[#111827]">CAMPUS COMMUNITY</h2>
+                <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
+                <h2 className="text-[14px] font-bold text-[#111827]">생활 가이드</h2>
               </div>
-              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
-                전체보기 ›
-              </Link>
             </div>
-            {/* 카드 */}
-            <div className="bg-white rounded-[22px] border border-[#E5E7EB] shadow-sm px-3 py-4">
-              <div className="grid grid-cols-5 gap-x-2 gap-y-4">
-                {CATEGORIES.map(({ slug, Icon, ...labels }) => (
+            <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
+              <p className="text-[11px] text-[#1D4ED8] bg-[#EFF6FF] rounded-lg px-3 py-1.5 mb-3 inline-flex items-center gap-1.5">
+                <ShieldCheck size={12} strokeWidth={2} />
+                관리자가 직접 작성한 정착 가이드
+              </p>
+              <div className="grid grid-cols-3 gap-x-2 gap-y-4">
+                {LIFE_GUIDE_CATEGORIES.map(({ slug, Icon, ...labels }) => (
                   <Link
                     key={slug}
                     href={`/category/${slug}`}
                     className="flex flex-col items-center gap-1.5 no-underline group"
                   >
-                    <span className="flex h-9 items-center justify-center text-[#1D4ED8] group-active:scale-90 transition-transform shrink-0">
-                      <Icon size={25} strokeWidth={1.7} />
+                    <span className="flex h-10 w-10 items-center justify-center bg-[#EFF6FF] rounded-xl text-[#1B7CC0] group-active:scale-90 transition-transform shrink-0">
+                      <Icon size={22} strokeWidth={1.7} />
                     </span>
-                    <span className="text-[10px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
+                    <span className="text-[11px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
+                      {bLabel(labels)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── CAMPUS COMMUNITY ── */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3 px-0.5">
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
+                <h2 className="text-[14px] font-bold text-[#111827]">커뮤니티</h2>
+              </div>
+              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
+                전체보기 ›
+              </Link>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
+              <div className="grid grid-cols-3 gap-x-2 gap-y-4">
+                {CAMPUS_CATEGORIES.map(({ slug, Icon, ...labels }) => (
+                  <Link
+                    key={slug}
+                    href={`/category/${slug}`}
+                    className="flex flex-col items-center gap-1.5 no-underline group"
+                  >
+                    <span className="flex h-10 w-10 items-center justify-center bg-[#EFF6FF] rounded-xl text-[#1B7CC0] group-active:scale-90 transition-transform shrink-0">
+                      <Icon size={22} strokeWidth={1.7} />
+                    </span>
+                    <span className="text-[11px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
                       {bLabel(labels)}
                     </span>
                   </Link>
