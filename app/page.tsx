@@ -280,7 +280,7 @@ export default function Home() {
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
-              <span className="text-[12px] text-[#64748B] truncate leading-snug">외국인 유학생을 위한 커뮤니티</span>
+              <span className="text-[12px] text-[#64748B] truncate leading-snug">{t.headerSub}</span>
             </div>
           </Link>
 
