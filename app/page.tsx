@@ -12,7 +12,7 @@ import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
-  Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, Pin,
+  Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -117,6 +117,7 @@ type FeedPost = {
   comment_count: number;
   like_count: number;
   profiles: { nickname: string; nationality: string | null; role: string | null } | null;
+  bookmarked?: boolean;
 };
 
 export default function Home() {
@@ -129,6 +130,7 @@ export default function Home() {
   const [feedLoadingMore, setFeedLoadingMore] = useState(false);
   const [feedHasMore, setFeedHasMore] = useState(true);
   const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
 
   const t = T[lang];
   const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
@@ -137,9 +139,16 @@ export default function Home() {
   // 인증 상태
   useEffect(() => {
     const client = getSupabaseClient();
-    client.auth.getUser().then(({ data }: { data: { user: any } }) => {
+    client.auth.getUser().then(async ({ data }: { data: { user: any } }) => {
       const u = data.user ?? null;
       setUser(u);
+      if (u) {
+        const { data: bms } = await getSupabaseClient()
+          .from('bookmarks')
+          .select('post_id')
+          .eq('user_id', u.id);
+        if (bms) setBookmarks(new Set(bms.map((b: { post_id: string }) => b.post_id)));
+      }
       if (u) fetchUnreadCount(u.id).then(setUnreadCount);
     });
     const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
@@ -206,6 +215,25 @@ export default function Home() {
       setFeedHasMore(data.length === PAGE_SIZE);
     }
     setFeedLoadingMore(false);
+  };
+
+  const handleBookmarkToggle = async (e: React.MouseEvent, postId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) { return; }
+    const was = bookmarks.has(postId);
+    setBookmarks(prev => {
+      const next = new Set(prev);
+      was ? next.delete(postId) : next.add(postId);
+      return next;
+    });
+    const supabase = getSupabaseClient();
+    if (was) {
+      await supabase.from('bookmarks').delete()
+        .eq('user_id', user.id).eq('post_id', postId);
+    } else {
+      await supabase.from('bookmarks').insert({ user_id: user.id, post_id: postId });
+    }
   };
 
   async function handleLogout() {
@@ -486,7 +514,16 @@ export default function Home() {
                           {(() => { const CatIcon = getCatIcon(post.category); return CatIcon ? <CatIcon size={9} strokeWidth={2} className="shrink-0" /> : null; })()}
                           {getCategoryLabel(post.category, uiLangToLanguage(lang))}
                         </span>
-                        <Bookmark size={14} strokeWidth={1.8} className="text-[#CBD5E1] shrink-0" />
+                        <button
+                          type="button"
+                          onClick={(e) => handleBookmarkToggle(e, post.id)}
+                          className="p-0 bg-transparent border-none cursor-pointer shrink-0 flex items-center"
+                          aria-label={bookmarks.has(post.id) ? '저장 해제' : '저장'}
+                        >
+                          {bookmarks.has(post.id)
+                            ? <BookmarkCheck size={14} strokeWidth={1.8} className="text-[#1B7CC0]" />
+                            : <Bookmark size={14} strokeWidth={1.8} className="text-[#CBD5E1]" />}
+                        </button>
                       </div>
 
                       {/* 제목 */}
