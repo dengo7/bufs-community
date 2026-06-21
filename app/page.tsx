@@ -404,8 +404,8 @@ export default function Home() {
         {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
 
-          {/* ── 히어로 배너 (카테고리 섹션 바로 위) ── */}
-          <HeroBanner />
+          {/* ── 히어로 배너 ── */}
+          <HeroBanner lang={lang} user={user} />
 
           {/* ── CAMPUS COMMUNITY 카테고리 ── */}
           <div className="mt-4 mb-5 sm:mb-6">

@@ -1,6 +1,13 @@
 import Link from "next/link";
 
-export default function HeroBanner() {
+type Lang = 'ko' | 'en' | 'zh' | 'ja';
+
+interface HeroBannerProps {
+  lang?: Lang;
+  user?: any;
+}
+
+export default function HeroBanner(_props: HeroBannerProps = {}) {
   return (
     <section className="relative mt-1 min-h-[206px] overflow-hidden rounded-[20px] border border-[#D6E8FB] bg-gradient-to-br from-[#E7F2FF] via-[#ECF5FE] to-[#F0F7FE] sm:min-h-[248px] lg:min-h-[272px]">
       {/* 구름 장식 (일러스트 뒤쪽 하늘 — 은은하게 블러 처리해 스티커처럼 보이지 않게) */}
@@ -58,14 +65,6 @@ export default function HeroBanner() {
         >
           커뮤니티 둘러보기 <span aria-hidden>→</span>
         </Link>
-
-        {/* 캐러셀 느낌의 점 인디케이터 (장식) */}
-        <div className="mt-4 flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-[#1D4ED8]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-[#BBD7F5]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-[#BBD7F5]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-[#BBD7F5]" />
-        </div>
       </div>
     </section>
   );
