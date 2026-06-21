@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, MessageCircle, Eye,
   MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
-  Bookmark, BookmarkCheck, Pin, PinOff, Pencil,
+  Bookmark, BookmarkCheck, Pin, PinOff, Pencil, Flag,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
@@ -97,6 +97,9 @@ export default function PostView({
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportBusy, setReportBusy] = useState(false);
 
   const t = T[lang];
   const categoryLabel = getCategoryLabel(post.category, uiLangToLanguage(lang));
@@ -267,6 +270,32 @@ export default function PostView({
       showToast(false, msg);
     } finally {
       setBookmarkBusy(false);
+    }
+  };
+
+  const handleReport = async () => {
+    if (!currentUserId) { showToast(false, '로그인이 필요해요'); return; }
+    if (!reportReason) { showToast(false, '신고 사유를 선택해주세요'); return; }
+    if (reportBusy) return;
+    setReportBusy(true);
+    try {
+      const { error } = await getSupabaseClient()
+        .from('reports')
+        .insert({
+          reporter_id: currentUserId,
+          target_type: 'post',
+          target_id: post.id,
+          reason: reportReason,
+        });
+      if (error) throw error;
+      showToast(true, '신고가 접수됐어요');
+      setShowReportModal(false);
+      setReportReason('');
+    } catch (e: any) {
+      if (e?.code === '23505') showToast(false, '이미 신고한 게시글이에요');
+      else showToast(false, '오류가 발생했어요');
+    } finally {
+      setReportBusy(false);
     }
   };
 
@@ -527,6 +556,35 @@ export default function PostView({
               </div>
             )}
 
+            {/* 비관리자 + 타인 글 신고 메뉴 */}
+            {!isCurrentUserAdmin && !isOwnPost && currentUserId && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMenu(v => !v)}
+                  className="p-1 text-gray-500 bg-transparent border-none cursor-pointer"
+                  aria-label="메뉴"
+                >
+                  <MoreHorizontal size={18} strokeWidth={1.8} />
+                </button>
+                {showMenu && (
+                  <>
+                    <div className="fixed inset-0 z-[290]" onClick={() => setShowMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[110px]">
+                      <button
+                        type="button"
+                        onClick={() => { setShowMenu(false); setShowReportModal(true); }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                      >
+                        <Flag size={14} strokeWidth={1.8} />
+                        신고하기
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
           </div>
         </div>
 
@@ -641,6 +699,54 @@ export default function PostView({
           onConfirm={handleAdminBan}
           onCancel={() => setAdminModal(null)}
         />
+      )}
+
+      {showReportModal && (
+        <>
+          <div className="fixed inset-0 z-[390] bg-black/40" onClick={() => setShowReportModal(false)} />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[400] bg-white rounded-2xl shadow-xl w-[280px] p-5">
+            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">신고하기</h3>
+            <p className="text-[12px] text-gray-400 mb-4">신고 사유를 선택해주세요</p>
+            <div className="space-y-2 mb-4">
+              {[
+                { value: 'spam',    label: '스팸 / 광고' },
+                { value: 'hate',    label: '욕설 / 혐오 표현' },
+                { value: 'obscene', label: '음란물' },
+                { value: 'privacy', label: '개인정보 노출' },
+                { value: 'other',   label: '기타' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setReportReason(value)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-[13px] border transition-colors bg-transparent cursor-pointer
+                    ${reportReason === value
+                      ? 'border-[#1B7CC0] text-[#1B7CC0] bg-[#EFF6FF]'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setShowReportModal(false); setReportReason(''); }}
+                className="flex-1 py-2.5 rounded-xl text-[13px] text-gray-500 border border-gray-200 bg-transparent cursor-pointer hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleReport}
+                disabled={!reportReason || reportBusy}
+                className="flex-1 py-2.5 rounded-xl text-[13px] text-white bg-[#1B7CC0] border-none cursor-pointer disabled:opacity-40"
+              >
+                {reportBusy ? '신고 중...' : '신고'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── 토스트 ── */}

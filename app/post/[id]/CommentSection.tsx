@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff } from 'lucide-react';
+import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { formatTimeAgo } from '../../lib/utils';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
@@ -107,6 +107,9 @@ export default function CommentSection({
   const [commentAdminModal, setCommentAdminModal] = useState<CommentAdminModal>(null);
   const [commentAdminLoading, setCommentAdminLoading] = useState(false);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportBusy, setReportBusy] = useState(false);
   const mainTextareaRef  = useRef<HTMLTextAreaElement>(null);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -227,6 +230,31 @@ export default function CommentSection({
     }
   };
 
+  const handleCommentReport = async () => {
+    if (!currentUserId || !reportTarget) return;
+    if (!reportReason) return;
+    if (reportBusy) return;
+    setReportBusy(true);
+    try {
+      const { error } = await getSupabaseClient()
+        .from('reports')
+        .insert({
+          reporter_id: currentUserId,
+          target_type: 'comment',
+          target_id: reportTarget,
+          reason: reportReason,
+        });
+      if (error) throw error;
+      setReportTarget(null);
+      setReportReason('');
+    } catch (e: any) {
+      if (e?.code === '23505') alert('이미 신고한 댓글이에요');
+      else alert('오류가 발생했어요');
+    } finally {
+      setReportBusy(false);
+    }
+  };
+
   const renderComment = (comment: CommentRow, isReply = false) => (
     <div key={comment.id} className="flex gap-2.5 py-3">
       <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0 mt-0.5" />
@@ -305,6 +333,16 @@ export default function CommentSection({
                 </>
               )}
             </div>
+          )}
+          {currentUserId && !isCurrentUserAdmin && comment.author_id !== currentUserId && (
+            <button
+              type="button"
+              onClick={() => { setReportTarget(comment.id); setReportReason(''); }}
+              className="p-1 bg-transparent border-none cursor-pointer text-gray-300 hover:text-red-400 transition-colors"
+              aria-label="신고"
+            >
+              <Flag size={13} strokeWidth={1.8} />
+            </button>
           )}
         </div>
 
@@ -475,6 +513,54 @@ export default function CommentSection({
         >
           {toast.text}
         </div>
+      )}
+
+      {reportTarget && (
+        <>
+          <div className="fixed inset-0 z-[390] bg-black/40" onClick={() => setReportTarget(null)} />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[400] bg-white rounded-2xl shadow-xl w-[280px] p-5">
+            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">댓글 신고</h3>
+            <p className="text-[12px] text-gray-400 mb-4">신고 사유를 선택해주세요</p>
+            <div className="space-y-2 mb-4">
+              {[
+                { value: 'spam',    label: '스팸 / 광고' },
+                { value: 'hate',    label: '욕설 / 혐오 표현' },
+                { value: 'obscene', label: '음란물' },
+                { value: 'privacy', label: '개인정보 노출' },
+                { value: 'other',   label: '기타' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setReportReason(value)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-[13px] border transition-colors bg-transparent cursor-pointer
+                    ${reportReason === value
+                      ? 'border-[#1B7CC0] text-[#1B7CC0] bg-[#EFF6FF]'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setReportTarget(null); setReportReason(''); }}
+                className="flex-1 py-2.5 rounded-xl text-[13px] text-gray-500 border border-gray-200 bg-transparent cursor-pointer hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleCommentReport}
+                disabled={!reportReason || reportBusy}
+                className="flex-1 py-2.5 rounded-xl text-[13px] text-white bg-[#1B7CC0] border-none cursor-pointer disabled:opacity-40"
+              >
+                {reportBusy ? '신고 중...' : '신고'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </>
   );
