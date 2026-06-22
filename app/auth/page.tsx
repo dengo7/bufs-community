@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -38,6 +39,7 @@ const COUNTRIES: Country[] = [
   { code: 'EC', en: 'Ecuador', ko: '에콰도르', zh: '厄瓜多尔', ja: 'エクアドル' },
   { code: 'EG', en: 'Egypt', ko: '이집트', zh: '埃及', ja: 'エジプト' },
   { code: 'SV', en: 'El Salvador', ko: '엘살바도르', zh: '萨尔瓦多', ja: 'エルサルバドル' },
+  { code: 'GQ', en: 'Equatorial Guinea', ko: '적도기니', zh: '赤道几内亚', ja: '赤道ギニア' },
   { code: 'EE', en: 'Estonia', ko: '에스토니아', zh: '爱沙尼亚', ja: 'エストニア' },
   { code: 'ET', en: 'Ethiopia', ko: '에티오피아', zh: '埃塞俄比亚', ja: 'エチオピア' },
   { code: 'FJ', en: 'Fiji', ko: '피지', zh: '斐济', ja: 'フィジー' },
@@ -141,9 +143,10 @@ const T = {
     tabLogin: '로그인', tabSignup: '회원가입',
     name: '이름', namePh: '이름을 입력하세요',
     nickname: '닉네임', nicknamePh: '닉네임을 입력하세요',
+    nicknameWarn: '실명보다 별명이나 닉네임을 사용해 주세요.',
     gender: '성별', male: '남자', female: '여자',
     nationality: '국적', nationalityPh: '국적을 선택하세요',
-    searchNationality: '국가 검색...', noResults: '검색 결과가 없어요',
+    searchNationality: '🔍 국가명으로 검색...', noResults: '검색 결과가 없어요',
     email: '이메일', emailPh: '이메일 주소',
     pw: '비밀번호', pwPh: '비밀번호 (6자리 이상)',
     pwNew: '비밀번호', pwNewPh: '비밀번호 설정 (6자리 이상)',
@@ -164,9 +167,10 @@ const T = {
     tabLogin: 'Sign In', tabSignup: 'Sign Up',
     name: 'Name', namePh: 'Your full name',
     nickname: 'Nickname', nicknamePh: 'Enter a nickname',
+    nicknameWarn: 'Please use a nickname or alias instead of your real name.',
     gender: 'Gender', male: 'Male', female: 'Female',
     nationality: 'Nationality', nationalityPh: 'Select nationality',
-    searchNationality: 'Search country...', noResults: 'No results found',
+    searchNationality: '🔍 Search country...', noResults: 'No results found',
     email: 'Email', emailPh: 'Email address',
     pw: 'Password', pwPh: 'Password (6+ characters)',
     pwNew: 'Password', pwNewPh: 'Set password (6+ characters)',
@@ -187,9 +191,10 @@ const T = {
     tabLogin: '登录', tabSignup: '注册',
     name: '姓名', namePh: '请输入您的姓名',
     nickname: '昵称', nicknamePh: '请输入昵称',
+    nicknameWarn: '请使用昵称或别名，而非真实姓名。',
     gender: '性别', male: '男', female: '女',
     nationality: '国籍', nationalityPh: '请选择国籍',
-    searchNationality: '搜索国家...', noResults: '未找到结果',
+    searchNationality: '🔍 搜索国家...', noResults: '未找到结果',
     email: '邮箱', emailPh: '邮箱地址',
     pw: '密码', pwPh: '密码（6位以上）',
     pwNew: '密码', pwNewPh: '设置密码（6位以上）',
@@ -210,9 +215,10 @@ const T = {
     tabLogin: 'ログイン', tabSignup: '新規登録',
     name: 'お名前', namePh: 'お名前を入力してください',
     nickname: 'ニックネーム', nicknamePh: 'ニックネームを入力してください',
+    nicknameWarn: '本名ではなく、ニックネームや別名をご使用ください。',
     gender: '性別', male: '男性', female: '女性',
     nationality: '国籍', nationalityPh: '国籍を選択してください',
-    searchNationality: '国を検索...', noResults: '結果が見つかりません',
+    searchNationality: '🔍 国名で検索...', noResults: '結果が見つかりません',
     email: 'メール', emailPh: 'メールアドレス',
     pw: 'パスワード', pwPh: 'パスワード（6文字以上）',
     pwNew: 'パスワード', pwNewPh: 'パスワード設定（6文字以上）',
@@ -231,6 +237,10 @@ const T = {
 
 const inputCls =
   'w-full py-3 px-4 text-base border border-gray-200 rounded-xl bg-white text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors placeholder:text-gray-400';
+
+// 국가 검색 모드(드롭다운 열림)일 때 검색창임을 강조하는 스타일
+const searchInputCls =
+  'w-full py-3 px-4 text-base border border-blue-300 rounded-xl bg-blue-50 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors placeholder-blue-300';
 
 // ── Searchable nationality dropdown ────────────────────────────────────────
 function NationalitySearch({
@@ -307,7 +317,7 @@ function NationalitySearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={open ? searchPh : placeholder}
-          className={`${inputCls} ${value ? 'pr-16' : 'pr-10'}`}
+          className={`${open ? searchInputCls : inputCls} ${value ? 'pr-16' : 'pr-10'}`}
           autoComplete="off"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
@@ -496,6 +506,10 @@ export default function AuthPage() {
                     autoComplete="nickname"
                     className={inputCls}
                   />
+                  <p className="flex items-center gap-1 text-xs text-amber-500 mt-1">
+                    <AlertTriangle size={12} />
+                    {t.nicknameWarn}
+                  </p>
                 </div>
 
                 {/* 3. 성별 */}
