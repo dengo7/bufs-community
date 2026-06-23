@@ -11,6 +11,7 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
 import CommentSection from './CommentSection';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
+import Avatar from '../../components/Avatar';
 import { getCategoryLabel, uiLangToLanguage, type UILang } from '../../lib/categories';
 import { formatTimeAgo } from '../../lib/utils';
 
@@ -414,7 +415,11 @@ export default function PostView({
 
         {/* 작성자 행 */}
         <div className="flex items-center gap-2 mt-3">
-          <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0" />
+          <Avatar
+            nickname={post.profiles?.nickname ?? ''}
+            avatarUrl={post.profiles?.avatar_url ?? null}
+            size="md"
+          />
           <span className="text-sm font-medium">{post.profiles?.nickname ?? '?'}</span>
           {post.profiles?.role === 'admin' && (
             <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />

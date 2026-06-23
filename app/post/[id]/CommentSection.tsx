@@ -6,6 +6,7 @@ import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag } from 'lucid
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { formatTimeAgo } from '../../lib/utils';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
+import Avatar from '../../components/Avatar';
 import type { CommentRow } from './PostView';
 import type { UILang } from '../../lib/categories';
 
@@ -266,25 +267,30 @@ export default function CommentSection({
   };
 
   const renderComment = (comment: CommentRow, isReply = false) => (
-    <div key={comment.id} className="flex gap-2.5 py-3">
-      <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0 mt-0.5" />
+    <div key={comment.id} className="flex gap-2.5 py-2">
+      <Avatar
+        nickname={comment.profiles?.nickname ?? ''}
+        avatarUrl={comment.profiles?.avatar_url ?? null}
+        size={isReply ? 'sm' : 'md'}
+        className="mt-0.5"
+      />
       <div className="flex-1 min-w-0">
 
         {/* 작성자 + ⋯ */}
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
-            <span className="text-[13px] font-medium">{comment.profiles?.nickname ?? '?'}</span>
+            <span className="text-[13px] font-semibold text-gray-900">{comment.profiles?.nickname ?? '?'}</span>
             {comment.profiles?.role === 'admin' && (
               <ShieldCheck size={13} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
             )}
             {comment.profiles?.nationality && (
               <>
-                <span className="text-[12px] text-gray-400">·</span>
-                <span className="text-[12px] text-gray-500">{comment.profiles.nationality}</span>
+                <span className="text-[11px] text-gray-300">·</span>
+                <span className="text-[11px] text-gray-400">{comment.profiles.nationality}</span>
               </>
             )}
-            <span className="text-[12px] text-gray-400">·</span>
-            <span className="text-[12px] text-gray-400 shrink-0">
+            <span className="text-[11px] text-gray-300">·</span>
+            <span className="text-[11px] text-gray-400 shrink-0">
               {formatTimeAgo(comment.created_at, lang)}
             </span>
           </div>
@@ -357,7 +363,7 @@ export default function CommentSection({
         </div>
 
         {/* 내용 */}
-        <p className="text-sm whitespace-pre-wrap text-gray-800 leading-relaxed">
+        <p className="text-[13px] whitespace-pre-wrap text-gray-700 leading-relaxed mt-0.5">
           {comment.content}
         </p>
 
@@ -378,7 +384,7 @@ export default function CommentSection({
                   setTimeout(() => replyTextareaRef.current?.focus(), 50);
                 }
               }}
-              className="mt-1 text-xs text-gray-400 bg-transparent border-none cursor-pointer p-0 hover:text-gray-600 transition-colors"
+              className="mt-1.5 text-[11px] text-gray-500 bg-transparent border-none cursor-pointer p-0 hover:text-gray-700 transition-colors font-medium"
             >
               {t.reply}
             </button>
@@ -391,7 +397,7 @@ export default function CommentSection({
   return (
     <>
       {/* ── 댓글 목록 ── */}
-      <div className="mt-6">
+      <div className="mt-6 pb-2">
         <p className="text-sm font-medium text-gray-700 mb-2">
           {t.commentCount(comments.length)}
         </p>
@@ -399,57 +405,56 @@ export default function CommentSection({
         {comments.length === 0 ? (
           <p className="text-center text-gray-400 text-sm py-8">{t.noComments}</p>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="space-y-1">
             {topLevel.map(comment => {
               const replies = repliesOf(comment.id);
               return (
-                <div key={comment.id}>
+                <div key={comment.id} className="py-1">
                   {renderComment(comment, false)}
 
-                  {/* 대댓글 */}
-                  {replies.length > 0 && (
-                    <div className="pl-10 ml-1 border-l-2 border-gray-100 mb-1">
+                  {/* 대댓글 + 답글 입력창 */}
+                  {(replies.length > 0 || replyingTo === comment.id) && (
+                    <div className="ml-6 pl-2.5 mb-1">
                       {replies.map(reply => renderComment(reply, true))}
-                    </div>
-                  )}
 
-                  {/* 답글 입력창 */}
-                  {replyingTo === comment.id && (
-                    <div className="pl-10 ml-1 mb-3">
-                      <textarea
-                        ref={replyTextareaRef}
-                        value={replyText}
-                        onChange={e => {
-                          setReplyText(e.target.value.slice(0, 500));
-                          autoResize(e.target);
-                        }}
-                        placeholder={t.replyTo(comment.profiles?.nickname ?? '?')}
-                        rows={1}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm
-                                   resize-none focus:outline-none focus:border-gray-400 transition-colors"
-                        style={{ maxHeight: '120px', overflowY: 'auto' }}
-                      />
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-[11px] text-gray-400">{replyText.length}/500</span>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                            className="px-3 py-1.5 text-xs text-gray-500 bg-gray-100 rounded-full border-none cursor-pointer"
-                          >
-                            {t.cancel}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => submitComment(comment.id, replyText)}
-                            disabled={!replyText.trim() || isSubmitting}
-                            className="px-3 py-1.5 text-xs text-white bg-[#2F2F2F] rounded-full border-none cursor-pointer
-                                       disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            {t.submit}
-                          </button>
+                      {replyingTo === comment.id && (
+                        <div className="mb-3">
+                          <textarea
+                            ref={replyTextareaRef}
+                            value={replyText}
+                            onChange={e => {
+                              setReplyText(e.target.value.slice(0, 500));
+                              autoResize(e.target);
+                            }}
+                            placeholder={t.replyTo(comment.profiles?.nickname ?? '?')}
+                            rows={1}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm
+                                       resize-none focus:outline-none focus:border-gray-400 transition-colors"
+                            style={{ maxHeight: '120px', overflowY: 'auto' }}
+                          />
+                          <div className="flex items-center justify-between mt-1.5">
+                            <span className="text-[11px] text-gray-300">{replyText.length}/500</span>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                                className="px-3 py-1.5 text-xs text-gray-500 bg-gray-100 rounded-full border-none cursor-pointer"
+                              >
+                                {t.cancel}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => submitComment(comment.id, replyText)}
+                                disabled={!replyText.trim() || isSubmitting}
+                                className="px-3 py-1.5 text-xs text-white bg-[#2F2F2F] rounded-full border-none cursor-pointer
+                                           disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                {t.submit}
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -460,8 +465,8 @@ export default function CommentSection({
       </div>
 
       {/* ── 하단 고정 댓글 입력창 ── */}
-      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-100">
-        <div className="max-w-[600px] mx-auto px-4 py-3">
+      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.04)]">
+        <div className="max-w-[600px] mx-auto px-4 py-2.5">
           {!currentUserId ? (
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-400">{t.loginRequired}</span>
@@ -499,8 +504,8 @@ export default function CommentSection({
                   {t.submit}
                 </button>
               </div>
-              <div className="text-right mt-1">
-                <span className="text-[11px] text-gray-400">{inputText.length}/500</span>
+              <div className="flex justify-end mt-1 pr-1">
+                <span className="text-[11px] text-gray-300">{inputText.length}/500</span>
               </div>
             </div>
           )}
