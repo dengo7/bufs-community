@@ -13,6 +13,7 @@ import CommentSection from './CommentSection';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
 import Avatar from '../../components/Avatar';
 import { getCategoryLabel, uiLangToLanguage, type UILang } from '../../lib/categories';
+import { getLang, setLang as persistLang } from '../../lib/lang';
 import { formatTimeAgo } from '../../lib/utils';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
@@ -82,7 +83,7 @@ export default function PostView({
   initialComments,
 }: Props) {
   const router = useRouter();
-  const [lang, setLang] = useState<UILang>('ko');
+  const [lang, setLang] = useState<UILang>(getLang);
   const [liked, setLiked] = useState(isLiked);
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0);
   const [commentCount, setCommentCount] = useState(post.comment_count ?? 0);
@@ -376,7 +377,7 @@ export default function PostView({
               <button
                 key={l}
                 type="button"
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

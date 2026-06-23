@@ -14,6 +14,7 @@ import {
   type CategorySlug,
 } from '../lib/categories';
 import { formatTimeAgo } from '../lib/utils';
+import { getLang, setLang as persistLang } from '../lib/lang';
 
 const PAGE_SIZE = 20;
 
@@ -37,7 +38,7 @@ type FeedPost = {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<UILang>('ko');
+  const [lang, setLang] = useState<UILang>(getLang);
   const [selectedCategory, setSelectedCategory] = useState<CategorySlug | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<FeedPost[]>([]);
@@ -135,7 +136,7 @@ export default function CommunityPage() {
               <button
                 key={l}
                 type="button"
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

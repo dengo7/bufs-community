@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Bell, SquarePen, Bookmark, Compass, Headphones,
+  Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
   Pencil, Heart, User,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
+import { getLang, setLang as persistLang, type UILang } from '../lib/lang';
 import BottomTabBar from '../components/BottomTabBar';
 import {
   getPushPermissionState,
@@ -18,6 +19,95 @@ import {
   unsubscribeFromPush,
   type PushPermissionState,
 } from '../lib/push';
+
+const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
+
+const T = {
+  ko: {
+    subtitle: '외국인 유학생을 위한 커뮤니티',
+    loginRequired: '로그인이 필요합니다',
+    login: '로그인',
+    signup: '회원가입',
+    likes: (n: number) => `받은 좋아요 ${n}`,
+    sectionSettings: '환경 설정',
+    pushNotification: '알림 설정',
+    pushDesc: '관심 있는 소식 기준으로 알림을 설정해요',
+    sectionActivity: '활동',
+    myPosts: '내가 쓴 글',
+    myPostsDesc: '내가 작성한 글을 관리해요',
+    savedPosts: '저장한 글',
+    savedPostsDesc: '북마크한 게시글을 관리해요',
+    guide: '앱 사용법',
+    guideDesc: '주요 기능을 다시 확인할 수 있어요',
+    sectionAccount: '계정',
+    terms: '이용약관',
+    privacy: '개인정보처리방침',
+    logout: '로그아웃',
+  },
+  en: {
+    subtitle: 'Community for International Students',
+    loginRequired: 'Login required',
+    login: 'Login',
+    signup: 'Sign Up',
+    likes: (n: number) => `${n} likes received`,
+    sectionSettings: 'Settings',
+    pushNotification: 'Notifications',
+    pushDesc: 'Set alerts for topics you care about',
+    sectionActivity: 'Activity',
+    myPosts: 'My Posts',
+    myPostsDesc: 'Manage your posts',
+    savedPosts: 'Saved Posts',
+    savedPostsDesc: 'Manage your bookmarked posts',
+    guide: 'How to Use',
+    guideDesc: 'Review key features anytime',
+    sectionAccount: 'Account',
+    terms: 'Terms of Service',
+    privacy: 'Privacy Policy',
+    logout: 'Logout',
+  },
+  zh: {
+    subtitle: '面向外国留学生的社区',
+    loginRequired: '需要登录',
+    login: '登录',
+    signup: '注册',
+    likes: (n: number) => `获得 ${n} 个点赞`,
+    sectionSettings: '环境设置',
+    pushNotification: '通知设置',
+    pushDesc: '根据感兴趣的内容设置通知',
+    sectionActivity: '活动',
+    myPosts: '我的帖子',
+    myPostsDesc: '管理我发布的帖子',
+    savedPosts: '已收藏',
+    savedPostsDesc: '管理书签帖子',
+    guide: '使用指南',
+    guideDesc: '随时查看主要功能',
+    sectionAccount: '账户',
+    terms: '服务条款',
+    privacy: '隐私政策',
+    logout: '退出登录',
+  },
+  ja: {
+    subtitle: '外国人留学生のためのコミュニティ',
+    loginRequired: 'ログインが必要です',
+    login: 'ログイン',
+    signup: '会員登録',
+    likes: (n: number) => `もらったいいね ${n}`,
+    sectionSettings: '環境設定',
+    pushNotification: '通知設定',
+    pushDesc: '関心のある情報の通知を設定します',
+    sectionActivity: 'アクティビティ',
+    myPosts: '自分の投稿',
+    myPostsDesc: '自分の投稿を管理します',
+    savedPosts: '保存した記事',
+    savedPostsDesc: 'ブックマークした投稿を管理します',
+    guide: 'アプリの使い方',
+    guideDesc: '主な機能をいつでも確認できます',
+    sectionAccount: 'アカウント',
+    terms: '利用規約',
+    privacy: 'プライバシーポリシー',
+    logout: 'ログアウト',
+  },
+} as const;
 
 // ── 서브 컴포넌트 ──────────────────────────────────────────────
 
@@ -98,6 +188,7 @@ function SectionCard({ label, children }: { label: string; children: React.React
 
 // ── 페이지 ────────────────────────────────────────────────────
 export default function MyPage() {
+  const [lang, setLang]             = useState<UILang>(getLang);
   const [user, setUser]             = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);
@@ -192,6 +283,8 @@ export default function MyPage() {
     || user?.email?.split('@')[0]
     || '회원';
 
+  const t = T[lang];
+
   return (
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
@@ -202,9 +295,22 @@ export default function MyPage() {
             <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
-              <span className="text-[11px] text-gray-500 truncate leading-tight">외국인 유학생을 위한 커뮤니티</span>
+              <span className="text-[11px] text-gray-500 truncate leading-tight">{t.subtitle}</span>
             </div>
           </Link>
+          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
+            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => { setLang(l); persistLang(l); }}
+                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
+                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
+              >
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
           <Link
             href="/notifications"
             className="text-gray-700 no-underline flex items-center shrink-0"
@@ -223,13 +329,13 @@ export default function MyPage() {
             <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
               <User size={36} strokeWidth={1.5} className="text-gray-300" />
             </div>
-            <p className="text-[15px] font-semibold text-[#1A1A1A] mb-1">로그인이 필요합니다</p>
+            <p className="text-[15px] font-semibold text-[#1A1A1A] mb-1">{t.loginRequired}</p>
             <p className="text-[13px] text-gray-400 mb-6">로그인하고 더 많은 기능을 이용해요</p>
             <Link
               href="/auth"
               className="px-6 py-2.5 bg-[#F6C21A] text-[#2F2F2F] rounded-full font-bold text-sm no-underline hover:opacity-90 transition-opacity"
             >
-              로그인 / 회원가입
+              {t.login} / {t.signup}
             </Link>
           </div>
         )}
@@ -261,16 +367,16 @@ export default function MyPage() {
               {/* 받은 좋아요 pill */}
               <span className="inline-flex items-center gap-1.5 bg-[#FFF4D6] text-[#B8900E] text-[12px] font-semibold px-3 py-1 rounded-full">
                 <Heart size={11} strokeWidth={0} className="fill-[#F6C21A]" />
-                받은 좋아요 {totalLikes}
+                {t.likes(totalLikes)}
               </span>
             </div>
 
             {/* ── 환경 설정 ── */}
-            <SectionCard label="환경 설정">
+            <SectionCard label={t.sectionSettings}>
               <MenuRow
                 icon={Bell}
-                title="알림 설정"
-                desc="관심 있는 소식 기준으로 알림을 설정해요"
+                title={t.pushNotification}
+                desc={t.pushDesc}
                 onClick={handlePushToggle}
                 right={
                   !pushReady || pushPerm === 'unsupported'
@@ -284,18 +390,17 @@ export default function MyPage() {
             </SectionCard>
 
             {/* ── 활동 ── */}
-            <SectionCard label="활동">
-              <MenuRow icon={SquarePen}  title="내가 쓴 글"  desc="내가 작성한 글을 관리해요"           onClick={() => router.push('/my/posts')} />
-              <MenuRow icon={Bookmark}   title="저장한 글"   desc="북마크한 게시글을 관리해요"           onClick={() => router.push('/my/saved')} />
-              <MenuRow icon={Compass}    title="앱 사용법"   desc="주요 기능을 다시 확인할 수 있어요"    onClick={comingSoon} />
-              <MenuRow icon={Headphones} title="문의하기"    desc="운영팀에 의견을 남겨요"               onClick={comingSoon} />
+            <SectionCard label={t.sectionActivity}>
+              <MenuRow icon={SquarePen}  title={t.myPosts}    desc={t.myPostsDesc}    onClick={() => router.push('/my/posts')} />
+              <MenuRow icon={Bookmark}   title={t.savedPosts} desc={t.savedPostsDesc} onClick={() => router.push('/my/saved')} />
+              <MenuRow icon={Compass}    title={t.guide}      desc={t.guideDesc}      onClick={() => router.push('/my/guide')} />
             </SectionCard>
 
             {/* ── 계정 ── */}
-            <SectionCard label="계정">
-              <MenuRow icon={FileText}    title="이용약관"          onClick={comingSoon} />
-              <MenuRow icon={ShieldCheck} title="개인정보처리방침"   onClick={comingSoon} />
-              <MenuRow icon={LogOut}      title="로그아웃"           onClick={handleLogout} danger />
+            <SectionCard label={t.sectionAccount}>
+              <MenuRow icon={FileText}    title={t.terms}   onClick={comingSoon} />
+              <MenuRow icon={ShieldCheck} title={t.privacy} onClick={comingSoon} />
+              <MenuRow icon={LogOut}      title={t.logout}  onClick={handleLogout} danger />
             </SectionCard>
           </>
         )}

@@ -12,6 +12,7 @@ import {
   type ScheduleType,
 } from '../lib/schedule';
 import { SCHEDULE_LABELS, SCHEDULE_TITLE_I18N } from '../lib/scheduleI18n';
+import { getLang, setLang as persistLang } from '../lib/lang';
 
 type UILang = 'ko' | 'en' | 'zh' | 'ja';
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
@@ -88,7 +89,7 @@ function buildGroups(today: string): MonthGroup[] {
 
 // ── 페이지 ────────────────────────────────────────────────────
 export default function SchedulePage() {
-  const [lang, setLang] = useState<UILang>('ko');
+  const [lang, setLang] = useState<UILang>(getLang);
   const today   = new Date().toISOString().split('T')[0];
   const d       = new Date();
   const todayMD = `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`;
@@ -120,7 +121,7 @@ export default function SchedulePage() {
               <button
                 key={l}
                 type="button"
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

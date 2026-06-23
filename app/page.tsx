@@ -9,6 +9,7 @@ import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
 import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
+import { getLang, setLang as persistLang } from './lib/lang';
 import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
@@ -121,16 +122,16 @@ const getCatIcon = (slug: string) =>
 
 // 최근 게시글 카테고리 칩의 연한 파스텔 색상 (slug별)
 const CATEGORY_CHIP: Record<string, string> = {
-  'school-life':      'bg-[#FEF3C7] text-[#A16207] border-[#FDE68A]',
-  'announcements':    'bg-orange-50 text-orange-700 border-orange-100',
-  'translation-help': 'bg-violet-50 text-violet-700 border-violet-100',
-  'visa':             'bg-blue-50 text-blue-700 border-blue-100',
-  'housing':          'bg-emerald-50 text-emerald-700 border-emerald-100',
-  'bank':             'bg-indigo-50 text-indigo-700 border-indigo-100',
-  'telecom':          'bg-sky-50 text-sky-700 border-sky-100',
-  'insurance':        'bg-cyan-50 text-cyan-700 border-cyan-100',
-  'medical':          'bg-rose-50 text-rose-700 border-rose-100',
-  'part-time':        'bg-purple-50 text-purple-700 border-purple-100',
+  'school-life':      'bg-[#F9F3E8] text-[#92702A] border-[#EEE0C4]',
+  'announcements':    'bg-[#FBF1EB] text-[#9A5A3A] border-[#EEDDD2]',
+  'translation-help': 'bg-[#F2F0FB] text-[#5B52A8] border-[#D8D5EF]',
+  'visa':             'bg-[#EDF4FB] text-[#2B5FA0] border-[#C4D8EE]',
+  'housing':          'bg-[#EBF6F1] text-[#2A6B52] border-[#B8DDD0]',
+  'bank':             'bg-[#EEF1FA] text-[#3A4A9A] border-[#C8CEEC]',
+  'telecom':          'bg-[#EBF5FA] text-[#2A6A8A] border-[#B8D8EA]',
+  'insurance':        'bg-[#EBF7F8] text-[#2A7080] border-[#B8D8DC]',
+  'medical':          'bg-[#FAF0F2] text-[#8A3A4A] border-[#E8CDD2]',
+  'part-time':        'bg-[#F3EEF9] text-[#6A3A9A] border-[#DDD0EE]',
 };
 const getCategoryChipClass = (slug: string) =>
   CATEGORY_CHIP[slug] ?? 'bg-slate-50 text-slate-600 border-slate-100';
@@ -149,7 +150,7 @@ type FeedPost = {
 };
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>('ko');
+  const [lang, setLang] = useState<Lang>(getLang);
   const [user, setUser] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
@@ -288,7 +289,7 @@ export default function Home() {
             {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
               <button
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >
@@ -334,7 +335,7 @@ export default function Home() {
               {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
                 <button
                   key={l}
-                  onClick={() => setLang(l)}
+                  onClick={() => { setLang(l); persistLang(l); }}
                   className={`px-2.5 py-1.5 border-none cursor-pointer transition-colors font-medium
                     ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#999]'}`}
                 >
