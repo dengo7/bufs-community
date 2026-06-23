@@ -361,25 +361,29 @@ export default function CommentSection({
           {comment.content}
         </p>
 
-        {/* 답글 버튼 — 대댓글에는 없음 */}
-        {!isReply && currentUserId && (
-          <button
-            type="button"
-            onClick={() => {
-              if (replyingTo === comment.id) {
-                setReplyingTo(null);
-                setReplyText('');
-              } else {
-                setReplyingTo(comment.id);
-                setReplyText('');
-                setTimeout(() => replyTextareaRef.current?.focus(), 50);
-              }
-            }}
-            className="mt-1 text-xs text-gray-400 bg-transparent border-none cursor-pointer p-0 hover:text-gray-600 transition-colors"
-          >
-            {t.reply}
-          </button>
-        )}
+        {/* 답글 버튼 — 대댓글은 최상위 댓글(parent_id) 기준으로 입력창 오픈 (3단계 중첩 방지) */}
+        {currentUserId && (() => {
+          const targetId = isReply ? comment.parent_id : comment.id;
+          if (!targetId) return null;
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                if (replyingTo === targetId) {
+                  setReplyingTo(null);
+                  setReplyText('');
+                } else {
+                  setReplyingTo(targetId);
+                  setReplyText('');
+                  setTimeout(() => replyTextareaRef.current?.focus(), 50);
+                }
+              }}
+              className="mt-1 text-xs text-gray-400 bg-transparent border-none cursor-pointer p-0 hover:text-gray-600 transition-colors"
+            >
+              {t.reply}
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
