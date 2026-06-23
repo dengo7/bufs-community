@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
-  Pencil, Heart, User,
+  Heart, User,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -115,9 +115,9 @@ function IconBox({ icon: Icon, danger }: { icon: LucideIcon; danger?: boolean })
   return (
     <div
       className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center"
-      style={{ backgroundColor: danger ? '#FEE9E9' : '#FFF4D6' }}
+      style={{ backgroundColor: danger ? '#FEE9E9' : '#EFF6FF' }}
     >
-      <Icon size={18} strokeWidth={1.8} color={danger ? '#E05050' : '#B8900E'} />
+      <Icon size={18} strokeWidth={1.8} color={danger ? '#E05050' : '#1B7CC0'} />
     </div>
   );
 }
@@ -354,15 +354,8 @@ export default function MyPage() {
                 )}
               </div>
 
-              {/* 닉네임 + 수정 */}
-              <button
-                type="button"
-                onClick={comingSoon}
-                className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 mb-2.5"
-              >
-                <span className="text-[18px] font-bold text-[#1A1A1A]">{nickname}</span>
-                <Pencil size={14} strokeWidth={2} className="text-gray-400" />
-              </button>
+              {/* 닉네임 */}
+              <span className="text-[18px] font-bold text-[#1A1A1A] mb-2.5">{nickname}</span>
 
               {/* 받은 좋아요 pill */}
               <span className="inline-flex items-center gap-1.5 bg-[#FFF4D6] text-[#B8900E] text-[12px] font-semibold px-3 py-1 rounded-full">
@@ -398,8 +391,8 @@ export default function MyPage() {
 
             {/* ── 계정 ── */}
             <SectionCard label={t.sectionAccount}>
-              <MenuRow icon={FileText}    title={t.terms}   onClick={comingSoon} />
-              <MenuRow icon={ShieldCheck} title={t.privacy} onClick={comingSoon} />
+              <MenuRow icon={FileText}    title={t.terms}   onClick={() => router.push('/my/terms')} />
+              <MenuRow icon={ShieldCheck} title={t.privacy} onClick={() => router.push('/my/privacy')} />
               <MenuRow icon={LogOut}      title={t.logout}  onClick={handleLogout} danger />
             </SectionCard>
           </>
