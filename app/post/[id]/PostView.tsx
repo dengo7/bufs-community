@@ -392,7 +392,7 @@ export default function PostView({
 
         {/* 핀 배지 */}
         {isPinned && (
-          <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 mb-1.5">
             <span className="inline-flex items-center gap-1 text-[11px] font-semibold
                              text-[#1B7CC0] bg-[#EFF6FD] border border-blue-100
                              px-2.5 py-1 rounded-full">
@@ -410,28 +410,28 @@ export default function PostView({
             className="w-full text-xl font-bold leading-snug border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0]"
           />
         ) : (
-          <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
+          <h1 className="text-[18px] font-bold leading-snug text-gray-900 mt-1">{post.title}</h1>
         )}
 
         {/* 작성자 행 */}
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mt-2.5">
           <Avatar
             nickname={post.profiles?.nickname ?? ''}
             avatarUrl={post.profiles?.avatar_url ?? null}
             size="md"
           />
-          <span className="text-sm font-medium">{post.profiles?.nickname ?? '?'}</span>
+          <span className="text-[13px] font-semibold text-gray-900">{post.profiles?.nickname ?? '?'}</span>
           {post.profiles?.role === 'admin' && (
             <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
           )}
           {post.profiles?.nationality && (
             <>
-              <span className="text-sm text-gray-400">·</span>
-              <span className="text-sm text-gray-500">{post.profiles.nationality}</span>
+              <span className="text-sm text-gray-300">·</span>
+              <span className="text-[12px] text-gray-400">{post.profiles.nationality}</span>
             </>
           )}
-          <span className="text-sm text-gray-400">·</span>
-          <span className="text-sm text-gray-500 shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
+          <span className="text-sm text-gray-300">·</span>
+          <span className="text-[12px] text-gray-400 shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
 
           {/* 저장 + ⋯ 메뉴 */}
           <div className="flex items-center gap-0.5 ml-auto shrink-0">
@@ -603,7 +603,7 @@ export default function PostView({
           </div>
         </div>
 
-        <div className="border-b border-gray-100 my-4" />
+        <div className="border-b border-gray-100 my-3" />
 
         {/* 본문 텍스트 */}
         {isEditing ? (
@@ -631,7 +631,7 @@ export default function PostView({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap leading-relaxed text-gray-800">{post.content}</p>
+          <p className="whitespace-pre-wrap leading-relaxed text-[14px] text-gray-700">{post.content}</p>
         )}
 
         {/* 첨부 이미지 */}
