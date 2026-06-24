@@ -290,9 +290,6 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
                     {post.profiles?.role === 'admin' && (
                       <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
                     )}
-                    {post.profiles?.nationality && (
-                      <span className="text-gray-400">· {post.profiles.nationality}</span>
-                    )}
                   </div>
                   <span>{formatRelativeTime(post.created_at, lang)}</span>
                 </div>

@@ -283,12 +283,6 @@ export default function CommentSection({
             {comment.profiles?.role === 'admin' && (
               <ShieldCheck size={13} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
             )}
-            {comment.profiles?.nationality && (
-              <>
-                <span className="text-[11px] text-gray-300">·</span>
-                <span className="text-[11px] text-gray-400">{comment.profiles.nationality}</span>
-              </>
-            )}
             <span className="text-[11px] text-gray-300">·</span>
             <span className="text-[11px] text-gray-400 shrink-0">
               {formatTimeAgo(comment.created_at, lang)}

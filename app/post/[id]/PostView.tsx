@@ -425,12 +425,6 @@ export default function PostView({
           {post.profiles?.role === 'admin' && (
             <ShieldCheck size={14} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
           )}
-          {post.profiles?.nationality && (
-            <>
-              <span className="text-sm text-gray-300">·</span>
-              <span className="text-[12px] text-gray-400">{post.profiles.nationality}</span>
-            </>
-          )}
           <span className="text-sm text-gray-300">·</span>
           <span className="text-[12px] text-gray-400 shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
 

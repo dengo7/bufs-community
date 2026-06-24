@@ -177,11 +177,6 @@ export default function NotificationsPage() {
                         <span className="text-[11px] font-medium text-gray-900 leading-none">
                           {notif.actor?.nickname ?? '—'}
                         </span>
-                        {notif.actor?.nationality && (
-                          <span className="text-[11px] text-gray-400 leading-none">
-                            {notif.actor.nationality}
-                          </span>
-                        )}
                       </span>
                       <span className="text-[13px] text-gray-700">{t[notif.type]}</span>
                     </div>

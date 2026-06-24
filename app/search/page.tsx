@@ -206,9 +206,6 @@ export default function SearchPage() {
                     <span className="font-medium text-gray-600">
                       {post.profiles?.nickname ?? '?'}
                     </span>
-                    {post.profiles?.nationality && (
-                      <span className="text-gray-400">· {post.profiles.nationality}</span>
-                    )}
                   </div>
                   <span>{formatTimeAgo(post.created_at, lang)}</span>
                 </div>

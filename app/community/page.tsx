@@ -290,12 +290,6 @@ export default function CommunityPage() {
                       {post.profiles?.role === 'admin' && (
                         <ShieldCheck size={11} strokeWidth={2} className="text-[#F6C21A] shrink-0" />
                       )}
-                      {post.profiles?.nationality && (
-                        <>
-                          <span className="text-gray-300">·</span>
-                          <span className="truncate">{post.profiles.nationality}</span>
-                        </>
-                      )}
                       <span className="text-gray-300 shrink-0">·</span>
                       <span className="shrink-0">{formatTimeAgo(post.created_at, lang)}</span>
                     </div>
