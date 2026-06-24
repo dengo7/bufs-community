@@ -13,7 +13,7 @@ const CONTENT = {
       {
         h: '제1조 (수집하는 개인정보 항목)',
         b: `운영자는 회원가입 시 다음 정보를 수집합니다.
-- 필수: 이메일 주소, 닉네임, 국적, 성별`,
+- 필수: 이메일 주소, 닉네임`,
       },
       {
         h: '제2조 (개인정보 수집 목적)',
@@ -81,7 +81,7 @@ const CONTENT = {
       {
         h: 'Article 1 (Information Collected)',
         b: `The Operator collects the following information upon registration:
-- Required: Email address, nickname, nationality, gender`,
+- Required: Email address, nickname`,
       },
       {
         h: 'Article 2 (Purpose of Collection)',
