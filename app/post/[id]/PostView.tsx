@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Heart, MessageCircle, Eye,
   MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff,
-  Bookmark, BookmarkCheck, Pin, PinOff, Pencil, Flag,
+  Bookmark, BookmarkCheck, Pin, PinOff, Pencil, Flag, UserX,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { blockUser } from '../../lib/blocks';
 import BottomTabBar from '../../components/BottomTabBar';
 import CommentSection from './CommentSection';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
@@ -19,10 +20,10 @@ import { formatTimeAgo } from '../../lib/utils';
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
-  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제' },
-  en: { confirmDelete: 'Delete this?',           delete: 'Delete' },
-  zh: { confirmDelete: '确认删除?',               delete: '删除' },
-  ja: { confirmDelete: '削除しますか?',           delete: '削除' },
+  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요' },
+  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block' },
+  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败' },
+  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました' },
 } as const;
 
 export type CommentRow = {
@@ -311,6 +312,18 @@ export default function PostView({
     }
   };
 
+  // 사용자 차단 — 성공 시 이전 페이지로 이동
+  const handleBlock = async () => {
+    setShowMenu(false);
+    if (!confirm(t.confirmBlock)) return;
+    try {
+      await blockUser(post.author_id);
+      router.back();
+    } catch {
+      showToast(false, t.blockFailed);
+    }
+  };
+
   const handleEditSave = async () => {
     if (!editTitle.trim() || !editContent.trim()) return;
     setIsSaving(true);
@@ -588,6 +601,14 @@ export default function PostView({
                       >
                         <Flag size={14} strokeWidth={1.8} />
                         신고하기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBlock}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                      >
+                        <UserX size={14} strokeWidth={1.8} />
+                        {t.block}
                       </button>
                     </div>
                   </>

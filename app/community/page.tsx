@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Heart, MessageCircle, Eye, PenLine, ShieldCheck, Pin } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
+import { getBlockedIds } from '../lib/blocks';
 import BottomTabBar from '../components/BottomTabBar';
 import {
   CATEGORIES,
@@ -23,6 +24,7 @@ const ALL_LABEL: Record<UILang, string> = { ko: '전체', en: 'All', zh: '全部
 
 type FeedPost = {
   id: string;
+  author_id: string;
   title: string;
   content: string;
   category: string;
@@ -46,6 +48,12 @@ export default function CommunityPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
+
+  // 차단한 사용자 목록 로드
+  useEffect(() => {
+    getBlockedIds().then(setBlockedIds);
+  }, []);
 
   // 전체 공지 로드
   useEffect(() => {
@@ -53,7 +61,7 @@ export default function CommunityPage() {
       const client = getSupabaseClient();
       const { data } = await client
         .from('posts')
-        .select('id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
         .eq('pinned', true)
         .eq('pin_scope', 'global')
@@ -76,7 +84,7 @@ export default function CommunityPage() {
       const client = getSupabaseClient();
       let query = client
         .from('posts')
-        .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
         .eq('pinned', false);
 
@@ -106,7 +114,7 @@ export default function CommunityPage() {
     const client = getSupabaseClient();
     let query = client
       .from('posts')
-      .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+      .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
       .eq('is_deleted', false)
       .eq('pinned', false);
 
@@ -123,6 +131,10 @@ export default function CommunityPage() {
     }
     setLoadingMore(false);
   };
+
+  // 차단한 사용자의 게시글 숨김
+  const visiblePosts = posts.filter(p => !blockedIds.includes(p.author_id));
+  const visiblePinned = pinnedPosts.filter(p => !blockedIds.includes(p.author_id));
 
   return (
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
@@ -190,14 +202,14 @@ export default function CommunityPage() {
 
       {/* ── 피드 리스트 ── */}
       <div className="max-w-[600px] mx-auto px-4 pt-3 pb-44">
-        {!loading && pinnedPosts.length > 0 && (
+        {!loading && visiblePinned.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
               <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
               <span className="text-[12px] font-semibold text-[#1B7CC0]">전체 공지</span>
             </div>
             <div className="space-y-2">
-              {pinnedPosts.map(post => (
+              {visiblePinned.map(post => (
                 <Link
                   key={post.id}
                   href={`/post/${post.id}`}
@@ -253,12 +265,12 @@ export default function CommunityPage() {
               </div>
             ))}
           </div>
-        ) : posts.length === 0 ? (
+        ) : visiblePosts.length === 0 ? (
           <p className="text-center text-gray-400 text-sm py-16">게시글이 없어요</p>
         ) : (
           <>
             <div className="space-y-2.5">
-              {posts.map(post => (
+              {visiblePosts.map(post => (
                 <Link
                   key={post.id}
                   href={`/post/${post.id}`}

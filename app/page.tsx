@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSupabaseClient } from './lib/supabase/client';
+import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
 import HeroBanner from './components/HeroBanner';
 import { formatTimeAgo } from './lib/utils';
@@ -138,6 +139,7 @@ const getCategoryChipClass = (slug: string) =>
 
 type FeedPost = {
   id: string;
+  author_id: string;
   title: string;
   content: string;
   category: string;
@@ -160,6 +162,7 @@ export default function Home() {
   const [feedHasMore, setFeedHasMore] = useState(true);
   const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
 
   const t = T[lang];
   const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
@@ -179,12 +182,16 @@ export default function Home() {
         if (bms) setBookmarks(new Set(bms.map((b: { post_id: string }) => b.post_id)));
       }
       if (u) fetchUnreadCount(u.id).then(setUnreadCount);
+      if (u) getBlockedIds().then(setBlockedIds);
+      else setBlockedIds([]);
     });
     const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
       const u = session?.user ?? null;
       setUser(u);
       if (u) fetchUnreadCount(u.id).then(setUnreadCount);
       else setUnreadCount(0);
+      if (u) getBlockedIds().then(setBlockedIds);
+      else setBlockedIds([]);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -195,7 +202,7 @@ export default function Home() {
       const client = getSupabaseClient();
       const { data } = await client
         .from('posts')
-        .select('id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
         .eq('pinned', true)
         .eq('pin_scope', 'global')
@@ -212,7 +219,7 @@ export default function Home() {
     const load = async () => {
       const { data } = await getSupabaseClient()
         .from('posts')
-        .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
         .eq('pinned', false)
         .order('created_at', { ascending: false })
@@ -233,7 +240,7 @@ export default function Home() {
     setFeedLoadingMore(true);
     const { data } = await getSupabaseClient()
       .from('posts')
-      .select('id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+      .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
       .eq('is_deleted', false)
       .eq('pinned', false)
       .order('created_at', { ascending: false })
@@ -269,6 +276,10 @@ export default function Home() {
     await getSupabaseClient().auth.signOut();
     setUser(null);
   }
+
+  // 차단한 사용자의 게시글 숨김
+  const visibleFeedPosts = feedPosts.filter(p => !blockedIds.includes(p.author_id));
+  const visiblePinnedPosts = pinnedPosts.filter((p: any) => !blockedIds.includes(p.author_id));
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
@@ -499,14 +510,14 @@ export default function Home() {
             </div>
           </div>
 
-          {pinnedPosts.length > 0 && (
+          {visiblePinnedPosts.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center gap-1.5 mb-2 px-0.5">
                 <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
                 <span className="text-[12px] font-semibold text-[#1B7CC0]">{t.allNotices}</span>
               </div>
               <div className="space-y-2">
-                {pinnedPosts.map(post => (
+                {visiblePinnedPosts.map((post: any) => (
                   <Link key={post.id} href={`/post/${post.id}`}
                     className="block bg-[#DBEAFE] rounded-xl border border-[#93C5FD] p-4 no-underline">
                     <div className="flex items-center gap-1.5 mb-2">
@@ -555,12 +566,12 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : feedPosts.length === 0 ? (
+            ) : visibleFeedPosts.length === 0 ? (
               <p className="text-center text-gray-400 text-sm py-10">{t.noPosts}</p>
             ) : (
               <>
                 <div className="space-y-2">
-                  {feedPosts.map(post => (
+                  {visibleFeedPosts.map(post => (
                     <Link
                       key={post.id}
                       href={`/post/${post.id}`}

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
-  Heart, User,
+  Heart, User, UserX,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -40,6 +40,7 @@ const T = {
     guide: '앱 사용법',
     guideDesc: '주요 기능을 다시 확인할 수 있어요',
     sectionAccount: '계정',
+    blockedUsers: '차단 목록',
     terms: '이용약관',
     privacy: '개인정보처리방침',
     logout: '로그아웃',
@@ -64,6 +65,7 @@ const T = {
     guide: 'How to Use',
     guideDesc: 'Review key features anytime',
     sectionAccount: 'Account',
+    blockedUsers: 'Blocked Users',
     terms: 'Terms of Service',
     privacy: 'Privacy Policy',
     logout: 'Logout',
@@ -88,6 +90,7 @@ const T = {
     guide: '使用指南',
     guideDesc: '随时查看主要功能',
     sectionAccount: '账户',
+    blockedUsers: '屏蔽列表',
     terms: '服务条款',
     privacy: '隐私政策',
     logout: '退出登录',
@@ -112,6 +115,7 @@ const T = {
     guide: 'アプリの使い方',
     guideDesc: '主な機能をいつでも確認できます',
     sectionAccount: 'アカウント',
+    blockedUsers: 'ブロックリスト',
     terms: '利用規約',
     privacy: 'プライバシーポリシー',
     logout: 'ログアウト',
@@ -417,6 +421,7 @@ export default function MyPage() {
 
             {/* ── 계정 ── */}
             <SectionCard label={t.sectionAccount}>
+              <MenuRow icon={UserX}       title={t.blockedUsers} onClick={() => router.push('/my/blocks')} />
               <MenuRow icon={FileText}    title={t.terms}   onClick={() => router.push('/my/terms')} />
               <MenuRow icon={ShieldCheck} title={t.privacy} onClick={() => router.push('/my/privacy')} />
               <MenuRow icon={LogOut}      title={t.logout}  onClick={handleLogout} danger />

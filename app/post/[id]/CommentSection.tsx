@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag } from 'lucide-react';
+import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag, UserX } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { blockUser } from '../../lib/blocks';
 import { formatTimeAgo } from '../../lib/utils';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
 import Avatar from '../../components/Avatar';
@@ -23,6 +24,10 @@ const T = {
     commentCount:  (n: number) => `댓글 ${n}개`,
     loginRequired: '로그인 후 댓글 작성 가능',
     login:         '로그인',
+    report:        '신고하기',
+    block:         '차단하기',
+    confirmBlock:  '이 사용자를 차단하시겠어요?',
+    blockFailed:   '차단에 실패했어요',
   },
   en: {
     writeComment:  'Write a comment',
@@ -36,6 +41,10 @@ const T = {
     commentCount:  (n: number) => `${n} comment${n === 1 ? '' : 's'}`,
     loginRequired: 'Login required to comment',
     login:         'Login',
+    report:        'Report',
+    block:         'Block',
+    confirmBlock:  'Block this user?',
+    blockFailed:   'Failed to block',
   },
   zh: {
     writeComment:  '写评论',
@@ -49,6 +58,10 @@ const T = {
     commentCount:  (n: number) => `${n}条评论`,
     loginRequired: '登录后可评论',
     login:         '登录',
+    report:        '举报',
+    block:         '屏蔽',
+    confirmBlock:  '要屏蔽该用户吗？',
+    blockFailed:   '屏蔽失败',
   },
   ja: {
     writeComment:  'コメントを書く',
@@ -62,6 +75,10 @@ const T = {
     commentCount:  (n: number) => `コメント ${n}件`,
     loginRequired: 'ログイン後コメント可能',
     login:         'ログイン',
+    report:        '報告する',
+    block:         'ブロック',
+    confirmBlock:  'このユーザーをブロックしますか？',
+    blockFailed:   'ブロックに失敗しました',
   },
 } as const;
 
@@ -105,6 +122,7 @@ export default function CommentSection({
   const [replyText, setReplyText]   = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [hiddenAuthorIds, setHiddenAuthorIds] = useState<Set<string>>(new Set());
   const [commentAdminModal, setCommentAdminModal] = useState<CommentAdminModal>(null);
   const [commentAdminLoading, setCommentAdminLoading] = useState(false);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
@@ -115,8 +133,9 @@ export default function CommentSection({
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const t = T[lang];
-  const topLevel  = comments.filter(c => c.parent_id === null);
-  const repliesOf = (parentId: string) => comments.filter(c => c.parent_id === parentId);
+  const visibleComments = comments.filter(c => !hiddenAuthorIds.has(c.author_id));
+  const topLevel  = visibleComments.filter(c => c.parent_id === null);
+  const repliesOf = (parentId: string) => visibleComments.filter(c => c.parent_id === parentId);
   const canModify = (c: CommentRow) =>
     currentUserId === c.author_id || isCurrentUserAdmin;
 
@@ -266,6 +285,18 @@ export default function CommentSection({
     }
   };
 
+  const handleBlock = async (authorId: string) => {
+    setMenuOpenId(null);
+    if (!confirm(t.confirmBlock)) return;
+    try {
+      await blockUser(authorId);
+      // 차단 성공 → 해당 작성자 댓글 즉시 숨김
+      setHiddenAuthorIds(prev => new Set(prev).add(authorId));
+    } catch {
+      showToast(false, t.blockFailed);
+    }
+  };
+
   const renderComment = (comment: CommentRow, isReply = false) => (
     <div key={comment.id} className="flex gap-2.5 py-2">
       <Avatar
@@ -345,14 +376,39 @@ export default function CommentSection({
             </div>
           )}
           {currentUserId && !isCurrentUserAdmin && comment.author_id !== currentUserId && (
-            <button
-              type="button"
-              onClick={() => { setReportTarget(comment.id); setReportReason(''); }}
-              className="p-1 bg-transparent border-none cursor-pointer text-gray-300 hover:text-red-400 transition-colors"
-              aria-label="신고"
-            >
-              <Flag size={13} strokeWidth={1.8} />
-            </button>
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setMenuOpenId(menuOpenId === comment.id ? null : comment.id)}
+                className="p-1 text-gray-400 bg-transparent border-none cursor-pointer"
+                aria-label="메뉴"
+              >
+                <MoreHorizontal size={15} strokeWidth={1.8} />
+              </button>
+              {menuOpenId === comment.id && (
+                <>
+                  <div className="fixed inset-0 z-[290]" onClick={() => setMenuOpenId(null)} />
+                  <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[110px]">
+                    <button
+                      type="button"
+                      onClick={() => { setMenuOpenId(null); setReportTarget(comment.id); setReportReason(''); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                    >
+                      <Flag size={13} strokeWidth={1.8} />
+                      {t.report}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBlock(comment.author_id)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
+                    >
+                      <UserX size={13} strokeWidth={1.8} />
+                      {t.block}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
 
