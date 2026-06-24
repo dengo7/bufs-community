@@ -43,6 +43,9 @@ const T = {
     terms: '이용약관',
     privacy: '개인정보처리방침',
     logout: '로그아웃',
+    deleteAccount: '회원 탈퇴',
+    deleteConfirm: '정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다',
+    deleteError: '탈퇴 처리 중 오류가 발생했습니다',
   },
   en: {
     subtitle: 'Community for International Students',
@@ -64,6 +67,9 @@ const T = {
     terms: 'Terms of Service',
     privacy: 'Privacy Policy',
     logout: 'Logout',
+    deleteAccount: 'Delete Account',
+    deleteConfirm: 'Are you sure you want to delete your account? All your data will be erased',
+    deleteError: 'An error occurred while deleting your account',
   },
   zh: {
     subtitle: '面向外国留学生的社区',
@@ -85,6 +91,9 @@ const T = {
     terms: '服务条款',
     privacy: '隐私政策',
     logout: '退出登录',
+    deleteAccount: '注销账号',
+    deleteConfirm: '确定要注销账号吗？所有数据将被删除',
+    deleteError: '注销过程中发生错误',
   },
   ja: {
     subtitle: '外国人留学生のためのコミュニティ',
@@ -106,6 +115,9 @@ const T = {
     terms: '利用規約',
     privacy: 'プライバシーポリシー',
     logout: 'ログアウト',
+    deleteAccount: '退会する',
+    deleteConfirm: '本当に退会しますか？すべてのデータが削除されます',
+    deleteError: '退会処理中にエラーが発生しました',
   },
 } as const;
 
@@ -278,6 +290,20 @@ export default function MyPage() {
     setTotalLikes(0);
   };
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t.deleteConfirm)) return;
+    try {
+      // service role 키로 계정을 삭제하는 API 라우트 호출
+      // (세션 쿠키로 본인 확인하므로 signOut 이전에 호출해야 함)
+      const res = await fetch('/api/delete-account', { method: 'POST' });
+      if (!res.ok) { showToast(t.deleteError); return; }
+      await getSupabaseClient().auth.signOut();
+      router.push('/auth');
+    } catch {
+      showToast(t.deleteError);
+    }
+  };
+
   const nickname = profile?.nickname
     || user?.user_metadata?.nickname
     || user?.email?.split('@')[0]
@@ -395,6 +421,17 @@ export default function MyPage() {
               <MenuRow icon={ShieldCheck} title={t.privacy} onClick={() => router.push('/my/privacy')} />
               <MenuRow icon={LogOut}      title={t.logout}  onClick={handleLogout} danger />
             </SectionCard>
+
+            {/* ── 회원 탈퇴 ── */}
+            <div className="text-center mt-2">
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                className="text-[12px] text-red-400 hover:text-red-500 underline underline-offset-2 transition-colors"
+              >
+                {t.deleteAccount}
+              </button>
+            </div>
           </>
         )}
       </div>
