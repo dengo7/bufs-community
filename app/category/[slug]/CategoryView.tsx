@@ -129,7 +129,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
       {/* 헤더 */}
-      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center min-h-[54px] px-3 gap-2">
 
           <Link

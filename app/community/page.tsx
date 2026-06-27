@@ -140,7 +140,7 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2">
           <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">커뮤니티</span>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">

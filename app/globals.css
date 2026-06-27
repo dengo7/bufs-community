@@ -24,12 +24,6 @@ body {
   color: var(--foreground);
   font-family: 'Noto Sans KR', Arial, sans-serif;
 }
-
-/* Capacitor iOS Safe Area */
-body {
-  padding-top: constant(safe-area-inset-top);
-  padding-top: env(safe-area-inset-top);
-}
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
