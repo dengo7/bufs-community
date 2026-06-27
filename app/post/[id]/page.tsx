@@ -10,19 +10,36 @@ export default async function PostPage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const { data: post, error } = await supabase
-    .from('posts')
-    .select(`
-      id, title, content, category, created_at, view_count,
-      comment_count, like_count, author_id, image_urls,
-      pinned, pin_scope, pinned_at,
-      profiles ( nickname, nationality, avatar_url, role )
-    `)
-    .eq('id', id)
-    .eq('is_deleted', false)
-    .single();
+  // 게시글 · 댓글 · 유저 정보는 서로 독립적이므로 병렬 실행
+  const [postResult, commentsResult, userResult] = await Promise.all([
+    supabase
+      .from('posts')
+      .select(`
+        id, title, content, category, created_at, view_count,
+        comment_count, like_count, author_id, image_urls,
+        pinned, pin_scope, pinned_at,
+        profiles ( nickname, nationality, avatar_url, role )
+      `)
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .single(),
+    supabase
+      .from('comments')
+      .select(`
+        id, post_id, author_id, parent_id, content, is_deleted, created_at,
+        profiles ( nickname, nationality, avatar_url, role )
+      `)
+      .eq('post_id', id)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: true }),
+    supabase.auth.getUser(),
+  ]);
 
+  const { data: post, error } = postResult;
   if (error || !post) notFound();
+
+  const comments = commentsResult.data;
+  const user = userResult.data.user;
 
   // view_count +1 (fire-and-forget)
   supabase
@@ -30,8 +47,6 @@ export default async function PostPage({
     .update({ view_count: ((post as any).view_count ?? 0) + 1 })
     .eq('id', id)
     .then(() => {});
-
-  const { data: { user } } = await supabase.auth.getUser();
 
   let isLiked = false;
   let currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null = null;
@@ -61,16 +76,6 @@ export default async function PostPage({
       isCurrentUserAdmin = (profileResult.data as any).role === 'admin';
     }
   }
-
-  const { data: comments } = await supabase
-    .from('comments')
-    .select(`
-      id, post_id, author_id, parent_id, content, is_deleted, created_at,
-      profiles ( nickname, nationality, avatar_url, role )
-    `)
-    .eq('post_id', id)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: true });
 
   return (
     <PostView
