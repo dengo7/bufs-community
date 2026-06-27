@@ -80,11 +80,20 @@ export default function SearchPage() {
 
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
+      // PostgREST .or() 필터 인젝션 방지 — 필터 문법/와일드카드 문자 제거
+      const safe = q.replace(/[%_,()*\\]/g, '').trim();
+      if (safe.length < 2) {
+        setResults([]);
+        setLoading(false);
+        setSearched(true);
+        return;
+      }
+
       const client = getSupabaseClient();
       const { data } = await client
         .from('posts')
         .select('id, title, content, created_at, like_count, comment_count, profiles(nickname, nationality)')
-        .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
+        .or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false })
         .limit(30);
