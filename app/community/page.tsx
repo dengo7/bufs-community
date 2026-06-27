@@ -141,7 +141,7 @@ export default function CommunityPage() {
 
       {/* ── 헤더 ── */}
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2 pt-14">
+        <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2">
           <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">커뮤니티</span>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as UILang[]).map(l => (

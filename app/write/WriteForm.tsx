@@ -188,7 +188,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
 
       {/* 헤더 */}
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="flex items-center min-h-[54px] px-3 gap-2 pt-14">
+        <div className="flex items-center min-h-[54px] px-3 gap-2">
           <button
             type="button"
             onClick={() => router.back()}
