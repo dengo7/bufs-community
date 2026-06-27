@@ -109,22 +109,17 @@ export default function AuthPage() {
   function switchMode(m: Mode) { setMode(m); reset(); }
 
   async function handleLogin() {
-    console.log('🔥 Login attempt:', { email, mode });
     setLoading(true); reset();
     try {
       const supabase = getSupabaseClient();
-      console.log('📤 Sending to Supabase...');
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      console.log('📥 Supabase response:', { data, error });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        console.log('❌ Validation failed:', error);
         setError(t.errLogin);
       } else {
-        console.log('✅ Login success, redirecting...');
         window.location.href = '/';
       }
-    } catch (e) {
-      console.log('💥 Error caught:', e);
+    } catch {
+      setError(t.errLogin);
     }
     setLoading(false);
   }

@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
             .from('push_subscriptions')
             .delete()
             .eq('endpoint', sub.endpoint);
-          console.log('[push/route] removed expired subscription:', sub.endpoint);
+          console.log('[push/route] removed expired subscription');
         } else {
           console.error('[push/route] sendNotification error:', err);
         }
