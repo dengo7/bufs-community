@@ -41,12 +41,8 @@ export default async function PostPage({
   const comments = commentsResult.data;
   const user = userResult.data.user;
 
-  // view_count +1 (fire-and-forget)
-  supabase
-    .from('posts')
-    .update({ view_count: ((post as any).view_count ?? 0) + 1 })
-    .eq('id', id)
-    .then(() => {});
+  // view_count +1 (원자적 증가 RPC — 동시 조회 시에도 정확)
+  await supabase.rpc('increment_view_count', { p_id: id });
 
   let isLiked = false;
   let currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null = null;

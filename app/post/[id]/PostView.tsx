@@ -20,10 +20,10 @@ import { formatTimeAgo } from '../../lib/utils';
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
-  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요' },
-  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block' },
-  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败' },
-  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました' },
+  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요' },
+  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block', editFailed: 'Failed to save changes' },
+  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败', editFailed: '保存失败' },
+  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました', editFailed: '保存に失敗しました' },
 } as const;
 
 export type CommentRow = {
@@ -330,15 +330,21 @@ export default function PostView({
     setIsSaving(true);
     try {
       const client = getSupabaseClient();
-      const { error } = await client
+      const { data, error } = await client
         .from('posts')
         .update({ title: editTitle.trim(), content: editContent.trim() })
-        .eq('id', post.id);
-      if (!error) {
-        post.title = editTitle.trim();
-        post.content = editContent.trim();
-        setIsEditing(false);
+        .eq('id', post.id)
+        .select('id');
+      // RLS 거부 시 error는 null이지만 변경된 행이 0개일 수 있음 → 행 수로 성공 검증
+      if (error || !data || data.length === 0) {
+        showToast(false, t.editFailed);
+        return;
       }
+      post.title = editTitle.trim();
+      post.content = editContent.trim();
+      setIsEditing(false);
+    } catch {
+      showToast(false, t.editFailed);
     } finally {
       setIsSaving(false);
     }
