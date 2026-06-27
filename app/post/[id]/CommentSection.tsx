@@ -515,7 +515,7 @@ export default function CommentSection({
       </div>
 
       {/* ── 하단 고정 댓글 입력창 ── */}
-      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.04)]">
         <div className="max-w-[600px] mx-auto px-4 py-2.5">
           {!currentUserId ? (
             <div className="flex items-center justify-between">
