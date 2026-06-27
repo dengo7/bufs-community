@@ -111,8 +111,8 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
-      <header className="safe-top sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="max-w-[1400px] mx-auto flex items-center h-[54px] px-4 gap-3">
+      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+        <div className="max-w-[1400px] mx-auto flex items-center min-h-[54px] px-4 gap-3 pt-[env(safe-area-inset-top)]">
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">

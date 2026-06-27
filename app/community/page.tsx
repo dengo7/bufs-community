@@ -140,8 +140,8 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
       {/* ── 헤더 ── */}
-      <header className="safe-top sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="max-w-[600px] mx-auto flex items-center h-[54px] px-4 gap-2">
+      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+        <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2 pt-[env(safe-area-inset-top)]">
           <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">커뮤니티</span>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
@@ -201,7 +201,7 @@ export default function CommunityPage() {
       </div>
 
       {/* ── 피드 리스트 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-44">
+      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-[calc(88px+env(safe-area-inset-bottom))]">
         {!loading && visiblePinned.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
@@ -345,7 +345,7 @@ export default function CommunityPage() {
       {/* ── 글쓰기 FAB ── */}
       <Link
         href="/write"
-        className="md:hidden fixed bottom-[88px] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
+        className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
         aria-label="글쓰기"
       >

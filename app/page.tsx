@@ -285,8 +285,8 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
 
       {/* ── MOBILE HEADER ── */}
-      <header className="safe-top xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="flex items-center h-[58px] px-4 gap-2">
+      <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+        <div className="flex items-center min-h-[58px] px-4 gap-2 pt-[env(safe-area-inset-top)]">
 
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
