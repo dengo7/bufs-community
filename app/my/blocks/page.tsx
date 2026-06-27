@@ -55,7 +55,8 @@ type BlockedProfile = {
 
 export default function BlocksPage() {
   const router = useRouter();
-  const [lang, setLang]         = useState<UILang>(getLang);
+  const [lang, setLang]         = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [user, setUser]         = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [blocked, setBlocked]   = useState<BlockedProfile[]>([]);

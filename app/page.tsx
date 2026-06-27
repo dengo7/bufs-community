@@ -152,7 +152,8 @@ type FeedPost = {
 };
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>(getLang);
+  const [lang, setLang] = useState<Lang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [user, setUser] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);

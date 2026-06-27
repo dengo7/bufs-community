@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
-import { getLang } from '../../lib/lang';
+import { getLang, type UILang } from '../../lib/lang';
 
 const CONTENT = {
   ko: {
@@ -146,7 +146,8 @@ Contact: dengo12345@naver.com`,
 
 export default function PrivacyPage() {
   const router = useRouter();
-  const [lang] = useState(getLang);
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const c = lang === 'en' ? CONTENT.en : CONTENT.ko;
 
   return (

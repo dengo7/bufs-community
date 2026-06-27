@@ -40,7 +40,8 @@ type FeedPost = {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<UILang>(getLang);
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [selectedCategory, setSelectedCategory] = useState<CategorySlug | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<FeedPost[]>([]);

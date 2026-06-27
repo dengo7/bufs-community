@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag, UserX } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
-import { blockUser } from '../../lib/blocks';
+import { blockUser, getBlockedIds } from '../../lib/blocks';
 import { formatTimeAgo } from '../../lib/utils';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
 import Avatar from '../../components/Avatar';
@@ -131,6 +131,13 @@ export default function CommentSection({
   const [reportBusy, setReportBusy] = useState(false);
   const mainTextareaRef  = useRef<HTMLTextAreaElement>(null);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 마운트 시 차단 목록 로드 — 차단한 사용자의 댓글을 숨김
+  useEffect(() => {
+    getBlockedIds().then(ids => {
+      if (ids.length) setHiddenAuthorIds(new Set(ids));
+    });
+  }, []);
 
   const t = T[lang];
   const visibleComments = comments.filter(c => !hiddenAuthorIds.has(c.author_id));

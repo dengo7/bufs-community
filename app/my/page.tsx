@@ -204,7 +204,8 @@ function SectionCard({ label, children }: { label: string; children: React.React
 
 // ── 페이지 ────────────────────────────────────────────────────
 export default function MyPage() {
-  const [lang, setLang]             = useState<UILang>(getLang);
+  const [lang, setLang]             = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [user, setUser]             = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);

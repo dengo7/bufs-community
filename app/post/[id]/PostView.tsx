@@ -84,7 +84,8 @@ export default function PostView({
   initialComments,
 }: Props) {
   const router = useRouter();
-  const [lang, setLang] = useState<UILang>(getLang);
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [liked, setLiked] = useState(isLiked);
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0);
   const [commentCount, setCommentCount] = useState(post.comment_count ?? 0);

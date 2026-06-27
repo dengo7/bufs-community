@@ -52,7 +52,8 @@ type PostResult = {
 };
 
 export default function SearchPage() {
-  const [lang, setLang] = useState<UILang>(getLang);
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PostResult[]>([]);
   const [loading, setLoading] = useState(false);

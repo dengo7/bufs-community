@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ChevronLeft, PenLine, Pin, ShieldCheck,
@@ -118,7 +118,8 @@ interface Props {
 }
 
 export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: Props) {
-  const [lang, setLang] = useState<UILang>(getLang);
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
 
   const t = T[lang];
   const category = getCategoryBySlug(slug);

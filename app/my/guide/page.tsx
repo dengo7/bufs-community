@@ -138,7 +138,7 @@ const isUILang = (v: string | null): v is UILang =>
 
 export default function GuidePage() {
   const router = useRouter();
-  const [lang, setLang]   = useState<UILang>(getLang);
+  const [lang, setLang]   = useState<UILang>('ko');
   const [index, setIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
@@ -146,6 +146,7 @@ export default function GuidePage() {
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get('lang');
     if (isUILang(fromQuery)) setLang(fromQuery);
+    else setLang(getLang());
   }, []);
 
   const total   = SLIDES.length;
