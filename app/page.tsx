@@ -201,28 +201,31 @@ export default function Home() {
   useEffect(() => {
     const fetchPinned = async () => {
       const client = getSupabaseClient();
-      const { data } = await client
+      let query = client
         .from('posts')
         .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
         .eq('pinned', true)
-        .eq('pin_scope', 'global')
-        .order('pinned_at', { ascending: false });
+        .eq('pin_scope', 'global');
+      if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
+      const { data } = await query.order('pinned_at', { ascending: false });
       if (data) setPinnedPosts(data as any[]);
     };
     fetchPinned();
-  }, []);
+  }, [blockedIds]);
 
   // 피드 초기 로드
   useEffect(() => {
     let cancelled = false;
     setFeedLoading(true);
     const load = async () => {
-      const { data } = await getSupabaseClient()
+      let query = getSupabaseClient()
         .from('posts')
         .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
         .eq('is_deleted', false)
-        .eq('pinned', false)
+        .eq('pinned', false);
+      if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
+      const { data } = await query
         .order('created_at', { ascending: false })
         .range(0, PAGE_SIZE - 1);
       if (!cancelled && data) {
@@ -234,16 +237,18 @@ export default function Home() {
     };
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [blockedIds]);
 
   const handleFeedLoadMore = async () => {
     if (feedLoadingMore || !feedHasMore) return;
     setFeedLoadingMore(true);
-    const { data } = await getSupabaseClient()
+    let query = getSupabaseClient()
       .from('posts')
       .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
       .eq('is_deleted', false)
-      .eq('pinned', false)
+      .eq('pinned', false);
+    if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
+    const { data } = await query
       .order('created_at', { ascending: false })
       .range(feedOffset, feedOffset + PAGE_SIZE - 1);
     if (data) {

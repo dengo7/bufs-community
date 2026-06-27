@@ -7,6 +7,7 @@ import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo, type UILang } from '../lib/utils';
 import { getLang, setLang as persistLang } from '../lib/lang';
+import { getBlockedIds } from '../lib/blocks';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
@@ -58,8 +59,14 @@ export default function SearchPage() {
   const [results, setResults] = useState<PostResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 차단한 사용자 목록 로드
+  useEffect(() => {
+    getBlockedIds().then(setBlockedIds);
+  }, []);
 
   const t = T[lang];
 
@@ -90,11 +97,13 @@ export default function SearchPage() {
       }
 
       const client = getSupabaseClient();
-      const { data } = await client
+      let searchQuery = client
         .from('posts')
         .select('id, title, content, created_at, like_count, comment_count, profiles(nickname, nationality)')
         .or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
-        .eq('is_deleted', false)
+        .eq('is_deleted', false);
+      if (blockedIds.length) searchQuery = searchQuery.not('author_id', 'in', `(${blockedIds.join(',')})`);
+      const { data } = await searchQuery
         .order('created_at', { ascending: false })
         .limit(30);
 
@@ -106,7 +115,7 @@ export default function SearchPage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [query, blockedIds]);
 
   const trimmed = query.trim();
 

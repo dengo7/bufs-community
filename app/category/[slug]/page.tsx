@@ -35,32 +35,50 @@ export default async function CategoryPage({
 
   const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug as any);
 
-  // 4개 쿼리를 병렬 실행 (서로 독립적)
+  // 차단한 사용자 목록 (로그인 시) — 해당 작성자 게시글 제외
+  const { data: { user } } = await supabase.auth.getUser();
+  let blockList: string | null = null;
+  if (user) {
+    const { data: blocks } = await supabase
+      .from('user_blocks')
+      .select('blocked_id')
+      .eq('blocker_id', user.id);
+    const ids = (blocks ?? []).map((b: { blocked_id: string }) => b.blocked_id);
+    if (ids.length) blockList = `(${ids.join(',')})`;
+  }
+  // 차단 작성자 제외 필터 (.order 전에 적용)
+  const withBlock = (q: any) => blockList ? q.not('author_id', 'in', blockList) : q;
+
+  // 게시글 쿼리 병렬 실행 (서로 독립적)
   const [globalPinned, categoryPinned, regular, guide] = await Promise.all([
     // 전체 공지 (pin_scope='global') — 카테고리 무관하게 항상 표시
-    supabase
-      .from('posts')
-      .select(SELECT_FIELDS)
-      .eq('is_deleted', false)
-      .eq('pinned', true)
-      .eq('pin_scope', 'global')
-      .order('pinned_at', { ascending: false }),
+    withBlock(
+      supabase
+        .from('posts')
+        .select(SELECT_FIELDS)
+        .eq('is_deleted', false)
+        .eq('pinned', true)
+        .eq('pin_scope', 'global')
+    ).order('pinned_at', { ascending: false }),
     // 카테고리 고정글 (pin_scope='category')
-    supabase
-      .from('posts')
-      .select(SELECT_FIELDS)
-      .eq('category', slug)
-      .eq('is_deleted', false)
-      .eq('pinned', true)
-      .eq('pin_scope', 'category')
-      .order('pinned_at', { ascending: false }),
+    withBlock(
+      supabase
+        .from('posts')
+        .select(SELECT_FIELDS)
+        .eq('category', slug)
+        .eq('is_deleted', false)
+        .eq('pinned', true)
+        .eq('pin_scope', 'category')
+    ).order('pinned_at', { ascending: false }),
     // 일반 게시글
-    supabase
-      .from('posts')
-      .select(SELECT_FIELDS)
-      .eq('category', slug)
-      .eq('is_deleted', false)
-      .eq('pinned', false)
+    withBlock(
+      supabase
+        .from('posts')
+        .select(SELECT_FIELDS)
+        .eq('category', slug)
+        .eq('is_deleted', false)
+        .eq('pinned', false)
+    )
       .order('created_at', { ascending: false })
       .limit(50),
     // 가이드 카드 — 가이드 카테고리에서만 조회
