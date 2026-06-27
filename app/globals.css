@@ -31,3 +31,8 @@ body {
     display: none;
   }
 }
+
+/* iOS 터치 딜레이 제거 */
+* {
+  touch-action: manipulation;
+}
