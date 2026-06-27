@@ -107,7 +107,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="safe-top sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="max-w-[600px] mx-auto flex items-center h-[54px] px-3 gap-2">
           <Link
             href={`/category/${guide.category_slug}`}

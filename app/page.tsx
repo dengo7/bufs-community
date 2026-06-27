@@ -285,7 +285,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
 
       {/* ── MOBILE HEADER ── */}
-      <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="safe-top xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="flex items-center h-[58px] px-4 gap-2">
 
           <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">

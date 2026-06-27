@@ -187,7 +187,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
     <div className="min-h-screen bg-[#F5F6FA] text-[#1A1A1A]">
 
       {/* 헤더 */}
-      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="safe-top sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="flex items-center h-[54px] px-3 gap-2">
           <button
             type="button"

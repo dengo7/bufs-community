@@ -153,7 +153,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gray-50 text-[#1A1A1A]">
 
       {/* ── 헤더 ── */}
-      <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
+      <header className="safe-top sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
         <div className="max-w-[600px] mx-auto flex items-center h-[54px] px-4 gap-2">
           <button
             type="button"

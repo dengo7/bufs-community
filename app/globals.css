@@ -25,6 +25,15 @@ body {
   font-family: 'Noto Sans KR', Arial, sans-serif;
 }
 
+/* iOS Safe Area */
+:root {
+  --sat: env(safe-area-inset-top);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
