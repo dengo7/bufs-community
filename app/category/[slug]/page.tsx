@@ -33,53 +33,56 @@ export default async function CategoryPage({
     profiles ( nickname, nationality, avatar_url, role )
   `;
 
-  // 전체 공지 (pin_scope='global') — 카테고리 무관하게 항상 표시
-  const { data: globalPinnedData } = await supabase
-    .from('posts')
-    .select(SELECT_FIELDS)
-    .eq('is_deleted', false)
-    .eq('pinned', true)
-    .eq('pin_scope', 'global')
-    .order('pinned_at', { ascending: false });
+  const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug as any);
 
-  // 카테고리 고정글 (pin_scope='category')
-  const { data: categoryPinnedData } = await supabase
-    .from('posts')
-    .select(SELECT_FIELDS)
-    .eq('category', slug)
-    .eq('is_deleted', false)
-    .eq('pinned', true)
-    .eq('pin_scope', 'category')
-    .order('pinned_at', { ascending: false });
+  // 4개 쿼리를 병렬 실행 (서로 독립적)
+  const [globalPinned, categoryPinned, regular, guide] = await Promise.all([
+    // 전체 공지 (pin_scope='global') — 카테고리 무관하게 항상 표시
+    supabase
+      .from('posts')
+      .select(SELECT_FIELDS)
+      .eq('is_deleted', false)
+      .eq('pinned', true)
+      .eq('pin_scope', 'global')
+      .order('pinned_at', { ascending: false }),
+    // 카테고리 고정글 (pin_scope='category')
+    supabase
+      .from('posts')
+      .select(SELECT_FIELDS)
+      .eq('category', slug)
+      .eq('is_deleted', false)
+      .eq('pinned', true)
+      .eq('pin_scope', 'category')
+      .order('pinned_at', { ascending: false }),
+    // 일반 게시글
+    supabase
+      .from('posts')
+      .select(SELECT_FIELDS)
+      .eq('category', slug)
+      .eq('is_deleted', false)
+      .eq('pinned', false)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    // 가이드 카드 — 가이드 카테고리에서만 조회
+    isGuideCategory
+      ? supabase
+          .from('category_guides')
+          .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at')
+          .eq('category_slug', slug)
+          .order('sort_order', { ascending: true })
+      : Promise.resolve({ data: [] as GuideCard[] }),
+  ]);
+
+  const { data: regularData, error } = regular;
+  if (error) console.error('[CategoryPage] posts query error:', error.message);
 
   // 전체 공지 먼저, 카테고리 고정글 뒤
   const allPinnedData = [
-    ...(globalPinnedData ?? []),
-    ...(categoryPinnedData ?? []),
+    ...(globalPinned.data ?? []),
+    ...(categoryPinned.data ?? []),
   ];
 
-  // 일반 게시글
-  const { data: regularData, error } = await supabase
-    .from('posts')
-    .select(SELECT_FIELDS)
-    .eq('category', slug)
-    .eq('is_deleted', false)
-    .eq('pinned', false)
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  if (error) console.error('[CategoryPage] posts query error:', error.message);
-
-  const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug as any);
-  let guideCards: GuideCard[] = [];
-  if (isGuideCategory) {
-    const { data: guideData } = await supabase
-      .from('category_guides')
-      .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at')
-      .eq('category_slug', slug)
-      .order('sort_order', { ascending: true });
-    guideCards = (guideData ?? []) as GuideCard[];
-  }
+  const guideCards = (guide.data ?? []) as GuideCard[];
 
   return (
     <CategoryView
