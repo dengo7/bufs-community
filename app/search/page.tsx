@@ -105,7 +105,7 @@ export default function SearchPage() {
 
       {/* 헤더 */}
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]">
-        <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-3 gap-2 pt-[env(safe-area-inset-top)]">
+        <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-3 gap-2 pt-14">
 
           <Link
             href="/"
