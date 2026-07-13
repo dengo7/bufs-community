@@ -14,8 +14,18 @@ import {
   type UILang,
 } from '../../lib/categories';
 import { getLang, setLang as persistLang } from '../../lib/lang';
+import { getSupabaseClient } from '../../lib/supabase/client';
+import { getBlockedIds } from '../../lib/blocks';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
+
+const GUIDE_CATEGORY_SLUGS = ['housing', 'bank', 'telecom', 'insurance', 'medical', 'visa', 'part-time'];
+
+const SELECT_FIELDS = `
+  id, author_id, title, content, created_at,
+  pinned, pin_scope, pinned_at,
+  profiles ( nickname, nationality, avatar_url, role )
+`;
 
 const T = {
   ko: {
@@ -46,6 +56,7 @@ const T = {
 
 export interface PostRow {
   id: string;
+  author_id: string;
   title: string;
   content: string;
   created_at: string;
@@ -112,14 +123,80 @@ function formatRelativeTime(dateStr: string, lang: UILang): string {
 
 interface Props {
   slug: string;
-  posts: PostRow[];
-  pinnedPosts: PostRow[];
-  guideCards: GuideCard[];
 }
 
-export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: Props) {
+export default function CategoryView({ slug }: Props) {
   const [lang, setLang] = useState<UILang>('ko');
   useEffect(() => { setLang(getLang()); }, []);
+
+  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [pinnedPosts, setPinnedPosts] = useState<PostRow[]>([]);
+  const [guideCards, setGuideCards] = useState<GuideCard[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 데이터 로드 (브라우저 Supabase 클라이언트)
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    const load = async () => {
+      const client = getSupabaseClient();
+      const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug);
+
+      // 게시글 + 가이드 + 차단 목록을 모두 병렬 실행
+      const [blockedIds, globalPinned, categoryPinned, regular, guide] = await Promise.all([
+        getBlockedIds(),
+        client
+          .from('posts')
+          .select(SELECT_FIELDS)
+          .eq('is_deleted', false)
+          .eq('pinned', true)
+          .eq('pin_scope', 'global')
+          .order('pinned_at', { ascending: false }),
+        client
+          .from('posts')
+          .select(SELECT_FIELDS)
+          .eq('category', slug)
+          .eq('is_deleted', false)
+          .eq('pinned', true)
+          .eq('pin_scope', 'category')
+          .order('pinned_at', { ascending: false }),
+        client
+          .from('posts')
+          .select(SELECT_FIELDS)
+          .eq('category', slug)
+          .eq('is_deleted', false)
+          .eq('pinned', false)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        isGuideCategory
+          ? client
+              .from('category_guides')
+              .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at')
+              .eq('category_slug', slug)
+              .order('sort_order', { ascending: true })
+          : Promise.resolve({ data: [] as GuideCard[] }),
+      ]);
+
+      if (cancelled) return;
+
+      // 차단 작성자 제외 (JS 후처리 필터)
+      const blocked = new Set(blockedIds);
+      const exclude = (rows: unknown): PostRow[] =>
+        ((rows ?? []) as PostRow[]).filter(r => !blocked.size || !blocked.has(r.author_id));
+
+      setPinnedPosts([
+        ...exclude(globalPinned.data),
+        ...exclude(categoryPinned.data),
+      ]);
+      setPosts(exclude(regular.data));
+      setGuideCards((guide.data ?? []) as GuideCard[]);
+      setLoading(false);
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [slug]);
 
   const t = T[lang];
   const category = getCategoryBySlug(slug);
@@ -165,6 +242,23 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
 
       {/* 글 목록 */}
       <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+        {loading ? (
+          /* 로딩 중 — 게시글 목록 자리에 스켈레톤 표시 (헤더/언어필터는 그대로) */
+          <div className="space-y-2.5">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2.5" />
+                <div className="h-3 bg-gray-100 rounded w-full mb-1.5" />
+                <div className="h-3 bg-gray-100 rounded w-4/5 mb-3" />
+                <div className="flex items-center justify-between">
+                  <div className="h-3 bg-gray-100 rounded w-16" />
+                  <div className="h-3 bg-gray-100 rounded w-12" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
         {/* 가이드 섹션 */}
         {guideCards.length > 0 && (
           <div className="mb-5 bg-[#EFF6FD] rounded-2xl border border-blue-100 overflow-hidden">
@@ -297,6 +391,8 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
               </Link>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
 
