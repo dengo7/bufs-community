@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import { subscribeToPush } from '../lib/push';
+import { setLang as persistLang, LANG_KEY } from '../lib/lang';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 type Mode = 'login' | 'signup';
@@ -103,6 +104,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [step, setStep] = useState<'form' | 'lang'>('form');
 
   const t = T[lang];
 
@@ -123,7 +125,13 @@ export default function AuthPage() {
         } catch {
           // 푸시 구독 실패는 무시
         }
-        window.location.href = '/';
+        // 언어가 저장돼 있지 않으면 언어 선택 화면 표시, 있으면 바로 홈으로
+        const hasLang = typeof window !== 'undefined' && localStorage.getItem(LANG_KEY) !== null;
+        if (hasLang) {
+          window.location.href = '/';
+          return;
+        }
+        setStep('lang');
       }
     } catch {
       setError(t.errLogin);
@@ -142,8 +150,43 @@ export default function AuthPage() {
       options: { data: { name: name.trim(), nickname: nickname.trim() } },
     });
     if (error) setError(error.message);
-    else setMessage(t.successSignup);
+    else setStep('lang'); // 회원가입 성공 → 언어 선택 화면
     setLoading(false);
+  }
+
+  // 언어 선택 → localStorage 저장 후 홈으로 이동
+  function chooseLang(l: Lang) {
+    persistLang(l);
+    window.location.href = '/';
+  }
+
+  // ── 언어 선택 화면 ──────────────────────────────────────────
+  if (step === 'lang') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 sm:px-6 py-10">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 sm:px-8 pt-8 pb-8">
+            <div className="text-center mb-7">
+              <div className="text-4xl mb-3">🌐</div>
+              <h1 className="text-xl font-bold text-gray-900 mb-1">언어 선택</h1>
+              <p className="text-sm text-gray-500">Choose your language · 选择语言 · 言語を選択</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+                <button
+                  key={l}
+                  onClick={() => chooseLang(l)}
+                  className="py-4 text-base font-bold rounded-xl border border-gray-200 bg-white text-gray-800
+                             hover:border-blue-400 hover:bg-blue-50 active:scale-[0.98] transition-all"
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

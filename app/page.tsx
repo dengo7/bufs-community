@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
@@ -155,6 +156,8 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>('ko');
   useEffect(() => { setLang(getLang()); }, []);
   const [user, setUser] = useState<any>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
   const [feedOffset, setFeedOffset] = useState(0);
@@ -174,25 +177,25 @@ export default function Home() {
     const client = getSupabaseClient();
     client.auth.getUser().then(async ({ data }: { data: { user: any } }) => {
       const u = data.user ?? null;
+      // 비로그인 시 로그인 페이지로 리다이렉트
+      if (!u) { router.push('/auth'); return; }
       setUser(u);
-      if (u) {
-        const { data: bms } = await getSupabaseClient()
-          .from('bookmarks')
-          .select('post_id')
-          .eq('user_id', u.id);
-        if (bms) setBookmarks(new Set(bms.map((b: { post_id: string }) => b.post_id)));
-      }
-      if (u) fetchUnreadCount(u.id).then(setUnreadCount);
-      if (u) getBlockedIds().then(setBlockedIds);
-      else setBlockedIds([]);
+      setAuthChecked(true);
+      const { data: bms } = await getSupabaseClient()
+        .from('bookmarks')
+        .select('post_id')
+        .eq('user_id', u.id);
+      if (bms) setBookmarks(new Set(bms.map((b: { post_id: string }) => b.post_id)));
+      fetchUnreadCount(u.id).then(setUnreadCount);
+      getBlockedIds().then(setBlockedIds);
     });
     const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
       const u = session?.user ?? null;
+      if (!u) { router.push('/auth'); return; }
       setUser(u);
-      if (u) fetchUnreadCount(u.id).then(setUnreadCount);
-      else setUnreadCount(0);
-      if (u) getBlockedIds().then(setBlockedIds);
-      else setBlockedIds([]);
+      setAuthChecked(true);
+      fetchUnreadCount(u.id).then(setUnreadCount);
+      getBlockedIds().then(setBlockedIds);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -286,6 +289,11 @@ export default function Home() {
   // 차단한 사용자의 게시글 숨김
   const visibleFeedPosts = feedPosts.filter(p => !blockedIds.includes(p.author_id));
   const visiblePinnedPosts = pinnedPosts.filter((p: any) => !blockedIds.includes(p.author_id));
+
+  // 인증 확인 전에는 빈 화면 (비로그인이면 /auth로 리다이렉트됨)
+  if (!authChecked) {
+    return <div className="min-h-screen bg-[#F8FAFC]" />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
