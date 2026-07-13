@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
+import { subscribeToPush } from '../lib/push';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 type Mode = 'login' | 'signup';
@@ -116,6 +117,12 @@ export default function AuthPage() {
       if (error) {
         setError(t.errLogin);
       } else {
+        // 로그인 성공 시 푸시 알림 구독 요청 (실패해도 로그인은 정상 진행)
+        try {
+          await subscribeToPush();
+        } catch {
+          // 푸시 구독 실패는 무시
+        }
         window.location.href = '/';
       }
     } catch {
