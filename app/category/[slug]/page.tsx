@@ -36,7 +36,9 @@ export default async function CategoryPage({
   const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug as any);
 
   // 차단한 사용자 목록 (로그인 시) — 해당 작성자 게시글 제외
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser()는 매 요청마다 Auth 서버 왕복이 발생하므로, 로컬 세션을 읽는 getSession() 사용
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   let blockList: string | null = null;
   if (user) {
     const { data: blocks } = await supabase
