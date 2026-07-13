@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NProgress from 'nprogress';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 
@@ -95,7 +96,7 @@ export default function HeroBanner({ lang = 'ko' }: HeroBannerProps = {}) {
           {ht.desc}
         </p>
 
-        <Link
+        <Link onClick={() => NProgress.start()}
           href="/community"
           className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[#1D4ED8] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-sm shadow-[#1D4ED8]/20 transition-colors hover:bg-[#1A45BE]"
         >

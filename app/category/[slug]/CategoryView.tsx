@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NProgress from 'nprogress';
 import {
   ChevronLeft, PenLine, Pin, ShieldCheck,
   ListChecks, MapPin, ClipboardList, BookOpen, ChevronRight, ScrollText,
@@ -133,7 +134,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center min-h-[54px] px-3 gap-2">
 
-          <Link
+          <Link onClick={() => NProgress.start()}
             href="/"
             className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
             aria-label="홈으로"
@@ -179,7 +180,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
               {guideCards.map(card => {
                 const CardIcon = GUIDE_CARD_ICONS[card.card_type];
                 return (
-                  <Link
+                  <Link onClick={() => NProgress.start()}
                     key={card.id}
                     href={`/guide/${card.id}`}
                     className="bg-white rounded-xl border border-blue-100 p-3 no-underline
@@ -218,7 +219,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
             </div>
             <div className="space-y-2">
               {pinnedPosts.map(post => (
-                <Link
+                <Link onClick={() => NProgress.start()}
                   key={post.id}
                   href={`/post/${post.id}`}
                   className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline
@@ -258,7 +259,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
           pinnedPosts.length === 0 && (
             <div className="text-center py-16">
               <p className="text-[15px] text-gray-400 mb-2">{t.noPosts}</p>
-              <Link
+              <Link onClick={() => NProgress.start()}
                 href={`/write?category=${slug}`}
                 className="inline-flex items-center gap-1.5 mt-2 px-5 py-2.5 bg-[#F6C21A] text-[#2F2F2F]
                            rounded-full text-[13px] font-bold no-underline hover:opacity-90 transition-opacity"
@@ -271,7 +272,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
         ) : (
           <div className="space-y-2.5">
             {posts.map(post => (
-              <Link
+              <Link onClick={() => NProgress.start()}
                 key={post.id}
                 href={`/post/${post.id}`}
                 className="block bg-white rounded-xl border border-gray-100 p-4 no-underline
@@ -301,7 +302,7 @@ export default function CategoryView({ slug, posts, pinnedPosts, guideCards }: P
       </div>
 
       {/* 플로팅 글쓰기 버튼 (모바일) */}
-      <Link
+      <Link onClick={() => NProgress.start()}
         href={`/write?category=${slug}`}
         className="md:hidden fixed bottom-[88px] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"

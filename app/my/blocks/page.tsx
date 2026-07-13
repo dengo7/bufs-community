@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NProgress from 'nprogress';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, UserX } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
@@ -152,7 +153,7 @@ export default function BlocksPage() {
         {authLoaded && !user && (
           <div className="flex flex-col items-center py-16 text-center">
             <p className="text-[15px] font-semibold text-[#1A1A1A] mb-2">{t.loginRequired}</p>
-            <Link
+            <Link onClick={() => NProgress.start()}
               href="/auth"
               className="mt-2 px-6 py-2.5 bg-[#F6C21A] text-[#2F2F2F] rounded-full font-bold text-sm no-underline"
             >

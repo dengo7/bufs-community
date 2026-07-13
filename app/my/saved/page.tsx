@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NProgress from 'nprogress';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldCheck, Heart, MessageCircle, Eye } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
@@ -84,7 +85,7 @@ export default function SavedPage() {
         {authLoaded && !user && (
           <div className="flex flex-col items-center py-16 text-center">
             <p className="text-[15px] font-semibold text-[#1A1A1A] mb-2">로그인이 필요합니다</p>
-            <Link
+            <Link onClick={() => NProgress.start()}
               href="/auth"
               className="mt-2 px-6 py-2.5 bg-[#F6C21A] text-[#2F2F2F] rounded-full font-bold text-sm no-underline"
             >
@@ -119,7 +120,7 @@ export default function SavedPage() {
         {!loading && posts.length > 0 && (
           <div className="space-y-2.5">
             {posts.map(post => (
-              <Link
+              <Link onClick={() => NProgress.start()}
                 key={post.id}
                 href={`/post/${post.id}`}
                 className="block bg-white rounded-xl border border-gray-100 p-4 no-underline

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NProgress from 'nprogress';
 import { useRouter } from 'next/navigation';
 import {
   Bell, SquarePen, Bookmark, Compass,
@@ -322,7 +323,7 @@ export default function MyPage() {
       {/* ── 헤더 ── */}
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-3">
-          <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
+          <Link onClick={() => NProgress.start()} href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
@@ -342,7 +343,7 @@ export default function MyPage() {
               </button>
             ))}
           </div>
-          <Link
+          <Link onClick={() => NProgress.start()}
             href="/notifications"
             className="text-gray-700 no-underline flex items-center shrink-0"
             aria-label="알림"
@@ -362,7 +363,7 @@ export default function MyPage() {
             </div>
             <p className="text-[15px] font-semibold text-[#1A1A1A] mb-1">{t.loginRequired}</p>
             <p className="text-[13px] text-gray-400 mb-6">로그인하고 더 많은 기능을 이용해요</p>
-            <Link
+            <Link onClick={() => NProgress.start()}
               href="/auth"
               className="px-6 py-2.5 bg-[#F6C21A] text-[#2F2F2F] rounded-full font-bold text-sm no-underline hover:opacity-90 transition-opacity"
             >
