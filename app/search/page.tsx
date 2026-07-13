@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import NProgress from 'nprogress';
 import { ChevronLeft, Search, X } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
@@ -127,7 +126,7 @@ export default function SearchPage() {
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-3 gap-2">
 
-          <Link onClick={() => NProgress.start()}
+          <Link
             href="/"
             className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
             aria-label="홈으로"
@@ -209,7 +208,7 @@ export default function SearchPage() {
         {!loading && results.length > 0 && (
           <div className="space-y-3">
             {results.map(post => (
-              <Link onClick={() => NProgress.start()}
+              <Link
                 key={post.id}
                 href={`/post/${post.id}`}
                 className="block bg-white rounded-xl border border-gray-100 p-4 no-underline

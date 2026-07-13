@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import NProgress from 'nprogress';
 import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
@@ -295,7 +294,7 @@ export default function Home() {
       <header className="xl:hidden sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center min-h-[58px] px-4 gap-2">
 
-          <Link onClick={() => NProgress.start()} href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
+          <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
@@ -317,10 +316,10 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Link onClick={() => NProgress.start()} href="/search" aria-label="검색" className="text-gray-700 no-underline flex items-center">
+            <Link href="/search" aria-label="검색" className="text-gray-700 no-underline flex items-center">
               <Search size={20} strokeWidth={1.8} />
             </Link>
-            <Link onClick={() => NProgress.start()} href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center relative">
+            <Link href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center relative">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
@@ -328,7 +327,7 @@ export default function Home() {
                 </span>
               )}
             </Link>
-            <Link onClick={() => NProgress.start()} href="/my" aria-label="마이" className="text-gray-700 no-underline flex items-center">
+            <Link href="/my" aria-label="마이" className="text-gray-700 no-underline flex items-center">
               <User size={20} strokeWidth={1.8} />
             </Link>
           </div>
@@ -339,7 +338,7 @@ export default function Home() {
       <nav className="hidden xl:block bg-[#2F2F2F] sticky top-0 z-[200] shadow-[0_2px_8px_rgba(0,0,0,0.18)]">
         <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
 
-          <Link onClick={() => NProgress.start()} href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
+          <Link href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-[19px] text-[#1D4ED8] leading-[1.1]"><span className="font-normal">The</span> <span className="font-bold">Well</span></div>
@@ -361,7 +360,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <Link onClick={() => NProgress.start()} href="/notifications" aria-label="알림" className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
+            <Link href="/notifications" aria-label="알림" className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
@@ -469,7 +468,7 @@ export default function Home() {
               </p>
               <div className="grid grid-cols-3 gap-x-2 gap-y-4">
                 {LIFE_GUIDE_CATEGORIES.map(({ slug, Icon, ...labels }) => (
-                  <Link onClick={() => NProgress.start()}
+                  <Link
                     key={slug}
                     href={`/category/${slug}`}
                     className="flex flex-col items-center gap-1.5 no-underline group"
@@ -493,14 +492,14 @@ export default function Home() {
                 <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
                 <h2 className="text-[14px] font-bold text-[#111827]">{t.community}</h2>
               </div>
-              <Link onClick={() => NProgress.start()} href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
+              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
                 전체보기 ›
               </Link>
             </div>
             <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
               <div className="grid grid-cols-3 gap-x-2 gap-y-4">
                 {CAMPUS_CATEGORIES.map(({ slug, Icon, ...labels }) => (
-                  <Link onClick={() => NProgress.start()}
+                  <Link
                     key={slug}
                     href={`/category/${slug}`}
                     className="flex flex-col items-center gap-1.5 no-underline group"
@@ -525,7 +524,7 @@ export default function Home() {
               </div>
               <div className="space-y-2">
                 {visiblePinnedPosts.map((post: any) => (
-                  <Link onClick={() => NProgress.start()} key={post.id} href={`/post/${post.id}`}
+                  <Link key={post.id} href={`/post/${post.id}`}
                     className="block bg-[#DBEAFE] rounded-xl border border-[#93C5FD] p-4 no-underline">
                     <div className="flex items-center gap-1.5 mb-2">
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1B7CC0] bg-white border border-blue-100 px-2 py-0.5 rounded-full">
@@ -558,7 +557,7 @@ export default function Home() {
                 <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
                 <h2 className="text-[14px] font-bold text-[#111827]">{t.recentPosts}</h2>
               </div>
-              <Link onClick={() => NProgress.start()} href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
+              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
                 {t.more} ›
               </Link>
             </div>
@@ -579,7 +578,7 @@ export default function Home() {
               <>
                 <div className="space-y-2">
                   {visibleFeedPosts.map(post => (
-                    <Link onClick={() => NProgress.start()}
+                    <Link
                       key={post.id}
                       href={`/post/${post.id}`}
                       className="block bg-white rounded-xl border border-[#E5EAF2] p-3.5 no-underline

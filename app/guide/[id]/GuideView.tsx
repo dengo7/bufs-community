@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import NProgress from 'nprogress';
 import { ChevronLeft, Pencil, X, Check, Plus, Trash2 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 
@@ -110,7 +109,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-3 gap-2">
-          <Link onClick={() => NProgress.start()}
+          <Link
             href={`/category/${guide.category_slug}`}
             className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
           >

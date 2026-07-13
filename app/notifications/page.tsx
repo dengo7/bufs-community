@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import NProgress from 'nprogress';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo } from '../lib/utils';
@@ -114,7 +113,7 @@ export default function NotificationsPage() {
 
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[1400px] mx-auto flex items-center min-h-[54px] px-4 gap-3">
-          <Link onClick={() => NProgress.start()} href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
+          <Link href="/" className="flex items-center gap-2 flex-1 min-w-0 no-underline">
             <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import NProgress from 'nprogress';
 import { useRouter } from 'next/navigation';
 import { Search, Heart, MessageCircle, Eye, PenLine, ShieldCheck, Pin } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -215,7 +214,7 @@ export default function CommunityPage() {
             </div>
             <div className="space-y-2">
               {visiblePinned.map(post => (
-                <Link onClick={() => NProgress.start()}
+                <Link
                   key={post.id}
                   href={`/post/${post.id}`}
                   className="block bg-[#EFF6FD] rounded-xl border border-blue-100 p-4 no-underline
@@ -276,7 +275,7 @@ export default function CommunityPage() {
           <>
             <div className="space-y-2.5">
               {visiblePosts.map(post => (
-                <Link onClick={() => NProgress.start()}
+                <Link
                   key={post.id}
                   href={`/post/${post.id}`}
                   className="block bg-white rounded-xl border border-gray-100 p-4 no-underline
@@ -348,7 +347,7 @@ export default function CommunityPage() {
       </div>
 
       {/* ── 글쓰기 FAB ── */}
-      <Link onClick={() => NProgress.start()}
+      <Link
         href="/write"
         className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
