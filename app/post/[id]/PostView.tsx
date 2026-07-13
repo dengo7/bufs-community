@@ -635,7 +635,7 @@ export default function PostView({
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               rows={10}
-              className="w-full text-[15px] leading-relaxed text-gray-800 border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0] resize-none"
+              className="w-full text-[16px] leading-relaxed text-gray-800 border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0] resize-none"
             />
             <div className="flex gap-2 justify-end">
               <button

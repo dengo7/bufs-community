@@ -285,7 +285,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
             value={title}
             onChange={e => setTitle(e.target.value.slice(0, TITLE_MAX))}
             placeholder={t.titlePlaceholder}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[14px]
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[16px]
                        placeholder-gray-300 focus:outline-none focus:border-[#F6C21A] transition-colors"
           />
         </section>
@@ -305,7 +305,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
             onChange={e => setContent(e.target.value.slice(0, CONTENT_MAX))}
             placeholder={t.contentPlaceholder}
             rows={14}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[14px]
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-[16px]
                        placeholder-gray-300 resize-none focus:outline-none focus:border-[#F6C21A]
                        transition-colors leading-relaxed"
           />

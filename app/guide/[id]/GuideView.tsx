@@ -163,7 +163,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
             <textarea
               value={richText}
               onChange={e => setRichText(e.target.value)}
-              className="w-full min-h-[300px] text-[15px] text-gray-800 leading-relaxed
+              className="w-full min-h-[300px] text-[16px] text-gray-800 leading-relaxed
                          border border-blue-200 rounded-xl p-4 resize-none
                          focus:outline-none focus:border-[#1B7CC0]"
               placeholder="내용을 입력해주세요"
@@ -186,7 +186,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
                       value={item.name}
                       onChange={e => updatePlace(i, 'name', e.target.value)}
                       placeholder="업체명 *"
-                      className="flex-1 text-[13px] border border-gray-200 rounded-lg px-3 py-2
+                      className="flex-1 text-[16px] border border-gray-200 rounded-lg px-3 py-2
                                  focus:outline-none focus:border-[#1B7CC0]"
                     />
                     <button type="button" onClick={() => removePlace(i)}
@@ -195,11 +195,11 @@ export default function GuideView({ guide, isAdmin }: Props) {
                     </button>
                   </div>
                   <input value={item.address ?? ''} onChange={e => updatePlace(i, 'address', e.target.value)}
-                    placeholder="주소" className="w-full text-[13px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
+                    placeholder="주소" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
                   <input value={item.phone ?? ''} onChange={e => updatePlace(i, 'phone', e.target.value)}
-                    placeholder="전화번호" className="w-full text-[13px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
+                    placeholder="전화번호" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
                   <input value={item.note ?? ''} onChange={e => updatePlace(i, 'note', e.target.value)}
-                    placeholder="한 줄 메모" className="w-full text-[13px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
+                    placeholder="한 줄 메모" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
                 </div>
               ) : (
                 <div key={i} className="p-4 bg-[#F8FAFC] rounded-xl border border-gray-100">
@@ -235,7 +235,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
                     value={item.text}
                     onChange={e => updateCheck(i, e.target.value)}
                     placeholder="항목 내용"
-                    className="flex-1 text-[14px] border border-gray-200 rounded-lg px-3 py-2
+                    className="flex-1 text-[16px] border border-gray-200 rounded-lg px-3 py-2
                                focus:outline-none focus:border-[#1B7CC0]"
                   />
                   <button type="button" onClick={() => removeCheck(i)}

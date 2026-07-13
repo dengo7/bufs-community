@@ -485,7 +485,7 @@ export default function CommentSection({
                             }}
                             placeholder={t.replyTo(comment.profiles?.nickname ?? '?')}
                             rows={1}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-base
                                        resize-none focus:outline-none focus:border-gray-400 transition-colors"
                             style={{ maxHeight: '120px', overflowY: 'auto' }}
                           />
@@ -547,7 +547,7 @@ export default function CommentSection({
                   }}
                   placeholder={t.writeComment}
                   rows={1}
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-base
                              resize-none focus:outline-none focus:border-gray-400 transition-colors"
                   style={{ maxHeight: '120px', overflowY: 'auto' }}
                 />
