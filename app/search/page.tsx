@@ -143,7 +143,7 @@ export default function SearchPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={t.placeholder}
-              className="flex-1 bg-transparent text-[14px] outline-none text-[#1A1A1A] placeholder-gray-400"
+              className="flex-1 bg-transparent text-[16px] outline-none text-[#1A1A1A] placeholder-gray-400"
             />
             {query.length > 0 && (
               <button
