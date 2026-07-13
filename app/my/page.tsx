@@ -12,13 +12,6 @@ import {
 import { getSupabaseClient } from '../lib/supabase/client';
 import { getLang, setLang as persistLang, type UILang } from '../lib/lang';
 import BottomTabBar from '../components/BottomTabBar';
-import {
-  getPushPermissionState,
-  isPushSubscribed,
-  subscribeToPush,
-  unsubscribeFromPush,
-  type PushPermissionState,
-} from '../lib/push';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
@@ -138,21 +131,6 @@ function IconBox({ icon: Icon, danger }: { icon: LucideIcon; danger?: boolean })
   );
 }
 
-function ToggleSwitch({ on, disabled }: { on: boolean; disabled?: boolean }) {
-  return (
-    <div
-      className={`relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200
-        ${disabled ? 'opacity-40' : ''}
-        ${on ? 'bg-[#F6C21A]' : 'bg-gray-200'}`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200
-          ${on ? 'translate-x-5' : 'translate-x-0'}`}
-      />
-    </div>
-  );
-}
-
 function MenuRow({
   icon,
   title,
@@ -212,12 +190,6 @@ export default function MyPage() {
   const [totalLikes, setTotalLikes] = useState(0);
   const [toast, setToast]           = useState<string | null>(null);
 
-  // 푸시 알림 상태
-  const [pushPerm, setPushPerm]         = useState<PushPermissionState>('default');
-  const [pushOn, setPushOn]             = useState(false);
-  const [pushReady, setPushReady]       = useState(false);
-  const [pushBusy, setPushBusy]         = useState(false);
-
   // ── 토스트 ────────────────────────────────────────────────
   const router = useRouter();
 
@@ -254,39 +226,6 @@ export default function MyPage() {
     });
     return () => subscription.unsubscribe();
   }, []);
-
-  // ── 푸시 알림 초기화 ──────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const perm = getPushPermissionState();
-      const sub  = perm !== 'unsupported' ? await isPushSubscribed() : false;
-      if (!cancelled) {
-        setPushPerm(perm);
-        setPushOn(sub);
-        setPushReady(true);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  const handlePushToggle = async () => {
-    if (pushPerm === 'denied')      { showToast('브라우저 설정에서 알림 허용이 필요해요'); return; }
-    if (pushPerm === 'unsupported') { showToast('이 브라우저는 푸시 알림을 지원하지 않아요'); return; }
-    if (pushBusy || !pushReady)     return;
-
-    setPushBusy(true);
-    try {
-      if (pushOn) {
-        if (await unsubscribeFromPush()) setPushOn(false);
-      } else {
-        if (await subscribeToPush()) { setPushOn(true); setPushPerm('granted'); }
-        else setPushPerm(getPushPermissionState());
-      }
-    } finally {
-      setPushBusy(false);
-    }
-  };
 
   const handleLogout = async () => {
     await getSupabaseClient().auth.signOut();
@@ -401,15 +340,7 @@ export default function MyPage() {
                 icon={Bell}
                 title={t.pushNotification}
                 desc={t.pushDesc}
-                onClick={handlePushToggle}
-                right={
-                  !pushReady || pushPerm === 'unsupported'
-                    ? <span className="text-[11px] text-gray-300 shrink-0">미지원</span>
-                    : <ToggleSwitch
-                        on={pushOn}
-                        disabled={pushPerm === 'denied' || pushBusy}
-                      />
-                }
+                onClick={() => router.push('/my/notifications')}
               />
             </SectionCard>
 
