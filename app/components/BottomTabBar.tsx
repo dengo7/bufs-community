@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, MessageCircle, Calendar, User } from 'lucide-react';
+import NProgress from 'nprogress';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 
@@ -36,6 +37,10 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
 
   const iconW = (path: string) => isActive(path) ? 2 : 1.8;
 
+  const handleNav = (path: string) => {
+    if (!isActive(path)) NProgress.start();
+  };
+
   const labelCls = (path: string) =>
     `text-[11px] ${isActive(path) ? 'font-medium' : ''}`;
 
@@ -44,25 +49,25 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
       <div className="flex h-16">
 
         {/* 홈 */}
-        <Link href="/" className={tabCls('/')}>
+        <Link href="/" className={tabCls('/')} onClick={() => handleNav('/')}>
           <Home size={24} strokeWidth={iconW('/')} />
           <span className={labelCls('/')}>{label('home')}</span>
         </Link>
 
         {/* 커뮤니티 */}
-        <Link href="/community" className={tabCls('/community')}>
+        <Link href="/community" className={tabCls('/community')} onClick={() => handleNav('/community')}>
           <MessageCircle size={24} strokeWidth={iconW('/community')} />
           <span className={labelCls('/community')}>{label('community')}</span>
         </Link>
 
         {/* 학사일정 */}
-        <Link href="/schedule" className={tabCls('/schedule')}>
+        <Link href="/schedule" className={tabCls('/schedule')} onClick={() => handleNav('/schedule')}>
           <Calendar size={24} strokeWidth={iconW('/schedule')} />
           <span className={labelCls('/schedule')}>{label('schedule')}</span>
         </Link>
 
         {/* 내정보 */}
-        <Link href="/my" className={tabCls('/my')}>
+        <Link href="/my" className={tabCls('/my')} onClick={() => handleNav('/my')}>
           <User size={24} strokeWidth={iconW('/my')} />
           <span className={labelCls('/my')}>{label('my')}</span>
         </Link>

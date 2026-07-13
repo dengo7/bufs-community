@@ -36,3 +36,12 @@ body {
 * {
   touch-action: manipulation;
 }
+
+/* NProgress 커스텀 스타일 */
+#nprogress .bar {
+  background: #1D4ED8 !important;
+  height: 3px !important;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #1D4ED8, 0 0 5px #1D4ED8 !important;
+}
