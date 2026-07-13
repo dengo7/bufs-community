@@ -15,5 +15,15 @@ export default function NavigationProgress() {
     NProgress.done();
   }, [pathname, searchParams]);
 
+  useEffect(() => {
+    const handleClick = () => {
+      setTimeout(() => {
+        if (NProgress.isStarted()) NProgress.done();
+      }, 3000);
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
   return null;
 }
