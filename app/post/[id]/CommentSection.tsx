@@ -6,6 +6,7 @@ import { MoreHorizontal, ShieldCheck, Trash2, Ban, ShieldOff, Flag, UserX } from
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { blockUser, getBlockedIds } from '../../lib/blocks';
 import { formatTimeAgo } from '../../lib/utils';
+import { REPORT_REASONS } from '../../lib/constants';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
 import Avatar from '../../components/Avatar';
 import type { CommentRow } from './PostView';
@@ -598,12 +599,7 @@ export default function CommentSection({
             <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">댓글 신고</h3>
             <p className="text-[12px] text-gray-400 mb-4">신고 사유를 선택해주세요</p>
             <div className="space-y-2 mb-4">
-              {[
-                { value: 'spam',    label: '스팸 / 광고' },
-                { value: 'hate',    label: '욕설 / 혐오 표현' },
-                { value: 'privacy', label: '개인정보 노출' },
-                { value: 'other',   label: '기타' },
-              ].map(({ value, label }) => (
+              {REPORT_REASONS.map(({ value, label }) => (
                 <button
                   key={value}
                   type="button"
@@ -613,7 +609,7 @@ export default function CommentSection({
                       ? 'border-[#1B7CC0] text-[#1B7CC0] bg-[#EFF6FF]'
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
                 >
-                  {label}
+                  {label[lang]}
                 </button>
               ))}
             </div>
