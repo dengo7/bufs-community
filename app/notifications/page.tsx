@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo } from '../lib/utils';
+import { getLang, setLang as persistLang } from '../lib/lang';
 import {
   fetchNotifications,
   fetchUnreadCount,
@@ -27,6 +28,7 @@ const T = {
     comment: '회원님의 글에 댓글을 남겼어요',
     reply: '회원님의 댓글에 답글을 남겼어요',
     like: '회원님의 글을 좋아합니다',
+    subtitle: '외국인 유학생을 위한 커뮤니티',
   },
   en: {
     title: 'Notifications',
@@ -36,6 +38,7 @@ const T = {
     comment: 'commented on your post',
     reply: 'replied to your comment',
     like: 'liked your post',
+    subtitle: 'Community for International Students',
   },
   zh: {
     title: '通知',
@@ -45,6 +48,7 @@ const T = {
     comment: '评论了你的帖子',
     reply: '回复了你的评论',
     like: '赞了你的帖子',
+    subtitle: '为外国留学生打造的社区',
   },
   ja: {
     title: '通知',
@@ -54,12 +58,13 @@ const T = {
     comment: 'あなたの投稿にコメントしました',
     reply: 'あなたのコメントに返信しました',
     like: 'あなたの投稿にいいねしました',
+    subtitle: '外国人留学生のためのコミュニティ',
   },
 } as const;
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>('ko');
+  const [lang, setLang] = useState<Lang>(getLang);
   const [user, setUser] = useState<any>(null);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -117,14 +122,14 @@ export default function NotificationsPage() {
             <img src="/the-well-mark.png" alt="The Well" className="h-9 w-auto object-contain shrink-0" />
             <div className="flex flex-col min-w-0">
               <span className="text-[15px] text-[#1D4ED8] leading-tight"><span className="font-normal">The</span> <span className="font-bold">Well</span></span>
-              <span className="text-[11px] text-gray-500 truncate leading-tight">외국인 유학생을 위한 커뮤니티</span>
+              <span className="text-[11px] text-gray-500 truncate leading-tight">{t.subtitle}</span>
             </div>
           </Link>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
               <button
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >
