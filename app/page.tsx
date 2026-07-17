@@ -540,7 +540,7 @@ export default function Home() {
                         공지
                       </span>
                       <span className="text-[11px] text-gray-400">
-                        {post.category}
+                        {getCategoryLabel(post.category, uiLangToLanguage(lang))}
                       </span>
                     </div>
                     <h2 className="text-[14px] font-semibold text-gray-900 mb-1 line-clamp-2">{post.title}</h2>
