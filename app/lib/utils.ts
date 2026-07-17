@@ -14,7 +14,8 @@ export function formatTimeAgo(dateStr: string, lang: UILang): string {
       const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       return `${MONTHS[d.getMonth()]} ${day}`;
     }
-    return `${m}月${day}日`;
+    if (lang === 'ko') return `${m}월 ${day}일`;
+    return `${m}月${day}日`;   // zh/ja는 한자 그대로
   }
   if (days >= 1) {
     if (lang === 'ko') return `${days}일 전`;
