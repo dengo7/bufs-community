@@ -41,6 +41,14 @@ const T = {
     community: '커뮤니티',
     allNotices: '전체 공지',
     ongoing: '진행중',
+    searchAria: '검색',
+    notifAria: '알림',
+    myAria: '마이',
+    subtitle: '외국인 유학생을 위한 커뮤니티',
+    viewAll: '전체보기 ›',
+    noticeBadge: '공지',
+    bookmarkAria: '저장',
+    bookmarkRemoveAria: '저장 해제',
   },
   en: {
     schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ.',
@@ -59,6 +67,14 @@ const T = {
     community: 'Community',
     allNotices: 'Notices',
     ongoing: 'Ongoing',
+    searchAria: 'Search',
+    notifAria: 'Notifications',
+    myAria: 'My page',
+    subtitle: 'Community for International Students',
+    viewAll: 'View all ›',
+    noticeBadge: 'Notice',
+    bookmarkAria: 'Save',
+    bookmarkRemoveAria: 'Remove from saved',
   },
   zh: {
     schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
@@ -77,6 +93,14 @@ const T = {
     community: '社区',
     allNotices: '全体公告',
     ongoing: '进行中',
+    searchAria: '搜索',
+    notifAria: '通知',
+    myAria: '我的',
+    subtitle: '为外国留学生打造的社区',
+    viewAll: '查看全部 ›',
+    noticeBadge: '公告',
+    bookmarkAria: '收藏',
+    bookmarkRemoveAria: '取消收藏',
   },
   ja: {
     schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
@@ -95,6 +119,14 @@ const T = {
     community: 'コミュニティ',
     allNotices: 'お知らせ',
     ongoing: '進行中',
+    searchAria: '検索',
+    notifAria: '通知',
+    myAria: 'マイページ',
+    subtitle: '外国人留学生のためのコミュニティ',
+    viewAll: 'すべて見る ›',
+    noticeBadge: 'お知らせ',
+    bookmarkAria: '保存',
+    bookmarkRemoveAria: '保存を解除',
   },
 } as const;
 
@@ -324,10 +356,10 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <Link href="/search" aria-label="검색" className="text-gray-700 no-underline flex items-center">
+            <Link href="/search" aria-label={t.searchAria} className="text-gray-700 no-underline flex items-center">
               <Search size={20} strokeWidth={1.8} />
             </Link>
-            <Link href="/notifications" aria-label="알림" className="text-gray-700 no-underline flex items-center relative">
+            <Link href="/notifications" aria-label={t.notifAria} className="text-gray-700 no-underline flex items-center relative">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
@@ -335,7 +367,7 @@ export default function Home() {
                 </span>
               )}
             </Link>
-            <Link href="/my" aria-label="마이" className="text-gray-700 no-underline flex items-center">
+            <Link href="/my" aria-label={t.myAria} className="text-gray-700 no-underline flex items-center">
               <User size={20} strokeWidth={1.8} />
             </Link>
           </div>
@@ -350,7 +382,7 @@ export default function Home() {
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-[19px] text-[#1D4ED8] leading-[1.1]"><span className="font-normal">The</span> <span className="font-bold">Well</span></div>
-              <div className="text-[11px] text-[#aaa] leading-[1.3]">외국인 유학생을 위한 커뮤니티</div>
+              <div className="text-[11px] text-[#aaa] leading-[1.3]">{t.subtitle}</div>
               <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">{t.subSlogan}</div>
             </div>
           </Link>
@@ -368,7 +400,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <Link href="/notifications" aria-label="알림" className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
+            <Link href="/notifications" aria-label={t.notifAria} className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
@@ -501,7 +533,7 @@ export default function Home() {
                 <h2 className="text-[14px] font-bold text-[#111827]">{t.community}</h2>
               </div>
               <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
-                전체보기 ›
+                {t.viewAll}
               </Link>
             </div>
             <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
@@ -537,7 +569,7 @@ export default function Home() {
                     <div className="flex items-center gap-1.5 mb-2">
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1B7CC0] bg-white border border-blue-100 px-2 py-0.5 rounded-full">
                         <Pin size={10} strokeWidth={2.5} />
-                        공지
+                        {t.noticeBadge}
                       </span>
                       <span className="text-[11px] text-gray-400">
                         {getCategoryLabel(post.category, uiLangToLanguage(lang))}
@@ -607,7 +639,7 @@ export default function Home() {
                           type="button"
                           onClick={(e) => handleBookmarkToggle(e, post.id)}
                           className="p-0 bg-transparent border-none cursor-pointer shrink-0 flex items-center"
-                          aria-label={bookmarks.has(post.id) ? '저장 해제' : '저장'}
+                          aria-label={bookmarks.has(post.id) ? t.bookmarkRemoveAria : t.bookmarkAria}
                         >
                           {bookmarks.has(post.id)
                             ? <BookmarkCheck size={14} strokeWidth={1.8} className="text-[#1B7CC0]" />
