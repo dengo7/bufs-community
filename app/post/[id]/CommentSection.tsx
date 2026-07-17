@@ -32,6 +32,20 @@ const T = {
     reportTitle:   '댓글 신고',
     reportGuide:   '신고 사유를 선택해주세요',
     reporting:     '신고 중...',
+    deleteFailed:    '댓글 삭제 실패',
+    deleteNoAuth:    '삭제 권한이 없거나 이미 삭제된 댓글입니다.',
+    alreadyReported: '이미 신고한 댓글이에요',
+    genericError:    '오류가 발생했어요',
+    banDone:         '밴 처리 완료',
+    banFailed:       '처리 실패',
+    unbanDone:       '밴 해제 완료',
+    unbanFailed:     '처리 실패',
+    menuBan:         '작성자 밴',
+    menuUnban:       '밴 해제',
+    banModalTitle:   '이 작성자를 밴할까요?',
+    banModalDesc:    '로그인이 차단됩니다.',
+    banConfirm:      '밴',
+    menuAria:        '메뉴',
   },
   en: {
     writeComment:  'Write a comment',
@@ -52,6 +66,20 @@ const T = {
     reportTitle:   'Report Comment',
     reportGuide:   'Select a reason',
     reporting:     'Reporting...',
+    deleteFailed:    'Failed to delete comment',
+    deleteNoAuth:    'No permission or already deleted.',
+    alreadyReported: 'Already reported',
+    genericError:    'Something went wrong',
+    banDone:         'User banned',
+    banFailed:       'Action failed',
+    unbanDone:       'User unbanned',
+    unbanFailed:     'Action failed',
+    menuBan:         'Ban user',
+    menuUnban:       'Unban user',
+    banModalTitle:   'Ban this user?',
+    banModalDesc:    'Their login will be blocked.',
+    banConfirm:      'Ban',
+    menuAria:        'Menu',
   },
   zh: {
     writeComment:  '写评论',
@@ -72,6 +100,20 @@ const T = {
     reportTitle:   '举报评论',
     reportGuide:   '选择举报原因',
     reporting:     '举报中...',
+    deleteFailed:    '删除评论失败',
+    deleteNoAuth:    '无权限或已删除。',
+    alreadyReported: '已举报过',
+    genericError:    '发生错误',
+    banDone:         '已封禁用户',
+    banFailed:       '操作失败',
+    unbanDone:       '已解除封禁',
+    unbanFailed:     '操作失败',
+    menuBan:         '封禁用户',
+    menuUnban:       '解除封禁',
+    banModalTitle:   '要封禁该用户吗？',
+    banModalDesc:    '该用户将无法登录。',
+    banConfirm:      '封禁',
+    menuAria:        '菜单',
   },
   ja: {
     writeComment:  'コメントを書く',
@@ -92,6 +134,20 @@ const T = {
     reportTitle:   'コメントを報告',
     reportGuide:   '理由を選択してください',
     reporting:     '報告中...',
+    deleteFailed:    'コメントの削除に失敗しました',
+    deleteNoAuth:    '権限がないか、既に削除されています。',
+    alreadyReported: '既に報告済みです',
+    genericError:    'エラーが発生しました',
+    banDone:         'ユーザーをBANしました',
+    banFailed:       '処理に失敗しました',
+    unbanDone:       'BANを解除しました',
+    unbanFailed:     '処理に失敗しました',
+    menuBan:         'ユーザーをBAN',
+    menuUnban:       'BANを解除',
+    banModalTitle:   'このユーザーをBANしますか？',
+    banModalDesc:    'ログインがブロックされます。',
+    banConfirm:      'BAN',
+    menuAria:        'メニュー',
   },
 } as const;
 
@@ -223,9 +279,9 @@ export default function CommentSection({
     const { data, error } = await getSupabaseClient()
       .from('comments').delete().eq('id', commentId).select('id');
 
-    if (error) { alert(`댓글 삭제 실패: ${error.message}`); return; }
+    if (error) { alert(`${t.deleteFailed}: ${error.message}`); return; }
     if (!data || data.length === 0) {
-      alert('삭제 권한이 없거나 이미 삭제된 댓글입니다.');
+      alert(t.deleteNoAuth);
       return;
     }
 
@@ -244,11 +300,11 @@ export default function CommentSection({
         body: JSON.stringify({ userId, action: 'ban' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? '밴 처리 실패');
-      showToast(true, '밴 처리 완료');
+      if (!res.ok) throw new Error(data.error ?? t.banFailed);
+      showToast(true, t.banDone);
       setCommentAdminModal(null);
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      showToast(false, err instanceof Error ? err.message : t.banFailed);
       setCommentAdminModal(null);
     } finally {
       setCommentAdminLoading(false);
@@ -263,10 +319,10 @@ export default function CommentSection({
         body: JSON.stringify({ userId, action: 'unban' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? '밴 해제 실패');
-      showToast(true, '밴 해제 완료');
+      if (!res.ok) throw new Error(data.error ?? t.unbanFailed);
+      showToast(true, t.unbanDone);
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      showToast(false, err instanceof Error ? err.message : t.unbanFailed);
     }
   };
 
@@ -298,8 +354,8 @@ export default function CommentSection({
       setReportTarget(null);
       setReportReason('');
     } catch (e: any) {
-      if (e?.code === '23505') alert('이미 신고한 댓글이에요');
-      else alert('오류가 발생했어요');
+      if (e?.code === '23505') alert(t.alreadyReported);
+      else alert(t.genericError);
     } finally {
       setReportBusy(false);
     }
@@ -375,7 +431,7 @@ export default function CommentSection({
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                         >
                           <Ban size={13} strokeWidth={1.8} />
-                          작성자 밴
+                          {t.menuBan}
                         </button>
                         <button
                           type="button"
@@ -386,7 +442,7 @@ export default function CommentSection({
                           className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[13px] text-gray-600 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                         >
                           <ShieldOff size={13} strokeWidth={1.8} />
-                          밴 해제
+                          {t.menuUnban}
                         </button>
                       </>
                     )}
@@ -401,7 +457,7 @@ export default function CommentSection({
                 type="button"
                 onClick={() => setMenuOpenId(menuOpenId === comment.id ? null : comment.id)}
                 className="p-1 text-gray-400 bg-transparent border-none cursor-pointer"
-                aria-label="메뉴"
+                aria-label={t.menuAria}
               >
                 <MoreHorizontal size={15} strokeWidth={1.8} />
               </button>
@@ -585,9 +641,9 @@ export default function CommentSection({
       {/* ── 댓글 관리자 확인 모달 ── */}
       {commentAdminModal?.type === 'banUser' && (
         <AdminConfirmModal
-          title="이 작성자를 밴할까요?"
-          description="로그인이 차단됩니다."
-          confirmLabel="밴"
+          title={t.banModalTitle}
+          description={t.banModalDesc}
+          confirmLabel={t.banConfirm}
           loading={commentAdminLoading}
           onConfirm={() => handleCommentBan(commentAdminModal.userId)}
           onCancel={() => setCommentAdminModal(null)}
