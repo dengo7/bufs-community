@@ -8,6 +8,7 @@ import {
   SCHEDULE_STYLES,
   fmtDate,
   getScheduleType,
+  kstToday,
   type ScheduleItem,
   type ScheduleType,
 } from '../lib/schedule';
@@ -91,9 +92,9 @@ function buildGroups(today: string): MonthGroup[] {
 export default function SchedulePage() {
   const [lang, setLang] = useState<UILang>('ko');
   useEffect(() => { setLang(getLang()); }, []);
-  const today   = new Date().toISOString().split('T')[0];
-  const d       = new Date();
-  const todayMD = `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`;
+  const today   = kstToday();
+  const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const todayMD = `${kstDate.getUTCMonth() + 1}.${String(kstDate.getUTCDate()).padStart(2, '0')}`;
   const groups  = buildGroups(today);
   const labels  = SCHEDULE_LABELS[lang];
   let todayLineShown = false;

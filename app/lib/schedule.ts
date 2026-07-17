@@ -3,6 +3,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+// UTC+9(KST) 고정으로 오늘 날짜(YYYY-MM-DD) 계산
+export function kstToday(): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000)
+    .toISOString()
+    .split('T')[0];
+}
+
 export type ScheduleItem = { start: string; end?: string; title: string };
 
 // ── 타입 분류 ──────────────────────────────────────────────────
@@ -97,6 +104,6 @@ export function fmtRange(item: ScheduleItem): string {
 
 /** 오늘 기준 다가오는 항목 N개 (end >= today || start >= today) */
 export function getUpcoming(n: number): ScheduleItem[] {
-  const today = new Date().toISOString().split('T')[0];
+  const today = kstToday();
   return SCHEDULE.filter(item => (item.end ?? item.start) >= today).slice(0, n);
 }
