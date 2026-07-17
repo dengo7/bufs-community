@@ -546,11 +546,16 @@ export default function Home() {
                     <h2 className="text-[14px] font-semibold text-gray-900 mb-1 line-clamp-2">{post.title}</h2>
                     <p className="text-[12px] text-gray-500 line-clamp-2 mb-2">{post.content}</p>
                     <div className="flex items-center gap-1 text-[11px] text-gray-400">
-                      <span>{post.profiles?.nickname ?? '익명'}</span>
+                      <span>{post.profiles?.nickname ?? '?'}</span>
                       <span>·</span>
-                      <span>조회 {post.view_count ?? 0}</span>
-                      <span>·</span>
-                      <span>좋아요 {post.like_count ?? 0}</span>
+                      <span className="flex items-center gap-1">
+                        <Heart size={11} strokeWidth={1.6} />
+                        {post.like_count ?? 0}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Eye size={11} strokeWidth={1.6} />
+                        {post.view_count ?? 0}
+                      </span>
                     </div>
                   </Link>
                 ))}
