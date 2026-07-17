@@ -22,6 +22,13 @@ const PAGE_SIZE = 20;
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 const ALL_LABEL: Record<UILang, string> = { ko: '전체', en: 'All', zh: '全部', ja: 'すべて' };
 
+const T = {
+  ko: { title: '커뮤니티', searchPlaceholder: '게시글 검색', noticeSection: '전체 공지', noticeBadge: '공지', empty: '게시글이 없어요', loadingMore: '불러오는 중...', more: '더보기', fabAria: '글쓰기' },
+  en: { title: 'Community', searchPlaceholder: 'Search posts', noticeSection: 'Announcements', noticeBadge: 'Notice', empty: 'No posts yet', loadingMore: 'Loading...', more: 'Load more', fabAria: 'Write' },
+  zh: { title: '社区', searchPlaceholder: '搜索帖子', noticeSection: '全体公告', noticeBadge: '公告', empty: '暂无帖子', loadingMore: '加载中...', more: '加载更多', fabAria: '写帖子' },
+  ja: { title: 'コミュニティ', searchPlaceholder: '投稿を検索', noticeSection: '全体お知らせ', noticeBadge: 'お知らせ', empty: '投稿がありません', loadingMore: '読み込み中...', more: 'もっと見る', fabAria: '投稿する' },
+} as const;
+
 type FeedPost = {
   id: string;
   author_id: string;
@@ -42,6 +49,7 @@ export default function CommunityPage() {
   const router = useRouter();
   const [lang, setLang] = useState<UILang>('ko');
   useEffect(() => { setLang(getLang()); }, []);
+  const t = T[lang];
   const [selectedCategory, setSelectedCategory] = useState<CategorySlug | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<FeedPost[]>([]);
@@ -146,7 +154,7 @@ export default function CommunityPage() {
       {/* ── 헤더 ── */}
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2">
-          <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">커뮤니티</span>
+          <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">{t.title}</span>
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
               <button
@@ -171,7 +179,7 @@ export default function CommunityPage() {
           className="w-full flex items-center gap-2.5 bg-[#F5F6FA] border border-[#EBEBEB] rounded-xl px-4 py-2.5 cursor-pointer"
         >
           <Search size={15} strokeWidth={1.8} className="text-gray-400 shrink-0" />
-          <span className="text-[14px] text-gray-400">게시글 검색</span>
+          <span className="text-[14px] text-gray-400">{t.searchPlaceholder}</span>
         </button>
       </div>
 
@@ -210,7 +218,7 @@ export default function CommunityPage() {
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
               <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
-              <span className="text-[12px] font-semibold text-[#1B7CC0]">전체 공지</span>
+              <span className="text-[12px] font-semibold text-[#1B7CC0]">{t.noticeSection}</span>
             </div>
             <div className="space-y-2">
               {visiblePinned.map(post => (
@@ -225,7 +233,7 @@ export default function CommunityPage() {
                                      text-[#1B7CC0] bg-white border border-blue-100
                                      px-2 py-0.5 rounded-full">
                       <Pin size={10} strokeWidth={2.5} />
-                      공지
+                      {t.noticeBadge}
                     </span>
                     <span className="text-[11px] text-gray-400">
                       {getCategoryLabel(post.category, uiLangToLanguage(lang))}
@@ -270,7 +278,7 @@ export default function CommunityPage() {
             ))}
           </div>
         ) : visiblePosts.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-16">게시글이 없어요</p>
+          <p className="text-center text-gray-400 text-sm py-16">{t.empty}</p>
         ) : (
           <>
             <div className="space-y-2.5">
@@ -338,7 +346,7 @@ export default function CommunityPage() {
                   className="px-6 py-2.5 text-[13px] text-gray-600 bg-white border border-gray-200 rounded-full
                              cursor-pointer hover:border-gray-400 disabled:opacity-40 transition-colors"
                 >
-                  {loadingMore ? '불러오는 중...' : '더보기'}
+                  {loadingMore ? t.loadingMore : t.more}
                 </button>
               </div>
             )}
@@ -351,7 +359,7 @@ export default function CommunityPage() {
         href="/write"
         className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
-        aria-label="글쓰기"
+        aria-label={t.fabAria}
       >
         <PenLine size={24} color="white" strokeWidth={2} />
       </Link>
