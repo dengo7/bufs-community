@@ -33,24 +33,48 @@ const T = {
     writeFirst: '첫 글을 작성해 보세요!',
     write: '글쓰기',
     justNow: '방금 전',
+    homeAria: '홈으로',
+    adminGuide: '관리자 가이드',
+    lastUpdated: '최종 수정',
+    noticeSection: '공지',
+    pinGlobal: '전체 공지',
+    pinCategory: '카테고리 공지',
   },
   en: {
     noPosts: 'No posts yet',
     writeFirst: 'Be the first to write!',
     write: 'Write',
     justNow: 'just now',
+    homeAria: 'Home',
+    adminGuide: 'Admin Guide',
+    lastUpdated: 'Last updated',
+    noticeSection: 'Notice',
+    pinGlobal: 'Global Notice',
+    pinCategory: 'Category Notice',
   },
   zh: {
     noPosts: '暂无帖子',
     writeFirst: '来写第一篇帖子吧！',
     write: '写作',
     justNow: '刚刚',
+    homeAria: '首页',
+    adminGuide: '管理员指南',
+    lastUpdated: '最后更新',
+    noticeSection: '公告',
+    pinGlobal: '全体公告',
+    pinCategory: '分类公告',
   },
   ja: {
     noPosts: 'まだ投稿がありません',
     writeFirst: '最初の投稿をしてみよう！',
     write: '投稿',
     justNow: 'たった今',
+    homeAria: 'ホーム',
+    adminGuide: '管理者ガイド',
+    lastUpdated: '最終更新',
+    noticeSection: 'お知らせ',
+    pinGlobal: '全体お知らせ',
+    pinCategory: 'カテゴリーお知らせ',
   },
 } as const;
 
@@ -213,7 +237,7 @@ export default function CategoryView({ slug }: Props) {
           <Link
             href="/"
             className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
-            aria-label="홈으로"
+            aria-label={t.homeAria}
           >
             <ChevronLeft size={22} strokeWidth={2} />
           </Link>
@@ -265,7 +289,7 @@ export default function CategoryView({ slug }: Props) {
             {/* 헤더 */}
             <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5 border-b border-blue-100">
               <BookOpen size={15} strokeWidth={2} className="text-[#1B7CC0]" />
-              <span className="text-[13px] font-semibold text-[#1B7CC0]">관리자 가이드</span>
+              <span className="text-[13px] font-semibold text-[#1B7CC0]">{t.adminGuide}</span>
             </div>
 
             {/* 카드 그리드 */}
@@ -297,7 +321,7 @@ export default function CategoryView({ slug }: Props) {
             {/* 최종 수정 */}
             {guideCards[0]?.updated_at && (
               <p className="text-[10px] text-[#1B7CC0] opacity-60 text-right px-4 pb-2.5">
-                최종 수정 {formatRelativeTime(guideCards[0].updated_at, lang)}
+                {t.lastUpdated} {formatRelativeTime(guideCards[0].updated_at, lang)}
               </p>
             )}
           </div>
@@ -308,7 +332,7 @@ export default function CategoryView({ slug }: Props) {
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
               <Pin size={13} strokeWidth={2} className="text-[#1B7CC0]" />
-              <span className="text-[12px] font-semibold text-[#1B7CC0]">공지</span>
+              <span className="text-[12px] font-semibold text-[#1B7CC0]">{t.noticeSection}</span>
             </div>
             <div className="space-y-2">
               {pinnedPosts.map(post => (
@@ -323,7 +347,7 @@ export default function CategoryView({ slug }: Props) {
                                      text-[#1B7CC0] bg-white border border-blue-100
                                      px-2 py-0.5 rounded-full">
                       <Pin size={10} strokeWidth={2.5} />
-                      {post.pin_scope === 'global' ? '전체 공지' : '카테고리 공지'}
+                      {post.pin_scope === 'global' ? t.pinGlobal : t.pinCategory}
                     </span>
                   </div>
                   <h2 className="text-[14px] font-semibold text-[#1A1A1A] truncate mb-1 leading-snug">
