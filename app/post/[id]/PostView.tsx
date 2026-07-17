@@ -21,10 +21,10 @@ import { REPORT_REASONS } from '../../lib/constants';
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
-  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요', reportTitle: '신고하기', reportGuide: '신고 사유를 선택해주세요', cancel: '취소', report: '신고', reporting: '신고 중...' },
-  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block', editFailed: 'Failed to save changes', reportTitle: 'Report', reportGuide: 'Select a reason', cancel: 'Cancel', report: 'Report', reporting: 'Reporting...' },
-  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败', editFailed: '保存失败', reportTitle: '举报', reportGuide: '选择举报原因', cancel: '取消', report: '举报', reporting: '举报中...' },
-  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました', editFailed: '保存に失敗しました', reportTitle: '報告する', reportGuide: '理由を選択してください', cancel: 'キャンセル', report: '報告', reporting: '報告中...' },
+  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요', reportTitle: '신고하기', reportGuide: '신고 사유를 선택해주세요', cancel: '취소', report: '신고', reporting: '신고 중...', loginRequired: '로그인이 필요해요', bookmarkSaved: '저장했어요', bookmarkRemoved: '저장을 해제했어요', genericError: '오류가 발생했어요', reportGuideToast: '신고 사유를 선택해주세요', reportDone: '신고가 접수됐어요', alreadyReported: '이미 신고한 게시글이에요', deleteFailed: '삭제 실패', deleteNoAuth: '삭제 권한이 없거나 이미 삭제된 글입니다.', banDone: '밴 처리 완료', banFailed: '처리 실패', unbanDone: '밴 해제 완료', unbanFailed: '처리 실패', pinGlobal: '전체 공지로 고정됐어요', pinCategory: '카테고리 공지로 고정됐어요', pinRemoved: '공지 해제됐어요', pinFailed: '처리 실패', pinLabelGlobal: '전체 공지', pinLabelCategory: '카테고리 공지', bookmarkAria: '저장', bookmarkRemoveAria: '저장 해제', editSaving: '저장 중...', editSave: '저장', editCancel: '취소', menuEdit: '글 수정', menuDelete: '게시물 삭제', menuBan: '작성자 밴', menuUnban: '밴 해제' },
+  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block', editFailed: 'Failed to save changes', reportTitle: 'Report', reportGuide: 'Select a reason', cancel: 'Cancel', report: 'Report', reporting: 'Reporting...', loginRequired: 'Please log in', bookmarkSaved: 'Saved', bookmarkRemoved: 'Removed from saved', genericError: 'Something went wrong', reportGuideToast: 'Please select a reason', reportDone: 'Report submitted', alreadyReported: 'Already reported', deleteFailed: 'Failed to delete', deleteNoAuth: 'No permission or already deleted.', banDone: 'User banned', banFailed: 'Action failed', unbanDone: 'User unbanned', unbanFailed: 'Action failed', pinGlobal: 'Pinned as global notice', pinCategory: 'Pinned as category notice', pinRemoved: 'Unpinned', pinFailed: 'Action failed', pinLabelGlobal: 'Global Notice', pinLabelCategory: 'Category Notice', bookmarkAria: 'Save', bookmarkRemoveAria: 'Remove from saved', editSaving: 'Saving...', editSave: 'Save', editCancel: 'Cancel', menuEdit: 'Edit post', menuDelete: 'Delete post', menuBan: 'Ban user', menuUnban: 'Unban user' },
+  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败', editFailed: '保存失败', reportTitle: '举报', reportGuide: '选择举报原因', cancel: '取消', report: '举报', reporting: '举报中...', loginRequired: '请先登录', bookmarkSaved: '已收藏', bookmarkRemoved: '已取消收藏', genericError: '发生错误', reportGuideToast: '请选择举报原因', reportDone: '举报已提交', alreadyReported: '已举报过', deleteFailed: '删除失败', deleteNoAuth: '无权限或已删除。', banDone: '已封禁用户', banFailed: '操作失败', unbanDone: '已解除封禁', unbanFailed: '操作失败', pinGlobal: '已设为全局公告', pinCategory: '已设为分类公告', pinRemoved: '已取消公告', pinFailed: '操作失败', pinLabelGlobal: '全体公告', pinLabelCategory: '分类公告', bookmarkAria: '收藏', bookmarkRemoveAria: '取消收藏', editSaving: '保存中...', editSave: '保存', editCancel: '取消', menuEdit: '编辑帖子', menuDelete: '删除帖子', menuBan: '封禁用户', menuUnban: '解除封禁' },
+  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました', editFailed: '保存に失敗しました', reportTitle: '報告する', reportGuide: '理由を選択してください', cancel: 'キャンセル', report: '報告', reporting: '報告中...', loginRequired: 'ログインが必要です', bookmarkSaved: '保存しました', bookmarkRemoved: '保存を解除しました', genericError: 'エラーが発生しました', reportGuideToast: '理由を選択してください', reportDone: '報告を受け付けました', alreadyReported: '既に報告済みです', deleteFailed: '削除に失敗しました', deleteNoAuth: '権限がないか、既に削除されています。', banDone: 'ユーザーをBANしました', banFailed: '処理に失敗しました', unbanDone: 'BANを解除しました', unbanFailed: '処理に失敗しました', pinGlobal: '全体お知らせに固定しました', pinCategory: 'カテゴリーお知らせに固定しました', pinRemoved: '固定を解除しました', pinFailed: '処理に失敗しました', pinLabelGlobal: '全体お知らせ', pinLabelCategory: 'カテゴリーお知らせ', bookmarkAria: '保存', bookmarkRemoveAria: '保存を解除', editSaving: '保存中...', editSave: '保存', editCancel: 'キャンセル', menuEdit: '投稿を編集', menuDelete: '投稿を削除', menuBan: 'ユーザーをBAN', menuUnban: 'BANを解除' },
 } as const;
 
 export type CommentRow = {
@@ -145,9 +145,9 @@ export default function PostView({
     const { data, error } = await supabase
       .from('posts').delete().eq('id', post.id).select('id');
 
-    if (error) { alert(`삭제 실패: ${error.message}`); return; }
+    if (error) { alert(`${t.deleteFailed}: ${error.message}`); return; }
     if (!data || data.length === 0) {
-      alert('삭제 권한이 없거나 이미 삭제된 글입니다.');
+      alert(t.deleteNoAuth);
       return;
     }
 
@@ -170,10 +170,10 @@ export default function PostView({
         body: JSON.stringify({ postId: post.id }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? '삭제 실패');
+      if (!res.ok) throw new Error(data.error ?? t.deleteFailed);
       router.push('/');
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '삭제 실패');
+      showToast(false, err instanceof Error ? err.message : t.deleteFailed);
       setAdminModal(null);
     } finally {
       setAdminLoading(false);
@@ -190,11 +190,11 @@ export default function PostView({
         body: JSON.stringify({ userId: post.author_id, action: 'ban' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? '밴 처리 실패');
-      showToast(true, '밴 처리 완료');
+      if (!res.ok) throw new Error(data.error ?? t.banFailed);
+      showToast(true, t.banDone);
       setAdminModal(null);
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      showToast(false, err instanceof Error ? err.message : t.banFailed);
       setAdminModal(null);
     } finally {
       setAdminLoading(false);
@@ -210,10 +210,10 @@ export default function PostView({
         body: JSON.stringify({ userId: post.author_id, action: 'unban' }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? '밴 해제 실패');
-      showToast(true, '밴 해제 완료');
+      if (!res.ok) throw new Error(data.error ?? t.unbanFailed);
+      showToast(true, t.unbanDone);
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      showToast(false, err instanceof Error ? err.message : t.unbanFailed);
     }
   };
 
@@ -239,7 +239,7 @@ export default function PostView({
   }, [currentUserId, post.id]);
 
   const handleBookmark = async () => {
-    if (!currentUserId) { showToast(false, '로그인이 필요해요'); return; }
+    if (!currentUserId) { showToast(false, t.loginRequired); return; }
     if (!post.id || bookmarkBusy) return;
     const was = isBookmarked;
     setIsBookmarked(!was);
@@ -257,7 +257,7 @@ export default function PostView({
             '| msg:', error.message, '| details:', error.details);
           throw new Error(error.message);
         }
-        showToast(true, '저장을 해제했어요');
+        showToast(true, t.bookmarkRemoved);
       } else {
         const { error } = await supabase
           .from('bookmarks')
@@ -267,11 +267,11 @@ export default function PostView({
             '| msg:', error.message, '| details:', error.details);
           throw new Error(error.message);
         }
-        showToast(true, '저장했어요');
+        showToast(true, t.bookmarkSaved);
       }
     } catch (err: unknown) {
       setIsBookmarked(was);
-      const msg = err instanceof Error ? err.message : '오류가 발생했어요';
+      const msg = err instanceof Error ? err.message : t.genericError;
       showToast(false, msg);
     } finally {
       setBookmarkBusy(false);
@@ -279,8 +279,8 @@ export default function PostView({
   };
 
   const handleReport = async () => {
-    if (!currentUserId) { showToast(false, '로그인이 필요해요'); return; }
-    if (!reportReason) { showToast(false, '신고 사유를 선택해주세요'); return; }
+    if (!currentUserId) { showToast(false, t.loginRequired); return; }
+    if (!reportReason) { showToast(false, t.reportGuideToast); return; }
     if (reportBusy) return;
     setReportBusy(true);
     try {
@@ -303,12 +303,12 @@ export default function PostView({
           reporter_id: currentUserId,
         }),
       });
-      showToast(true, '신고가 접수됐어요');
+      showToast(true, t.reportDone);
       setShowReportModal(false);
       setReportReason('');
     } catch (e: any) {
-      if (e?.code === '23505') showToast(false, '이미 신고한 게시글이에요');
-      else showToast(false, '오류가 발생했어요');
+      if (e?.code === '23505') showToast(false, t.alreadyReported);
+      else showToast(false, t.genericError);
     } finally {
       setReportBusy(false);
     }
@@ -364,12 +364,12 @@ export default function PostView({
       setIsPinned(scope !== null);
       setPinScope(scope);
       showToast(true,
-        scope === 'global'   ? '전체 공지로 고정됐어요' :
-        scope === 'category' ? '카테고리 공지로 고정됐어요' :
-                               '공지 해제됐어요'
+        scope === 'global'   ? t.pinGlobal :
+        scope === 'category' ? t.pinCategory :
+                               t.pinRemoved
       );
     } catch (err: unknown) {
-      showToast(false, err instanceof Error ? err.message : '처리 실패');
+      showToast(false, err instanceof Error ? err.message : t.pinFailed);
     }
   };
 
@@ -419,7 +419,7 @@ export default function PostView({
                              text-[#1B7CC0] bg-[#EFF6FD] border border-blue-100
                              px-2.5 py-1 rounded-full">
               <Pin size={10} strokeWidth={2.5} />
-              {pinScope === 'global' ? '전체 공지' : '카테고리 공지'}
+              {pinScope === 'global' ? t.pinLabelGlobal : t.pinLabelCategory}
             </span>
           </div>
         )}
@@ -457,7 +457,7 @@ export default function PostView({
               type="button"
               onClick={handleBookmark}
               className="p-1 bg-transparent border-none cursor-pointer"
-              aria-label={isBookmarked ? '저장 해제' : '저장'}
+              aria-label={isBookmarked ? t.bookmarkRemoveAria : t.bookmarkAria}
             >
               {isBookmarked
                 ? <BookmarkCheck size={18} strokeWidth={1.8} className="text-[#F6C21A]" />
@@ -489,7 +489,7 @@ export default function PostView({
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[14px] text-gray-700 hover:bg-gray-50"
                       >
                         <Pencil size={15} className="text-gray-500" />
-                        글 수정
+                        {t.menuEdit}
                       </button>
                       {/* 핀 토글 */}
                       {isPinned ? (
@@ -531,7 +531,7 @@ export default function PostView({
                         className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                       >
                         <Trash2 size={14} strokeWidth={1.8} />
-                        게시물 삭제
+                        {t.menuDelete}
                       </button>
                       {!isOwnPost && (
                         <>
@@ -541,7 +541,7 @@ export default function PostView({
                             className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-red-500 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                           >
                             <Ban size={14} strokeWidth={1.8} />
-                            작성자 밴
+                            {t.menuBan}
                           </button>
                           <button
                             type="button"
@@ -549,7 +549,7 @@ export default function PostView({
                             className="w-full flex items-center gap-2 px-4 py-3 text-left text-[13px] text-gray-600 bg-transparent border-none cursor-pointer hover:bg-gray-50"
                           >
                             <ShieldOff size={14} strokeWidth={1.8} />
-                            밴 해제
+                            {t.menuUnban}
                           </button>
                         </>
                       )}
@@ -643,14 +643,14 @@ export default function PostView({
                 onClick={() => setIsEditing(false)}
                 className="px-4 py-2 text-[13px] text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50"
               >
-                취소
+                {t.editCancel}
               </button>
               <button
                 onClick={handleEditSave}
                 disabled={isSaving}
                 className="px-4 py-2 text-[13px] text-white bg-[#1B7CC0] rounded-lg hover:bg-[#1565a0] disabled:opacity-50"
               >
-                {isSaving ? '저장 중...' : '저장'}
+                {isSaving ? t.editSaving : t.editSave}
               </button>
             </div>
           </div>
