@@ -12,6 +12,7 @@ import {
   type UILang,
 } from '../lib/categories';
 import BottomTabBar from '../components/BottomTabBar';
+import { getLang, setLang as persistLang } from '../lib/lang';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
@@ -104,7 +105,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [lang, setLang] = useState<UILang>('ko');
+  const [lang, setLang] = useState<UILang>(getLang);
   const [category, setCategory] = useState<string>(initialCategory ?? '');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -208,7 +209,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
               <button
                 key={l}
                 type="button"
-                onClick={() => setLang(l)}
+                onClick={() => { setLang(l); persistLang(l); }}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >
