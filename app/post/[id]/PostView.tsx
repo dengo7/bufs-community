@@ -21,10 +21,10 @@ import { REPORT_REASONS } from '../../lib/constants';
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
-  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요' },
-  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block', editFailed: 'Failed to save changes' },
-  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败', editFailed: '保存失败' },
-  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました', editFailed: '保存に失敗しました' },
+  ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요', reportTitle: '신고하기', reportGuide: '신고 사유를 선택해주세요', cancel: '취소', report: '신고', reporting: '신고 중...' },
+  en: { confirmDelete: 'Delete this?',           delete: 'Delete', block: 'Block', confirmBlock: 'Block this user?', blockFailed: 'Failed to block', editFailed: 'Failed to save changes', reportTitle: 'Report', reportGuide: 'Select a reason', cancel: 'Cancel', report: 'Report', reporting: 'Reporting...' },
+  zh: { confirmDelete: '确认删除?',               delete: '删除', block: '屏蔽', confirmBlock: '要屏蔽该用户吗？', blockFailed: '屏蔽失败', editFailed: '保存失败', reportTitle: '举报', reportGuide: '选择举报原因', cancel: '取消', report: '举报', reporting: '举报中...' },
+  ja: { confirmDelete: '削除しますか?',           delete: '削除', block: 'ブロック', confirmBlock: 'このユーザーをブロックしますか？', blockFailed: 'ブロックに失敗しました', editFailed: '保存に失敗しました', reportTitle: '報告する', reportGuide: '理由を選択してください', cancel: 'キャンセル', report: '報告', reporting: '報告中...' },
 } as const;
 
 export type CommentRow = {
@@ -744,8 +744,8 @@ export default function PostView({
         <>
           <div className="fixed inset-0 z-[390] bg-black/40" onClick={() => setShowReportModal(false)} />
           <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[400] bg-white rounded-2xl shadow-xl w-[280px] p-5">
-            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">신고하기</h3>
-            <p className="text-[12px] text-gray-400 mb-4">신고 사유를 선택해주세요</p>
+            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">{t.reportTitle}</h3>
+            <p className="text-[12px] text-gray-400 mb-4">{t.reportGuide}</p>
             <div className="space-y-2 mb-4">
               {REPORT_REASONS.map(({ value, label }) => (
                 <button
@@ -767,7 +767,7 @@ export default function PostView({
                 onClick={() => { setShowReportModal(false); setReportReason(''); }}
                 className="flex-1 py-2.5 rounded-xl text-[13px] text-gray-500 border border-gray-200 bg-transparent cursor-pointer hover:bg-gray-50"
               >
-                취소
+                {t.cancel}
               </button>
               <button
                 type="button"
@@ -775,7 +775,7 @@ export default function PostView({
                 disabled={!reportReason || reportBusy}
                 className="flex-1 py-2.5 rounded-xl text-[13px] text-white bg-[#1B7CC0] border-none cursor-pointer disabled:opacity-40"
               >
-                {reportBusy ? '신고 중...' : '신고'}
+                {reportBusy ? t.reporting : t.report}
               </button>
             </div>
           </div>

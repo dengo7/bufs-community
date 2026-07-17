@@ -29,6 +29,9 @@ const T = {
     block:         '차단하기',
     confirmBlock:  '이 사용자를 차단하시겠어요?',
     blockFailed:   '차단에 실패했어요',
+    reportTitle:   '댓글 신고',
+    reportGuide:   '신고 사유를 선택해주세요',
+    reporting:     '신고 중...',
   },
   en: {
     writeComment:  'Write a comment',
@@ -46,6 +49,9 @@ const T = {
     block:         'Block',
     confirmBlock:  'Block this user?',
     blockFailed:   'Failed to block',
+    reportTitle:   'Report Comment',
+    reportGuide:   'Select a reason',
+    reporting:     'Reporting...',
   },
   zh: {
     writeComment:  '写评论',
@@ -63,6 +69,9 @@ const T = {
     block:         '屏蔽',
     confirmBlock:  '要屏蔽该用户吗？',
     blockFailed:   '屏蔽失败',
+    reportTitle:   '举报评论',
+    reportGuide:   '选择举报原因',
+    reporting:     '举报中...',
   },
   ja: {
     writeComment:  'コメントを書く',
@@ -80,6 +89,9 @@ const T = {
     block:         'ブロック',
     confirmBlock:  'このユーザーをブロックしますか？',
     blockFailed:   'ブロックに失敗しました',
+    reportTitle:   'コメントを報告',
+    reportGuide:   '理由を選択してください',
+    reporting:     '報告中...',
   },
 } as const;
 
@@ -596,8 +608,8 @@ export default function CommentSection({
         <>
           <div className="fixed inset-0 z-[390] bg-black/40" onClick={() => setReportTarget(null)} />
           <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[400] bg-white rounded-2xl shadow-xl w-[280px] p-5">
-            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">댓글 신고</h3>
-            <p className="text-[12px] text-gray-400 mb-4">신고 사유를 선택해주세요</p>
+            <h3 className="text-[15px] font-bold text-[#1A1A1A] mb-1">{t.reportTitle}</h3>
+            <p className="text-[12px] text-gray-400 mb-4">{t.reportGuide}</p>
             <div className="space-y-2 mb-4">
               {REPORT_REASONS.map(({ value, label }) => (
                 <button
@@ -619,7 +631,7 @@ export default function CommentSection({
                 onClick={() => { setReportTarget(null); setReportReason(''); }}
                 className="flex-1 py-2.5 rounded-xl text-[13px] text-gray-500 border border-gray-200 bg-transparent cursor-pointer hover:bg-gray-50"
               >
-                취소
+                {t.cancel}
               </button>
               <button
                 type="button"
@@ -627,7 +639,7 @@ export default function CommentSection({
                 disabled={!reportReason || reportBusy}
                 className="flex-1 py-2.5 rounded-xl text-[13px] text-white bg-[#1B7CC0] border-none cursor-pointer disabled:opacity-40"
               >
-                {reportBusy ? '신고 중...' : '신고'}
+                {reportBusy ? t.reporting : t.report}
               </button>
             </div>
           </div>
