@@ -12,7 +12,8 @@ type CheckItem = { id: number; text: string };
 
 // ko는 기존 title/rich_content 컬럼, 그 외 언어는 translations[lang]에 저장
 type GuideTranslations = {
-  [lang: string]: { title?: string; rich_content?: string } | undefined;
+  // items는 CheckItem.id를 문자열 키로 쓰는 맵
+  [lang: string]: { title?: string; rich_content?: string; items?: Record<string, string> } | undefined;
 };
 
 type Guide = {
@@ -121,6 +122,9 @@ export default function GuideView({ guide, isAdmin }: Props) {
   // 비편집 뷰용 번역 선택. ko이거나 번역이 없으면(빈 값 포함) 한국어 원본으로 폴백.
   const trField = (field: 'title' | 'rich_content'): string | undefined =>
     lang !== 'ko' ? (guide.translations?.[lang]?.[field] || undefined) : undefined;
+  // checklist 항목 번역. id를 문자열 키로 조회하고, 없으면 한국어 원본으로 폴백.
+  const trCheckText = (item: CheckItem): string =>
+    (lang !== 'ko' ? guide.translations?.[lang]?.items?.[String(item.id)] : undefined) || item.text;
   // 편집 중에는 항상 한국어 원본 제목을, 그 외에는 번역(있으면) 제목을 표시
   const displayTitle       = editing ? guide.title : (trField('title') || guide.title);
   const displayRichContent = trField('rich_content') || richText;
@@ -292,7 +296,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
               ) : (
                 <div key={i} className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-xl border border-gray-100">
                   <div className="w-5 h-5 rounded border-2 border-[#1B7CC0] shrink-0 mt-0.5" />
-                  <span className="text-[14px] text-gray-800">{item.text}</span>
+                  <span className="text-[14px] text-gray-800">{trCheckText(item)}</span>
                 </div>
               )
             ))}
