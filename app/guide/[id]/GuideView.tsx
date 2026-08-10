@@ -67,6 +67,21 @@ export default function GuideView({ guide, isAdmin }: Props) {
       ? ((guide.content?.items ?? []) as CheckItem[])
       : []
   );
+  // 체크 상태는 로컬 전용(DB 저장 없음). SSR 하이드레이션 불일치를 피하려고 마운트 후에만 읽는다.
+  const checksStorageKey = `guide-checks-${guide.id}`;
+  const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(checksStorageKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setCheckedKeys(parsed.map(String));
+    } catch {
+      // 손상된 값은 무시하고 빈 상태로 시작
+    }
+  }, [checksStorageKey]);
+
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -125,6 +140,22 @@ export default function GuideView({ guide, isAdmin }: Props) {
   // checklist 항목 번역. id를 문자열 키로 조회하고, 없으면 한국어 원본으로 폴백.
   const trCheckText = (item: CheckItem): string =>
     (lang !== 'ko' ? guide.translations?.[lang]?.items?.[String(item.id)] : undefined) || item.text;
+
+  // 체크 저장 키. id가 없는 레거시 항목은 인덱스를 대체 키로 사용.
+  const checkKeyOf = (item: CheckItem, i: number): string =>
+    item.id != null ? String(item.id) : `idx-${i}`;
+
+  const toggleCheck = (key: string) => {
+    const next = checkedKeys.includes(key)
+      ? checkedKeys.filter(k => k !== key)
+      : [...checkedKeys, key];
+    setCheckedKeys(next);
+    try {
+      localStorage.setItem(checksStorageKey, JSON.stringify(next));
+    } catch {
+      // 저장 실패(용량 초과/프라이빗 모드)해도 화면 토글은 유지
+    }
+  };
   // 편집 중에는 항상 한국어 원본 제목을, 그 외에는 번역(있으면) 제목을 표시
   const displayTitle       = editing ? guide.title : (trField('title') || guide.title);
   const displayRichContent = trField('rich_content') || richText;
@@ -294,10 +325,32 @@ export default function GuideView({ guide, isAdmin }: Props) {
                   </button>
                 </div>
               ) : (
-                <div key={i} className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-xl border border-gray-100">
-                  <div className="w-5 h-5 rounded border-2 border-[#1B7CC0] shrink-0 mt-0.5" />
-                  <span className="text-[14px] text-gray-800">{trCheckText(item)}</span>
-                </div>
+                (() => {
+                  const key = checkKeyOf(item, i);
+                  const checked = checkedKeys.includes(key);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => toggleCheck(key)}
+                      aria-pressed={checked}
+                      className="w-full flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-xl
+                                 border border-gray-100 text-left cursor-pointer
+                                 active:scale-[0.99] transition-transform"
+                    >
+                      <div
+                        className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center
+                                    transition-colors duration-200
+                                    ${checked ? 'bg-[#1B7CC0] border-[#1B7CC0]' : 'bg-transparent border-[#1B7CC0]'}`}
+                      >
+                        {checked && <Check size={13} strokeWidth={3} className="text-white" />}
+                      </div>
+                      <span className={`text-[14px] transition-colors duration-200 ${checked ? 'text-gray-400' : 'text-gray-800'}`}>
+                        {trCheckText(item)}
+                      </span>
+                    </button>
+                  );
+                })()
               )
             ))}
             {editing && (
