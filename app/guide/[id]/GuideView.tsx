@@ -30,7 +30,9 @@ export default function GuideView({ guide, isAdmin }: Props) {
   useEffect(() => {
     const checkAdmin = async () => {
       const supabase = getSupabaseClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      // 로컬 세션 읽기(네트워크 왕복 없음). 권한 재조회용 user.id만 필요.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
       const { data } = await supabase
         .from('profiles')

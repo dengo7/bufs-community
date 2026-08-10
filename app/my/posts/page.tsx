@@ -30,8 +30,9 @@ export default function MyPostsPage() {
 
   useEffect(() => {
     const client = getSupabaseClient();
-    client.auth.getUser().then(async ({ data }: { data: { user: any } }) => {
-      const u = data.user ?? null;
+    // 로컬 세션 읽기(네트워크 왕복 없음)
+    client.auth.getSession().then(async ({ data }: { data: { session: any } }) => {
+      const u = data.session?.user ?? null;
       setUser(u);
       setAuthLoaded(true);
 

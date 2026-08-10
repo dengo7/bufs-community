@@ -202,11 +202,12 @@ export default function CommentSection({
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // 마운트 시 차단 목록 로드 — 차단한 사용자의 댓글을 숨김
+  // 서버에서 내려온 currentUserId를 넘겨 getBlockedIds 내부의 getUser() 왕복을 생략
   useEffect(() => {
-    getBlockedIds().then(ids => {
+    getBlockedIds(currentUserId ?? undefined).then(ids => {
       if (ids.length) setHiddenAuthorIds(new Set(ids));
     });
-  }, []);
+  }, [currentUserId]);
 
   const t = T[lang];
   const visibleComments = comments.filter(c => !hiddenAuthorIds.has(c.author_id));

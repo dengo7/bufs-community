@@ -88,8 +88,9 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const supabase = getSupabaseClient();
-    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
-      const u = data.user ?? null;
+    // 로컬 세션 읽기(네트워크 왕복 없음)
+    supabase.auth.getSession().then(({ data }: { data: { session: any } }) => {
+      const u = data.session?.user ?? null;
       setUser(u);
       if (u) load(u.id);
       else setLoading(false);

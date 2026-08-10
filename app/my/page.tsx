@@ -219,7 +219,8 @@ export default function MyPage() {
       );
     };
 
-    client.auth.getUser().then(({ data }: { data: { user: any } }) => load(data.user ?? null));
+    // authLoaded 게이트용 — 로컬 세션 읽기(네트워크 왕복 없음)
+    client.auth.getSession().then(({ data }: { data: { session: any } }) => load(data.session?.user ?? null));
 
     const { data: { subscription } } = client.auth.onAuthStateChange((_e: any, session: any) => {
       load(session?.user ?? null);

@@ -207,8 +207,9 @@ export default function Home() {
   // 인증 상태
   useEffect(() => {
     const client = getSupabaseClient();
-    client.auth.getUser().then(async ({ data }: { data: { user: any } }) => {
-      const u = data.user ?? null;
+    // 화면 표시 여부(authChecked) 판단용 — 로컬 세션 읽기(네트워크 왕복 없음)
+    client.auth.getSession().then(async ({ data }: { data: { session: any } }) => {
+      const u = data.session?.user ?? null;
       // 비로그인 시 로그인 페이지로 리다이렉트
       if (!u) { router.push('/auth'); return; }
       setUser(u);
@@ -219,7 +220,7 @@ export default function Home() {
         .eq('user_id', u.id);
       if (bms) setBookmarks(new Set(bms.map((b: { post_id: string }) => b.post_id)));
       fetchUnreadCount(u.id).then(setUnreadCount);
-      getBlockedIds().then(setBlockedIds);
+      getBlockedIds(u.id).then(setBlockedIds);
     });
     const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
       const u = session?.user ?? null;
@@ -227,7 +228,7 @@ export default function Home() {
       setUser(u);
       setAuthChecked(true);
       fetchUnreadCount(u.id).then(setUnreadCount);
-      getBlockedIds().then(setBlockedIds);
+      getBlockedIds(u.id).then(setBlockedIds);
     });
     return () => subscription.unsubscribe();
   }, []);

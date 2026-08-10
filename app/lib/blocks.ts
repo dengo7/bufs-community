@@ -30,15 +30,22 @@ export async function unblockUser(blockedId: string): Promise<void> {
 }
 
 // 내가 차단한 사용자 id 배열 반환 (비로그인 시 빈 배열)
-export async function getBlockedIds(): Promise<string[]> {
+// userId를 넘기면 내부 getUser() 네트워크 호출을 생략하고 그 값을 사용한다.
+// (호출부가 이미 user 정보를 갖고 있을 때 중복 인증 왕복을 제거하기 위함)
+export async function getBlockedIds(userId?: string): Promise<string[]> {
   const supabase = getSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+
+  let uid = userId;
+  if (!uid) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    uid = user.id;
+  }
 
   const { data, error } = await supabase
     .from('user_blocks')
     .select('blocked_id')
-    .eq('blocker_id', user.id);
+    .eq('blocker_id', uid);
 
   if (error) return [];
   return (data ?? []).map((r: { blocked_id: string }) => r.blocked_id);
