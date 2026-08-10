@@ -167,9 +167,13 @@ export default function CategoryView({ slug }: Props) {
       const client = getSupabaseClient();
       const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug);
 
+      // 로컬 세션에서 user.id를 먼저 읽어 getBlockedIds 내부의 getUser() 왕복 제거
+      const { data: sessionData } = await client.auth.getSession();
+      const uid = sessionData.session?.user?.id;
+
       // 게시글 + 가이드 + 차단 목록을 모두 병렬 실행
       const [blockedIds, globalPinned, categoryPinned, regular, guide] = await Promise.all([
-        getBlockedIds(),
+        uid ? getBlockedIds(uid) : Promise.resolve<string[]>([]),
         client
           .from('posts')
           .select(SELECT_FIELDS)

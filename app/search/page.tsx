@@ -64,8 +64,13 @@ export default function SearchPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 차단한 사용자 목록 로드
+  // 로컬 세션에서 user.id를 먼저 읽어 getBlockedIds 내부의 getUser() 왕복 제거
   useEffect(() => {
-    getBlockedIds().then(setBlockedIds);
+    (async () => {
+      const { data } = await getSupabaseClient().auth.getSession();
+      const uid = data.session?.user?.id;
+      setBlockedIds(uid ? await getBlockedIds(uid) : []);
+    })();
   }, []);
 
   const t = T[lang];
