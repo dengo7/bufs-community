@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import { notFound } from 'next/navigation';
 import { createSupabaseServerClient } from '../../lib/supabase/server';
 import PostView from './PostView';
@@ -10,7 +11,7 @@ export default async function PostPage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  // 게시글 · 유저 정보는 서로 독립적이므로 병렬 실행
+  // ── 1단계 ── 게시글 · 유저 정보는 서로 독립적이므로 병렬 실행
   const [postResult, userResult] = await Promise.all([
     supabase
       .from('posts')
@@ -31,20 +32,50 @@ export default async function PostPage({
 
   const user = userResult.data.user;
 
-  // 로그인 시 차단 목록 조회 (비로그인은 빈 배열)
+  // ── 2단계 ── user id 기반 조회. 차단목록·좋아요여부·프로필은 서로 독립적이며
+  // 모두 user.id만 필요하므로(차단목록에 의존하지 않음) 동시 실행.
+  // (차단목록은 이후 본문 노출 여부 판정과 댓글 필터에 사용된다)
   let blockedIds: string[] = [];
+  let isLiked = false;
+  let currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null = null;
+  let isCurrentUserAdmin = false;
+
   if (user) {
-    const { data: blocks } = await supabase
-      .from('user_blocks')
-      .select('blocked_id')
-      .eq('blocker_id', user.id);
-    blockedIds = (blocks ?? []).map((b: { blocked_id: string }) => b.blocked_id);
+    const [blocksResult, likeResult, profileResult] = await Promise.all([
+      supabase
+        .from('user_blocks')
+        .select('blocked_id')
+        .eq('blocker_id', user.id),
+      supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('profiles')
+        .select('nickname, nationality, avatar_url, role')
+        .eq('id', user.id)
+        .single(),
+    ]);
+
+    blockedIds = (blocksResult.data ?? []).map((b: { blocked_id: string }) => b.blocked_id);
+    isLiked = !!likeResult.data;
+    if (profileResult.data) {
+      currentUserProfile = {
+        nickname: profileResult.data.nickname,
+        nationality: profileResult.data.nationality ?? null,
+        avatar_url: profileResult.data.avatar_url ?? null,
+      };
+      isCurrentUserAdmin = (profileResult.data as any).role === 'admin';
+    }
   }
 
   // 차단한 작성자의 글이면 노출하지 않음
   if (blockedIds.includes(post.author_id)) notFound();
 
-  // 댓글 조회 — 차단한 작성자 제외 (빈 배열이면 필터 미적용: PostgREST 빈 in() 오류 방지)
+  // ── 3단계 ── 댓글 조회 — 차단한 작성자 제외 (빈 배열이면 필터 미적용: PostgREST 빈 in() 오류 방지)
+  // 서버 필터에 blockedIds가 필요하므로 2단계 완료 후 실행한다.
   let commentsQuery = supabase
     .from('comments')
     .select(`
@@ -60,36 +91,11 @@ export default async function PostPage({
   const comments = commentsResult.data;
 
   // view_count +1 (원자적 증가 RPC — 동시 조회 시에도 정확)
-  await supabase.rpc('increment_view_count', { p_id: id });
-
-  let isLiked = false;
-  let currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null = null;
-  let isCurrentUserAdmin = false;
-
-  if (user) {
-    const [likeResult, profileResult] = await Promise.all([
-      supabase
-        .from('likes')
-        .select('id')
-        .eq('post_id', id)
-        .eq('user_id', user.id)
-        .maybeSingle(),
-      supabase
-        .from('profiles')
-        .select('nickname, nationality, avatar_url, role')
-        .eq('id', user.id)
-        .single(),
-    ]);
-    isLiked = !!likeResult.data;
-    if (profileResult.data) {
-      currentUserProfile = {
-        nickname: profileResult.data.nickname,
-        nationality: profileResult.data.nationality ?? null,
-        avatar_url: profileResult.data.avatar_url ?? null,
-      };
-      isCurrentUserAdmin = (profileResult.data as any).role === 'admin';
-    }
-  }
+  // 렌더를 막지 않도록 응답 완료 후 실행(next/server after).
+  after(async () => {
+    const { error: rpcError } = await supabase.rpc('increment_view_count', { p_id: id });
+    if (rpcError) console.error('[increment_view_count]', rpcError.message);
+  });
 
   return (
     <PostView
