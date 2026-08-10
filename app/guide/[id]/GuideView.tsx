@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Pencil, X, Check, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
+import { getLang } from '../../lib/lang';
+import type { UILang } from '../../lib/categories';
 
 type PlaceItem = { name: string; address?: string; phone?: string; note?: string };
 type CheckItem = { id: number; text: string };
+
+// ko는 기존 title/rich_content 컬럼, 그 외 언어는 translations[lang]에 저장
+type GuideTranslations = {
+  [lang: string]: { title?: string; rich_content?: string } | undefined;
+};
 
 type Guide = {
   id: string;
@@ -16,6 +23,7 @@ type Guide = {
   content_type: 'rich_text' | 'structured';
   rich_content: string | null;
   content: { items?: PlaceItem[] | CheckItem[] };
+  translations?: GuideTranslations | null;
 };
 
 interface Props {
@@ -26,6 +34,9 @@ interface Props {
 export default function GuideView({ guide, isAdmin }: Props) {
   const [isAdminChecked, setIsAdminChecked] = useState(isAdmin);
   const [editing, setEditing] = useState(false);
+  // 언어 감지 — 다른 페이지와 동일하게 localStorage 기반 getLang() 사용
+  const [lang, setLang] = useState<UILang>('ko');
+  useEffect(() => { setLang(getLang()); }, []);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -107,6 +118,13 @@ export default function GuideView({ guide, isAdmin }: Props) {
   const placesItems = (guide.content?.items ?? []) as PlaceItem[];
   const checkItems  = (guide.content?.items ?? []) as CheckItem[];
 
+  // 비편집 뷰용 번역 선택. ko이거나 번역이 없으면(빈 값 포함) 한국어 원본으로 폴백.
+  const trField = (field: 'title' | 'rich_content'): string | undefined =>
+    lang !== 'ko' ? (guide.translations?.[lang]?.[field] || undefined) : undefined;
+  // 편집 중에는 항상 한국어 원본 제목을, 그 외에는 번역(있으면) 제목을 표시
+  const displayTitle       = editing ? guide.title : (trField('title') || guide.title);
+  const displayRichContent = trField('rich_content') || richText;
+
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
@@ -118,7 +136,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
             <ChevronLeft size={22} strokeWidth={2} />
           </Link>
           <span className="text-[15px] font-bold text-[#1A1A1A] flex-1 truncate">
-            {guide.title}
+            {displayTitle}
           </span>
           {isAdminChecked && !editing && (
             <button
@@ -172,7 +190,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
             />
           ) : (
             <p className="text-[15px] text-gray-800 whitespace-pre-wrap leading-relaxed">
-              {richText || '내용을 준비 중이에요.'}
+              {displayRichContent || '내용을 준비 중이에요.'}
             </p>
           )
         )}
@@ -209,6 +227,32 @@ export default function GuideView({ guide, isAdmin }: Props) {
                   {item.address && <p className="text-[13px] text-gray-500 mb-0.5">📍 {item.address}</p>}
                   {item.phone   && <p className="text-[13px] text-gray-500 mb-0.5">📞 {item.phone}</p>}
                   {item.note    && <p className="text-[12px] text-[#1B7CC0] mt-1">{item.note}</p>}
+                  {(item.address || item.phone) && (
+                    <div className="flex flex-wrap gap-2 mt-2.5">
+                      {item.address && (
+                        <a
+                          href={`https://map.kakao.com/link/search/${encodeURIComponent(`${item.name} ${item.address}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[12px] font-semibold
+                                     bg-[#FEE500] text-[#2F2F2F] no-underline active:scale-95 transition-transform"
+                        >
+                          <MapPin size={13} strokeWidth={2} />
+                          카카오맵
+                        </a>
+                      )}
+                      {item.phone && (
+                        <a
+                          href={`tel:${item.phone.replace(/-/g, '')}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[12px] font-semibold
+                                     bg-gray-100 text-gray-600 no-underline active:scale-95 transition-transform"
+                        >
+                          <Phone size={13} strokeWidth={2} />
+                          전화
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             ))}

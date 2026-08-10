@@ -105,6 +105,8 @@ export type GuideCard = {
   content: Record<string, unknown>;
   sort_order: number;
   updated_at: string;
+  // ko는 title 컬럼, 그 외 언어는 translations[lang].title
+  translations?: { [lang: string]: { title?: string; rich_content?: string } | undefined } | null;
 };
 
 const GUIDE_CARD_ICONS = {
@@ -200,7 +202,7 @@ export default function CategoryView({ slug }: Props) {
         isGuideCategory
           ? client
               .from('category_guides')
-              .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at')
+              .select('id, category_slug, card_type, title, content_type, rich_content, content, sort_order, updated_at, translations')
               .eq('category_slug', slug)
               .order('sort_order', { ascending: true })
           : Promise.resolve({ data: [] as GuideCard[] }),
@@ -227,6 +229,9 @@ export default function CategoryView({ slug }: Props) {
   }, [slug]);
 
   const t = T[lang];
+  // 가이드 카드 제목: ko이거나 번역이 없으면 한국어 원본으로 폴백
+  const guideCardTitle = (card: GuideCard) =>
+    (lang !== 'ko' && card.translations?.[lang]?.title) || card.title;
   const category = getCategoryBySlug(slug);
   const categoryName = getCategoryLabel(slug, uiLangToLanguage(lang));
   const Icon = category?.Icon;
@@ -313,7 +318,7 @@ export default function CategoryView({ slug }: Props) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-semibold text-[#1A1A1A] leading-tight truncate">
-                        {card.title}
+                        {guideCardTitle(card)}
                       </p>
                     </div>
                     <ChevronRight size={14} strokeWidth={2} className="text-[#1B7CC0] shrink-0" />
