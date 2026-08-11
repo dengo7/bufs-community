@@ -28,11 +28,77 @@ const GUIDE_CARD_ICONS = {
   info:      ScrollText,
 } as const;
 
+// 카테고리 한 줄 설명
+const CATEGORY_DESC: Record<string, Record<UILang, string>> = {
+  housing: {
+    ko: '방 구하기부터 계약까지',
+    en: 'From room hunting to contracts',
+    zh: '从找房到签约',
+    ja: '部屋探しから契約まで',
+  },
+  bank: {
+    ko: '계좌 개설 · 카드 · 송금',
+    en: 'Accounts, cards & transfers',
+    zh: '开户·银行卡·汇款',
+    ja: '口座開設・カード・送金',
+  },
+  telecom: {
+    ko: '유심 개통과 요금제',
+    en: 'SIM setup & phone plans',
+    zh: '手机卡开通与套餐',
+    ja: 'SIM開通と料金プラン',
+  },
+  insurance: {
+    ko: '유학생 보험 안내',
+    en: 'Insurance for students',
+    zh: '留学生保险指南',
+    ja: '留学生保険ガイド',
+  },
+  medical: {
+    ko: '진료 절차와 응급 상황',
+    en: 'Clinics & emergencies',
+    zh: '就诊流程与急诊',
+    ja: '受診の流れと緊急時',
+  },
+  visa: {
+    ko: '연장 절차와 필요 서류',
+    en: 'Extensions & documents',
+    zh: '签证延期与材料',
+    ja: '延長手続きと必要書類',
+  },
+  'part-time': {
+    ko: '시간제 취업 허가와 구직',
+    en: 'Work permits & job hunting',
+    zh: '打工许可与求职',
+    ja: 'アルバイト許可と求職',
+  },
+};
+
 const T = {
-  ko: { title: '관리자 가이드', empty: '내용을 준비 중이에요', backAria: '뒤로가기' },
-  en: { title: 'Admin Guide',   empty: 'Content coming soon',  backAria: 'Back' },
-  zh: { title: '管理员指南',     empty: '内容正在准备中',        backAria: '返回' },
-  ja: { title: '管理者ガイド',   empty: 'コンテンツを準備中です', backAria: '戻る' },
+  ko: {
+    title: '관리자 가이드',
+    intro: '한국 생활이 처음이라도 걱정 마세요! 정착에 필요한 정보를 관리자가 직접 정리했어요 ✨',
+    empty: '곧 채워질 예정이에요 🌱',
+    backAria: '뒤로가기',
+  },
+  en: {
+    title: 'Admin Guide',
+    intro: "New to life in Korea? Don't worry — we've organized everything you need to settle in ✨",
+    empty: 'Coming soon 🌱',
+    backAria: 'Back',
+  },
+  zh: {
+    title: '管理员指南',
+    intro: '初来韩国也不用担心！管理员为你整理了定居所需的一切信息 ✨',
+    empty: '即将上线 🌱',
+    backAria: '返回',
+  },
+  ja: {
+    title: '管理者ガイド',
+    intro: '韓国での生活が初めてでも大丈夫！定着に必要な情報を管理者がまとめました ✨',
+    empty: '近日公開予定です 🌱',
+    backAria: '戻る',
+  },
 } as const;
 
 type GuideItem = {
@@ -105,15 +171,24 @@ export default function GuidesPage() {
         </div>
       </header>
 
-      {/* ── 카테고리 아코디언 ── */}
       <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+
+        {/* ── 인트로 배너 ── */}
+        <div className="mb-4 rounded-2xl bg-gradient-to-br from-[#EFF6FF] to-[#E0F2FE] border border-blue-100 px-4 py-3.5">
+          <p className="text-[13px] leading-relaxed text-[#1E3A5F]">{t.intro}</p>
+        </div>
+
+        {/* ── 카테고리 아코디언 ── */}
         {loading ? (
           <div className="space-y-2.5">
             {GUIDE_CATEGORY_SLUGS.map(slug => (
-              <div key={slug} className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 shrink-0" />
-                  <div className="h-4 bg-gray-100 rounded w-1/3" />
+              <div key={slug} className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 bg-gray-100 rounded w-1/3" />
+                    <div className="h-3 bg-gray-50 rounded w-1/2" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -134,15 +209,28 @@ export default function GuidesPage() {
                     type="button"
                     onClick={() => toggle(slug)}
                     aria-expanded={open}
-                    className="w-full flex items-center gap-2.5 px-4 py-3.5 bg-transparent border-none
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-transparent border-none
                                cursor-pointer text-left active:bg-gray-50 transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-[#EFF6FD] flex items-center justify-center shrink-0">
-                      {Icon && <Icon size={17} strokeWidth={1.8} className="text-[#1B7CC0]" />}
+                    <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                      {Icon && <Icon size={19} strokeWidth={1.8} className="text-blue-600" />}
                     </div>
-                    <span className="flex-1 min-w-0 text-[14px] font-semibold text-[#1A1A1A] truncate">
-                      {getCategoryLabel(slug, dbLang)}
-                    </span>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-[#1A1A1A] truncate leading-tight">
+                        {getCategoryLabel(slug, dbLang)}
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-gray-400 truncate leading-snug">
+                        {CATEGORY_DESC[slug]?.[lang]}
+                      </p>
+                    </div>
+
+                    {items.length > 0 && (
+                      <span className="text-[11px] font-bold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5 shrink-0">
+                        {items.length}
+                      </span>
+                    )}
+
                     <ChevronDown
                       size={18}
                       strokeWidth={2}
@@ -167,14 +255,22 @@ export default function GuidesPage() {
                                 key={g.id}
                                 href={`/guide/${g.id}`}
                                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-100
-                                           bg-[#FAFBFC] no-underline hover:border-gray-200
-                                           active:scale-[0.99] transition-all"
+                                           bg-[#FAFBFC] no-underline transition-all
+                                           hover:bg-white hover:border-blue-200 hover:shadow-sm
+                                           active:scale-[0.99] active:bg-blue-50/40 group"
                               >
-                                <CardIcon size={15} strokeWidth={1.8} className="text-[#1B7CC0] shrink-0" />
+                                <span className="w-7 h-7 rounded-lg bg-white border border-gray-100 flex items-center
+                                                 justify-center shrink-0 group-hover:border-blue-100 transition-colors">
+                                  <CardIcon size={14} strokeWidth={1.8} className="text-[#1B7CC0]" />
+                                </span>
                                 <span className="flex-1 min-w-0 text-[13px] font-medium text-[#1A1A1A] truncate">
                                   {guideTitle(g)}
                                 </span>
-                                <ChevronRight size={14} strokeWidth={2} className="text-gray-300 shrink-0" />
+                                <ChevronRight
+                                  size={14}
+                                  strokeWidth={2}
+                                  className="text-gray-300 shrink-0 group-hover:text-[#1B7CC0] transition-colors"
+                                />
                               </Link>
                             );
                           })}
