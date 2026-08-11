@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { getLang } from '../../lib/lang';
+import { linkifyText } from '../../lib/linkify';
 import type { UILang } from '../../lib/categories';
 
 type PlaceItem = { name: string; address?: string; phone?: string; note?: string };
@@ -235,7 +236,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
             />
           ) : (
             <p className="text-[15px] text-gray-800 whitespace-pre-wrap leading-relaxed">
-              {displayRichContent || '내용을 준비 중이에요.'}
+              {displayRichContent ? linkifyText(displayRichContent) : '내용을 준비 중이에요.'}
             </p>
           )
         )}
