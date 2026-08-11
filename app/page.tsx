@@ -7,6 +7,7 @@ import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
 import HeroBanner from './components/HeroBanner';
+import NoticeSection from './components/NoticeSection';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
@@ -494,6 +495,9 @@ export default function Home() {
 
           {/* ── 히어로 배너 ── */}
           <HeroBanner lang={lang} user={user} />
+
+          {/* ── 학사공지 ── */}
+          <NoticeSection lang={lang} />
 
           {/* ── LIFE GUIDE ── */}
           <div className="mt-4 mb-4">
