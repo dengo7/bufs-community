@@ -16,6 +16,7 @@ import {
   GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
   Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
+  ChevronRight,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -37,7 +38,8 @@ const T = {
     headerSub: '외국인 유학생을 위한 커뮤니티',
     loadingMore: '불러오는 중...',
     lifeGuide: '생활 가이드',
-    lifeGuideDesc: '관리자가 직접 작성한 정착 가이드',
+    adminGuide: '관리자 가이드',
+    adminGuideDesc: '비자·부동산·은행 등 정착 가이드',
     community: '커뮤니티',
     allNotices: '전체 공지',
     ongoing: '진행중',
@@ -63,7 +65,8 @@ const T = {
     headerSub: 'Community for Int\'l Students',
     loadingMore: 'Loading...',
     lifeGuide: 'Life Guide',
-    lifeGuideDesc: 'Settlement guides written by admin',
+    adminGuide: 'Admin Guides',
+    adminGuideDesc: 'Settling-in guides: visa, housing, bank & more',
     community: 'Community',
     allNotices: 'Notices',
     ongoing: 'Ongoing',
@@ -89,7 +92,8 @@ const T = {
     headerSub: '留学生社区',
     loadingMore: '加载中...',
     lifeGuide: '生活指南',
-    lifeGuideDesc: '管理员撰写的定居指南',
+    adminGuide: '管理员指南',
+    adminGuideDesc: '签证·租房·银行等定居指南',
     community: '社区',
     allNotices: '全体公告',
     ongoing: '进行中',
@@ -115,7 +119,8 @@ const T = {
     headerSub: '留学生コミュニティ',
     loadingMore: '読み込み中...',
     lifeGuide: 'ライフガイド',
-    lifeGuideDesc: '管理者が作成した定住ガイド',
+    adminGuide: '管理者ガイド',
+    adminGuideDesc: 'ビザ・住まい・銀行など定着ガイド',
     community: 'コミュニティ',
     allNotices: 'お知らせ',
     ongoing: '進行中',
@@ -145,10 +150,6 @@ const CATEGORIES = [
 
 const CAMPUS_CATEGORIES = CATEGORIES.filter(c =>
   ['school-life', 'announcements', 'translation-help'].includes(c.slug)
-);
-
-const LIFE_GUIDE_CATEGORIES = CATEGORIES.filter(c =>
-  ['visa', 'housing', 'bank', 'telecom', 'medical', 'part-time'].includes(c.slug)
 );
 
 const getCatIcon = (slug: string) =>
@@ -502,28 +503,20 @@ export default function Home() {
                 <h2 className="text-[14px] font-bold text-[#111827]">{t.lifeGuide}</h2>
               </div>
             </div>
-            <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
-              <p className="text-[11px] text-[#1D4ED8] bg-[#EFF6FF] rounded-lg px-3 py-1.5 mb-3 inline-flex items-center gap-1.5">
-                <ShieldCheck size={12} strokeWidth={2} />
-                {t.lifeGuideDesc}
-              </p>
-              <div className="grid grid-cols-3 gap-x-2 gap-y-4">
-                {LIFE_GUIDE_CATEGORIES.map(({ slug, Icon, ...labels }) => (
-                  <Link
-                    key={slug}
-                    href={`/category/${slug}`}
-                    className="flex flex-col items-center gap-1.5 no-underline group"
-                  >
-                    <span className="flex h-10 w-10 items-center justify-center bg-[#EFF6FF] rounded-xl text-[#1B7CC0] group-active:scale-90 transition-transform shrink-0">
-                      <Icon size={22} strokeWidth={1.7} />
-                    </span>
-                    <span className="text-[11px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
-                      {bLabel(labels)}
-                    </span>
-                  </Link>
-                ))}
+            <Link
+              href="/guides"
+              className="flex items-center gap-3 bg-white rounded-2xl border border-[#E5E7EB] px-4 py-4 no-underline
+                         hover:border-[#CBD5E1] active:scale-[0.99] transition-all"
+            >
+              <span className="flex h-11 w-11 items-center justify-center bg-[#EFF6FF] rounded-xl text-[#1D4ED8] shrink-0">
+                <ShieldCheck size={22} strokeWidth={1.8} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[14px] font-bold text-[#111827] leading-tight">{t.adminGuide}</p>
+                <p className="mt-1 text-[12px] text-[#6B7280] leading-snug line-clamp-2">{t.adminGuideDesc}</p>
               </div>
-            </div>
+              <ChevronRight size={18} strokeWidth={2} className="text-[#CBD5E1] shrink-0" />
+            </Link>
           </div>
 
           {/* ── CAMPUS COMMUNITY ── */}
