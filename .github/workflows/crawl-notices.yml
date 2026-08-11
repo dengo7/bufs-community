@@ -1,0 +1,55 @@
+name: crawl-notices
+
+on:
+  schedule:
+    # 매시 17분 — 정각은 GitHub Actions 혼잡으로 지연이 커서 피한다
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: '크롤할 목록 페이지 수 (소스마다 적용)'
+        required: false
+        default: '1'
+      source:
+        description: '수집 소스'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - academic
+          - global
+
+# 이전 실행이 밀려 있으면 새 실행은 대기시킨다(동시 실행 방지, 취소는 하지 않음)
+concurrency:
+  group: crawl-notices
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Crawl notices
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.6-flash
+        run: >-
+          node scripts/crawl-notices.mjs
+          --pages=${{ github.event.inputs.pages || '1' }}
+          --source=${{ github.event.inputs.source || 'all' }}
