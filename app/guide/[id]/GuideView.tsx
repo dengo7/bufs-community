@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { getLang } from '../../lib/lang';
@@ -33,6 +33,14 @@ interface Props {
 }
 
 export default function GuideView({ guide, isAdmin }: Props) {
+  const router = useRouter();
+  // 진입 경로(가이드 허브 / 카테고리 게시판 등)로 그대로 돌아간다.
+  // 딥링크·새로고침으로 히스토리가 없을 때만 카테고리 게시판으로 폴백.
+  const handleBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push(`/category/${guide.category_slug}`);
+  };
+
   const [isAdminChecked, setIsAdminChecked] = useState(isAdmin);
   const [editing, setEditing] = useState(false);
   // 언어 감지 — 다른 페이지와 동일하게 localStorage 기반 getLang() 사용
@@ -164,12 +172,14 @@ export default function GuideView({ guide, isAdmin }: Props) {
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-3 gap-2">
-          <Link
-            href={`/category/${guide.category_slug}`}
-            className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
+            aria-label="뒤로가기"
           >
             <ChevronLeft size={22} strokeWidth={2} />
-          </Link>
+          </button>
           <span className="text-[15px] font-bold text-[#1A1A1A] flex-1 truncate">
             {displayTitle}
           </span>

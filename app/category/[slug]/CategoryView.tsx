@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, PenLine, Pin, ShieldCheck,
   ListChecks, MapPin, ClipboardList, BookOpen, ChevronRight, ScrollText,
@@ -152,6 +153,13 @@ interface Props {
 }
 
 export default function CategoryView({ slug }: Props) {
+  const router = useRouter();
+  // 진입 경로로 그대로 돌아간다. 히스토리가 없을 때만 홈으로 폴백.
+  const handleBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push('/');
+  };
+
   const [lang, setLang] = useState<UILang>('ko');
   useEffect(() => { setLang(getLang()); }, []);
 
@@ -243,13 +251,14 @@ export default function CategoryView({ slug }: Props) {
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center min-h-[54px] px-3 gap-2">
 
-          <Link
-            href="/"
-            className="p-1.5 -ml-1 text-gray-700 no-underline flex items-center shrink-0"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
             aria-label={t.homeAria}
           >
             <ChevronLeft size={22} strokeWidth={2} />
-          </Link>
+          </button>
 
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             {Icon && <Icon size={17} className="text-gray-700 shrink-0" strokeWidth={1.8} />}
