@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone } from 'lucide-react';
+import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone, ExternalLink } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { getLang } from '../../lib/lang';
 import { linkifyText } from '../../lib/linkify';
 import type { UILang } from '../../lib/categories';
 
-type PlaceItem = { name: string; address?: string; phone?: string; note?: string };
+type PlaceItem = { name: string; address?: string; phone?: string; note?: string; url?: string };
 type CheckItem = { id: number; text: string };
 
 // ko는 기존 title/rich_content 컬럼, 그 외 언어는 translations[lang]에 저장
@@ -123,7 +123,10 @@ export default function GuideView({ guide, isAdmin }: Props) {
   };
 
   const addPlace = () =>
-    setPlaces(prev => [...prev, { name: '', address: '', phone: '', note: '' }]);
+    setPlaces(prev => [...prev, { name: '', address: '', phone: '', note: '', url: '' }]);
+
+  // 스킴 없이 저장된 주소(www.example.com)도 외부 링크로 열리게 한다.
+  const placeHref = (url: string) => /^https?:\/\//i.test(url) ? url : `https://${url}`;
 
   const updatePlace = (i: number, field: keyof PlaceItem, value: string) =>
     setPlaces(prev => prev.map((p, idx) => idx === i ? { ...p, [field]: value } : p));
@@ -266,6 +269,8 @@ export default function GuideView({ guide, isAdmin }: Props) {
                     placeholder="전화번호" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
                   <input value={item.note ?? ''} onChange={e => updatePlace(i, 'note', e.target.value)}
                     placeholder="한 줄 메모" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
+                  <input value={item.url ?? ''} onChange={e => updatePlace(i, 'url', e.target.value)}
+                    placeholder="사이트 주소 (예: www.example.com)" className="w-full text-[16px] border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1B7CC0]" />
                 </div>
               ) : (
                 <div key={i} className="p-4 bg-[#F8FAFC] rounded-xl border border-gray-100">
@@ -273,7 +278,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
                   {item.address && <p className="text-[13px] text-gray-500 mb-0.5">📍 {item.address}</p>}
                   {item.phone   && <p className="text-[13px] text-gray-500 mb-0.5">📞 {item.phone}</p>}
                   {item.note    && <p className="text-[12px] text-[#1B7CC0] mt-1">{item.note}</p>}
-                  {(item.address || item.phone) && (
+                  {(item.address || item.phone || item.url) && (
                     <div className="flex flex-wrap gap-2 mt-2.5">
                       {item.address && (
                         <a
@@ -295,6 +300,18 @@ export default function GuideView({ guide, isAdmin }: Props) {
                         >
                           <Phone size={13} strokeWidth={2} />
                           전화
+                        </a>
+                      )}
+                      {item.url && (
+                        <a
+                          href={placeHref(item.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[12px] font-semibold
+                                     bg-[#EFF6FD] text-[#1B7CC0] no-underline active:scale-95 transition-transform"
+                        >
+                          <ExternalLink size={13} strokeWidth={2} />
+                          바로가기
                         </a>
                       )}
                     </div>
