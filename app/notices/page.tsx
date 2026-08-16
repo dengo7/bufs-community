@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Languages } from 'lucide-react';
 import BottomTabBar from '../components/BottomTabBar';
-import { getLang } from '../lib/lang';
-import type { UILang } from '../lib/categories';
+import { useLang } from '../lib/lang';
 import { getSupabaseClient } from '../lib/supabase/client';
 import {
   NOTICE_SELECT, NOTICE_T,
@@ -26,8 +25,7 @@ export default function NoticesPage() {
     else router.push('/');
   };
 
-  const [lang, setLang] = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
 
   const [filter, setFilter] = useState<Filter>('all');
   const [notices, setNotices] = useState<NoticeRow[]>([]);

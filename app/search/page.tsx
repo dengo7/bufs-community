@@ -6,7 +6,7 @@ import { ChevronLeft, Search, X } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo, type UILang } from '../lib/utils';
-import { getLang, setLang as persistLang } from '../lib/lang';
+import { useLang, setLang } from '../lib/lang';
 import { getBlockedIds } from '../lib/blocks';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
@@ -53,8 +53,7 @@ type PostResult = {
 };
 
 export default function SearchPage() {
-  const [lang, setLang] = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PostResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -168,7 +167,7 @@ export default function SearchPage() {
               <button
                 key={l}
                 type="button"
-                onClick={() => { setLang(l); persistLang(l); }}
+                onClick={() => setLang(l)}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

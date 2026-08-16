@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
-import { getLang, setLang as persistLang, type UILang } from '../lib/lang';
+import { useLang, setLang, type UILang } from '../lib/lang';
 import BottomTabBar from '../components/BottomTabBar';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
@@ -182,8 +182,7 @@ function SectionCard({ label, children }: { label: string; children: React.React
 
 // ── 페이지 ────────────────────────────────────────────────────
 export default function MyPage() {
-  const [lang, setLang]             = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
   const [user, setUser]             = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);
@@ -274,7 +273,7 @@ export default function MyPage() {
               <button
                 key={l}
                 type="button"
-                onClick={() => { setLang(l); persistLang(l); }}
+                onClick={() => setLang(l)}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

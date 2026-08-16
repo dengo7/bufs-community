@@ -14,7 +14,7 @@ import {
   uiLangToLanguage,
   type UILang,
 } from '../../lib/categories';
-import { getLang, setLang as persistLang } from '../../lib/lang';
+import { useLang, setLang } from '../../lib/lang';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { getBlockedIds } from '../../lib/blocks';
 
@@ -160,8 +160,7 @@ export default function CategoryView({ slug }: Props) {
     else router.push('/');
   };
 
-  const [lang, setLang] = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
 
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<PostRow[]>([]);
@@ -270,7 +269,7 @@ export default function CategoryView({ slug }: Props) {
               <button
                 key={l}
                 type="button"
-                onClick={() => { setLang(l); persistLang(l); }}
+                onClick={() => setLang(l)}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

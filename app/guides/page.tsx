@@ -14,7 +14,7 @@ import {
   uiLangToLanguage,
   type UILang,
 } from '../lib/categories';
-import { getLang } from '../lib/lang';
+import { useLang } from '../lib/lang';
 import { getSupabaseClient } from '../lib/supabase/client';
 
 // CategoryView의 GUIDE_CATEGORY_SLUGS와 동일한 목록/순서
@@ -114,8 +114,7 @@ type GuideItem = {
 export default function GuidesPage() {
   const router = useRouter();
 
-  const [lang, setLang] = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
 
   const [guides, setGuides] = useState<GuideItem[]>([]);
   const [loading, setLoading] = useState(true);

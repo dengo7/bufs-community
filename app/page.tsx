@@ -13,7 +13,7 @@ import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
 import { SCHEDULE_TITLE_I18N } from './lib/scheduleI18n';
 import { CATEGORIES, getCategoryBySlug, getCategoryLabel, uiLangToLanguage } from './lib/categories';
-import { getLang, setLang as persistLang } from './lib/lang';
+import { useLang, setLang } from './lib/lang';
 import {
   ShieldCheck,
   Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
@@ -160,8 +160,7 @@ type FeedPost = {
 };
 
 export default function Home() {
-  const [lang, setLang] = useState<Lang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  const lang = useLang();
   const [user, setUser] = useState<any>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
@@ -319,7 +318,7 @@ export default function Home() {
             {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
               <button
                 key={l}
-                onClick={() => { setLang(l); persistLang(l); }}
+                onClick={() => setLang(l)}
                 className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >
@@ -364,7 +363,7 @@ export default function Home() {
               {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
                 <button
                   key={l}
-                  onClick={() => { setLang(l); persistLang(l); }}
+                  onClick={() => setLang(l)}
                   className={`px-2.5 py-1.5 border-none cursor-pointer transition-colors font-medium
                     ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#BBBBBB]'}`}
                 >

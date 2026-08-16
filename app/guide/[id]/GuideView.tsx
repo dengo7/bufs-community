@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Pencil, X, Check, Plus, Trash2, MapPin, Phone, ExternalLink } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
-import { getLang } from '../../lib/lang';
+import { useLang } from '../../lib/lang';
 import { linkifyText } from '../../lib/linkify';
-import type { UILang } from '../../lib/categories';
 
 type PlaceItem = { name: string; address?: string; phone?: string; note?: string; url?: string };
 type CheckItem = { id: number; text: string };
@@ -61,9 +60,8 @@ export default function GuideView({ guide, isAdmin }: Props) {
 
   const [isAdminChecked, setIsAdminChecked] = useState(isAdmin);
   const [editing, setEditing] = useState(false);
-  // 언어 감지 — 다른 페이지와 동일하게 localStorage 기반 getLang() 사용
-  const [lang, setLang] = useState<UILang>('ko');
-  useEffect(() => { setLang(getLang()); }, []);
+  // 언어 감지 — 다른 페이지와 동일하게 전역 언어 스토어(useLang) 사용
+  const lang = useLang();
 
   useEffect(() => {
     const checkAdmin = async () => {
