@@ -394,7 +394,7 @@ export default function CategoryView({ slug }: Props) {
             <div className="text-center py-16">
               <p className="text-[15px] text-gray-400 mb-2">{t.noPosts}</p>
               <Link
-                href={`/write?category=${slug}`}
+                href="/write"
                 className="inline-flex items-center gap-1.5 mt-2 px-5 py-2.5 bg-[#F6C21A] text-[#2F2F2F]
                            rounded-full text-[13px] font-bold no-underline hover:opacity-90 transition-opacity"
               >
@@ -439,8 +439,8 @@ export default function CategoryView({ slug }: Props) {
 
       {/* 플로팅 글쓰기 버튼 (모바일) */}
       <Link
-        href={`/write?category=${slug}`}
-        className="md:hidden fixed bottom-[88px] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
+        href="/write"
+        className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
         aria-label={t.write}
       >

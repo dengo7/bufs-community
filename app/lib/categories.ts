@@ -1,5 +1,5 @@
 import {
-  GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
+  GraduationCap, FileText, Home as HomeIcon,
   Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
   type LucideIcon,
 } from 'lucide-react';
@@ -18,8 +18,6 @@ export function uiLangToLanguage(lang: UILang): Language {
 
 export type CategorySlug =
   | 'school-life'
-  | 'announcements'
-  | 'translation-help'
   | 'visa'
   | 'housing'
   | 'bank'
@@ -41,16 +39,6 @@ export const CATEGORIES: Category[] = [
     slug: 'school-life',
     Icon: GraduationCap,
     labels: { kr: '학교생활',      en: 'Campus Life',      cn: '校园生活',  jp: 'キャンパスライフ' },
-  },
-  {
-    slug: 'announcements',
-    Icon: Megaphone,
-    labels: { kr: '학교공지',      en: 'Announcements',    cn: '学校公告',  jp: 'お知らせ' },
-  },
-  {
-    slug: 'translation-help',
-    Icon: Languages,
-    labels: { kr: '번역·도움요청', en: 'Translation·Help', cn: '翻译·求助', jp: '翻訳·助け' },
   },
   {
     slug: 'visa',

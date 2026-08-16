@@ -12,7 +12,6 @@ import {
   getCategoryLabel,
   uiLangToLanguage,
   type UILang,
-  type CategorySlug,
 } from '../lib/categories';
 import { formatTimeAgo } from '../lib/utils';
 import { useLang, setLang } from '../lib/lang';
@@ -20,7 +19,6 @@ import { useLang, setLang } from '../lib/lang';
 const PAGE_SIZE = 20;
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
-const ALL_LABEL: Record<UILang, string> = { ko: '전체', en: 'All', zh: '全部', ja: 'すべて' };
 
 const T = {
   ko: { title: '커뮤니티', searchPlaceholder: '게시글 검색', noticeSection: '전체 공지', noticeBadge: '공지', empty: '게시글이 없어요', loadingMore: '불러오는 중...', more: '더보기', fabAria: '글쓰기' },
@@ -49,7 +47,6 @@ export default function CommunityPage() {
   const router = useRouter();
   const lang = useLang();
   const t = T[lang];
-  const [selectedCategory, setSelectedCategory] = useState<CategorySlug | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [pinnedPosts, setPinnedPosts] = useState<FeedPost[]>([]);
   const [offset, setOffset] = useState(0);
@@ -85,7 +82,7 @@ export default function CommunityPage() {
     fetchPinned();
   }, [blockedIds]);
 
-  // 카테고리 변경 시 초기 로드
+  // 초기 로드
   useEffect(() => {
     let cancelled = false;
 
@@ -102,7 +99,6 @@ export default function CommunityPage() {
         .eq('is_deleted', false)
         .eq('pinned', false);
 
-      if (selectedCategory) query = query.eq('category', selectedCategory);
       if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
 
       const { data } = await query
@@ -119,7 +115,7 @@ export default function CommunityPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [selectedCategory, blockedIds]);
+  }, [blockedIds]);
 
   // 더보기
   const handleLoadMore = async () => {
@@ -133,7 +129,6 @@ export default function CommunityPage() {
       .eq('is_deleted', false)
       .eq('pinned', false);
 
-    if (selectedCategory) query = query.eq('category', selectedCategory);
     if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
 
     const { data } = await query
@@ -185,35 +180,6 @@ export default function CommunityPage() {
           <Search size={15} strokeWidth={1.8} className="text-gray-400 shrink-0" />
           <span className="text-[14px] text-gray-400">{t.searchPlaceholder}</span>
         </button>
-      </div>
-
-      {/* ── 카테고리 필터 탭 ── */}
-      <div className="bg-white border-b border-[#EBEBEB]">
-        <div className="max-w-[600px] mx-auto flex gap-1.5 px-4 py-2.5 overflow-x-auto scrollbar-hide">
-          <button
-            type="button"
-            onClick={() => setSelectedCategory(null)}
-            className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12px] font-medium border cursor-pointer transition-colors
-              ${!selectedCategory
-                ? 'bg-[#2F2F2F] text-white border-[#2F2F2F]'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-          >
-            {ALL_LABEL[lang]}
-          </button>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat.slug}
-              type="button"
-              onClick={() => setSelectedCategory(cat.slug)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12px] font-medium border cursor-pointer transition-colors
-                ${selectedCategory === cat.slug
-                  ? 'bg-[#F6C21A] text-[#2F2F2F] border-[#F6C21A]'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-            >
-              {getCategoryLabel(cat.slug, uiLangToLanguage(lang))}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── 피드 리스트 ── */}

@@ -5,12 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ImagePlus, X } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { getSupabaseClient } from '../lib/supabase/client';
-import {
-  CATEGORIES,
-  getCategoryLabel,
-  uiLangToLanguage,
-  type UILang,
-} from '../lib/categories';
+import { uiLangToLanguage, type UILang } from '../lib/categories';
 import BottomTabBar from '../components/BottomTabBar';
 import { getLang, setLang as persistLang } from '../lib/lang';
 
@@ -20,8 +15,6 @@ const T = {
   ko: {
     pageTitle: '글쓰기',
     submit: '등록',
-    categoryLabel: '카테고리',
-    categoryRequired: '카테고리를 선택하세요',
     titleLabel: '제목',
     titlePlaceholder: '제목을 입력하세요',
     contentLabel: '내용',
@@ -36,8 +29,6 @@ const T = {
   en: {
     pageTitle: 'Write',
     submit: 'Submit',
-    categoryLabel: 'Category',
-    categoryRequired: 'Please select a category',
     titleLabel: 'Title',
     titlePlaceholder: 'Enter title',
     contentLabel: 'Content',
@@ -52,8 +43,6 @@ const T = {
   zh: {
     pageTitle: '写作',
     submit: '发布',
-    categoryLabel: '分类',
-    categoryRequired: '请选择分类',
     titleLabel: '标题',
     titlePlaceholder: '请输入标题',
     contentLabel: '内容',
@@ -68,8 +57,6 @@ const T = {
   ja: {
     pageTitle: '投稿',
     submit: '登録',
-    categoryLabel: 'カテゴリ',
-    categoryRequired: 'カテゴリを選択してください',
     titleLabel: 'タイトル',
     titlePlaceholder: 'タイトルを入力',
     contentLabel: '内容',
@@ -87,8 +74,10 @@ const TITLE_MAX = 200;
 const CONTENT_MAX = 10_000;
 const MAX_IMAGES = 5;
 
+// 게시판은 '학교생활' 단일 카테고리로 운영한다.
+const POST_CATEGORY = 'school-life';
+
 interface Props {
-  initialCategory?: string;
   userId: string;
 }
 
@@ -101,12 +90,11 @@ async function compressImage(file: File): Promise<File> {
   });
 }
 
-export default function WriteForm({ initialCategory, userId }: Props) {
+export default function WriteForm({ userId }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [lang, setLang] = useState<UILang>(getLang);
-  const [category, setCategory] = useState<string>(initialCategory ?? '');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -115,7 +103,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const t = T[lang];
-  const canSubmit = category !== '' && title.trim().length > 0 && content.trim().length > 0;
+  const canSubmit = title.trim().length > 0 && content.trim().length > 0;
   const atMaxImages = imageFiles.length >= MAX_IMAGES;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -168,7 +156,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
 
       const { error: insertError } = await supabase.from('posts').insert({
         author_id: userId,
-        category,
+        category: POST_CATEGORY,
         title: title.trim(),
         content: content.trim(),
         language: uiLangToLanguage(lang),
@@ -176,7 +164,7 @@ export default function WriteForm({ initialCategory, userId }: Props) {
       });
 
       if (insertError) throw insertError;
-      router.push(`/category/${category}`);
+      router.push('/community');
     } catch (err) {
       console.error(err);
       alert(t.uploadError);
@@ -240,36 +228,6 @@ export default function WriteForm({ initialCategory, userId }: Props) {
             {error}
           </div>
         )}
-
-        {/* 카테고리 선택 */}
-        <section>
-          <p className="text-[12px] font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-            {t.categoryLabel}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(cat => {
-              const isSelected = category === cat.slug;
-              return (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => setCategory(cat.slug)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-medium transition-colors
-                    ${isSelected
-                      ? 'bg-[#2F2F2F] text-white border-[#2F2F2F]'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                    }`}
-                >
-                  <cat.Icon size={13} strokeWidth={1.8} />
-                  <span>{getCategoryLabel(cat.slug, uiLangToLanguage(lang))}</span>
-                </button>
-              );
-            })}
-          </div>
-          {!category && (
-            <p className="text-[11px] text-gray-400 mt-1.5">{t.categoryRequired}</p>
-          )}
-        </section>
 
         {/* 제목 */}
         <section>

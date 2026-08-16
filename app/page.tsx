@@ -12,12 +12,12 @@ import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
 import { SCHEDULE_TITLE_I18N } from './lib/scheduleI18n';
-import { CATEGORIES, getCategoryBySlug, getCategoryLabel, uiLangToLanguage } from './lib/categories';
+import { getCategoryBySlug, getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import { useLang, setLang } from './lib/lang';
 import {
   ShieldCheck,
   Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
-  ChevronRight,
+  ChevronRight, PenLine,
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
@@ -30,7 +30,6 @@ const T = {
     logout: '로그아웃',
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
     calendar: '학사 일정',
-    recentPosts: '최근 게시글',
     noPosts: '아직 게시글이 없어요', more: '더보기',
     headerSub: '외국인 유학생을 위한 커뮤니티',
     loadingMore: '불러오는 중...',
@@ -47,12 +46,12 @@ const T = {
     noticeBadge: '공지',
     bookmarkAria: '저장',
     bookmarkRemoveAria: '저장 해제',
+    fabAria: '글쓰기',
   },
   en: {
     logout: 'Logout',
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
     calendar: 'Calendar',
-    recentPosts: 'Recent Posts',
     noPosts: 'No posts yet', more: 'More',
     headerSub: 'Community for Int\'l Students',
     loadingMore: 'Loading...',
@@ -69,12 +68,12 @@ const T = {
     noticeBadge: 'Notice',
     bookmarkAria: 'Save',
     bookmarkRemoveAria: 'Remove from saved',
+    fabAria: 'Write',
   },
   zh: {
     logout: '退出',
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
     calendar: '学校日程',
-    recentPosts: '最新帖子',
     noPosts: '暂无帖子', more: '更多',
     headerSub: '留学生社区',
     loadingMore: '加载中...',
@@ -91,12 +90,12 @@ const T = {
     noticeBadge: '公告',
     bookmarkAria: '收藏',
     bookmarkRemoveAria: '取消收藏',
+    fabAria: '写帖子',
   },
   ja: {
     logout: 'ログアウト',
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
     calendar: '学事日程',
-    recentPosts: '最新投稿',
     noPosts: 'まだ投稿がありません', more: 'もっと見る',
     headerSub: '留学生コミュニティ',
     loadingMore: '読み込み中...',
@@ -113,12 +112,9 @@ const T = {
     noticeBadge: 'お知らせ',
     bookmarkAria: '保存',
     bookmarkRemoveAria: '保存を解除',
+    fabAria: '投稿する',
   },
 } as const;
-
-const CAMPUS_CATEGORIES = CATEGORIES.filter(c =>
-  ['school-life', 'announcements', 'translation-help'].includes(c.slug)
-);
 
 const getCatIcon = (slug: string) =>
   getCategoryBySlug(slug)?.Icon ?? null;
@@ -132,8 +128,6 @@ const localScheduleTitle = (koTitle: string, lang: Lang): string => {
 // 최근 게시글 카테고리 칩의 연한 파스텔 색상 (slug별)
 const CATEGORY_CHIP: Record<string, string> = {
   'school-life':      'bg-[#F9F3E8] text-[#92702A] border-[#EEE0C4]',
-  'announcements':    'bg-[#FBF1EB] text-[#9A5A3A] border-[#EEDDD2]',
-  'translation-help': 'bg-[#F2F0FB] text-[#5B52A8] border-[#D8D5EF]',
   'visa':             'bg-[#EDF4FB] text-[#2B5FA0] border-[#C4D8EE]',
   'housing':          'bg-[#EBF6F1] text-[#2A6B52] border-[#B8DDD0]',
   'bank':             'bg-[#EEF1FA] text-[#3A4A9A] border-[#C8CEEC]',
@@ -465,37 +459,6 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* ── CAMPUS COMMUNITY ── */}
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-3 px-0.5">
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
-                <h2 className="text-[14px] font-bold text-[#111827]">{t.community}</h2>
-              </div>
-              <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
-                {t.viewAll}
-              </Link>
-            </div>
-            <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
-              <div className="grid grid-cols-3 gap-x-2 gap-y-4">
-                {CAMPUS_CATEGORIES.map(({ slug, Icon, labels }) => (
-                  <Link
-                    key={slug}
-                    href={`/category/${slug}`}
-                    className="flex flex-col items-center gap-1.5 no-underline group"
-                  >
-                    <span className="flex h-10 w-10 items-center justify-center bg-[#EFF6FF] rounded-xl text-[#1B7CC0] group-active:scale-90 transition-transform shrink-0">
-                      <Icon size={22} strokeWidth={1.7} />
-                    </span>
-                    <span className="text-[11px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
-                      {labels[uiLangToLanguage(lang)]}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {visiblePinnedPosts.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center gap-1.5 mb-2 px-0.5">
@@ -535,15 +498,15 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── 최근 게시글 피드 ── */}
+          {/* ── 커뮤니티 (최근 게시글 피드) ── */}
           <div>
             <div className="flex items-center justify-between mb-3 px-0.5">
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-[3px] rounded-full bg-[#1D4ED8]" />
-                <h2 className="text-[14px] font-bold text-[#111827]">{t.recentPosts}</h2>
+                <h2 className="text-[14px] font-bold text-[#111827]">{t.community}</h2>
               </div>
               <Link href="/community" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors shrink-0">
-                {t.more} ›
+                {t.viewAll}
               </Link>
             </div>
 
@@ -664,6 +627,16 @@ export default function Home() {
         </div>
 
       </div>
+
+      {/* ── 글쓰기 FAB ── */}
+      <Link
+        href="/write"
+        className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
+                   flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
+        aria-label={t.fabAria}
+      >
+        <PenLine size={24} color="white" strokeWidth={2} />
+      </Link>
 
       <BottomTabBar lang={lang} user={user} />
 
