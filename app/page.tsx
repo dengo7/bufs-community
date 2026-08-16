@@ -11,11 +11,11 @@ import NoticeSection from './components/NoticeSection';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
-import { getCategoryLabel, uiLangToLanguage } from './lib/categories';
+import { SCHEDULE_TITLE_I18N } from './lib/scheduleI18n';
+import { CATEGORIES, getCategoryBySlug, getCategoryLabel, uiLangToLanguage } from './lib/categories';
 import { getLang, setLang as persistLang } from './lib/lang';
 import {
-  GraduationCap, Megaphone, Languages, FileText, Home as HomeIcon,
-  Landmark, Smartphone, ShieldCheck, HeartPulse, Briefcase,
+  ShieldCheck,
   Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
   ChevronRight,
 } from 'lucide-react';
@@ -27,14 +27,10 @@ const PAGE_SIZE = 20;
 
 const T = {
   ko: {
-    schoolName: '부산외국어대학교', schoolNameShort: '부산외국어대학교',
-    subSlogan: '외국인 유학생을 위한 커뮤니티',
-    login: '로그인', logout: '로그아웃', signUp: '회원가입',
-    pleaseLogin: '로그인이 필요해요',
+    logout: '로그아웃',
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
     calendar: '학사 일정',
     recentPosts: '최근 게시글',
-    tabHome: '홈', tabMy: 'MY',
     noPosts: '아직 게시글이 없어요', more: '더보기',
     headerSub: '외국인 유학생을 위한 커뮤니티',
     loadingMore: '불러오는 중...',
@@ -43,7 +39,6 @@ const T = {
     adminGuideDesc: '비자·부동산·은행 등 정착 가이드',
     community: '커뮤니티',
     allNotices: '전체 공지',
-    ongoing: '진행중',
     searchAria: '검색',
     notifAria: '알림',
     myAria: '마이',
@@ -54,14 +49,10 @@ const T = {
     bookmarkRemoveAria: '저장 해제',
   },
   en: {
-    schoolName: 'Busan University of Foreign Studies', schoolNameShort: 'Busan Univ.',
-    subSlogan: 'Community for International Students',
-    login: 'Sign In', logout: 'Logout', signUp: 'Sign Up',
-    pleaseLogin: 'Please sign in',
+    logout: 'Logout',
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
     calendar: 'Calendar',
     recentPosts: 'Recent Posts',
-    tabHome: 'Home', tabMy: 'MY',
     noPosts: 'No posts yet', more: 'More',
     headerSub: 'Community for Int\'l Students',
     loadingMore: 'Loading...',
@@ -70,7 +61,6 @@ const T = {
     adminGuideDesc: 'Settling-in guides: visa, housing, bank & more',
     community: 'Community',
     allNotices: 'Notices',
-    ongoing: 'Ongoing',
     searchAria: 'Search',
     notifAria: 'Notifications',
     myAria: 'My page',
@@ -81,14 +71,10 @@ const T = {
     bookmarkRemoveAria: 'Remove from saved',
   },
   zh: {
-    schoolName: '釜山外国语大学', schoolNameShort: '釜山外国语大学',
-    subSlogan: '为外国留学生打造的社区',
-    login: '登录', logout: '退出', signUp: '注册',
-    pleaseLogin: '请先登录',
+    logout: '退出',
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
     calendar: '学校日程',
     recentPosts: '最新帖子',
-    tabHome: '首页', tabMy: '我的',
     noPosts: '暂无帖子', more: '更多',
     headerSub: '留学生社区',
     loadingMore: '加载中...',
@@ -97,7 +83,6 @@ const T = {
     adminGuideDesc: '签证·租房·银行等定居指南',
     community: '社区',
     allNotices: '全体公告',
-    ongoing: '进行中',
     searchAria: '搜索',
     notifAria: '通知',
     myAria: '我的',
@@ -108,14 +93,10 @@ const T = {
     bookmarkRemoveAria: '取消收藏',
   },
   ja: {
-    schoolName: '釜山外国語大学', schoolNameShort: '釜山外国語大学',
-    subSlogan: '外国人留学生のためのコミュニティ',
-    login: 'ログイン', logout: 'ログアウト', signUp: '新規登録',
-    pleaseLogin: 'ログインしてください',
+    logout: 'ログアウト',
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
     calendar: '学事日程',
     recentPosts: '最新投稿',
-    tabHome: 'ホーム', tabMy: 'MY',
     noPosts: 'まだ投稿がありません', more: 'もっと見る',
     headerSub: '留学生コミュニティ',
     loadingMore: '読み込み中...',
@@ -124,7 +105,6 @@ const T = {
     adminGuideDesc: 'ビザ・住まい・銀行など定着ガイド',
     community: 'コミュニティ',
     allNotices: 'お知らせ',
-    ongoing: '進行中',
     searchAria: '検索',
     notifAria: '通知',
     myAria: 'マイページ',
@@ -136,25 +116,18 @@ const T = {
   },
 } as const;
 
-const CATEGORIES = [
-  { slug: 'school-life',      Icon: GraduationCap, ko: '학교생활',      en: 'Campus Life',      zh: '校园生活',  ja: 'キャンパスライフ' },
-  { slug: 'announcements',    Icon: Megaphone,      ko: '학교공지',      en: 'Announcements',    zh: '学校公告',  ja: 'お知らせ' },
-  { slug: 'translation-help', Icon: Languages,      ko: '번역요청', en: 'Translation·Help', zh: '翻译·求助', ja: '翻訳·助け' },
-  { slug: 'visa',             Icon: FileText,       ko: '비자',          en: 'Visa',             zh: '签证',      ja: 'ビザ' },
-  { slug: 'housing',          Icon: HomeIcon,       ko: '부동산',        en: 'Housing',          zh: '房地产',    ja: '不動産' },
-  { slug: 'bank',             Icon: Landmark,       ko: '은행',          en: 'Bank',             zh: '银行',      ja: '銀行' },
-  { slug: 'telecom',          Icon: Smartphone,     ko: '통신·유심',     en: 'Telecom·SIM',      zh: '通信·SIM', ja: '通信·SIM' },
-  { slug: 'insurance',        Icon: ShieldCheck,    ko: '보험',          en: 'Insurance',        zh: '保险',      ja: '保険' },
-  { slug: 'medical',          Icon: HeartPulse,     ko: '병원',          en: 'Medical',          zh: '医院',      ja: '病院' },
-  { slug: 'part-time',        Icon: Briefcase,      ko: '알바',          en: 'Part-time',        zh: '兼职',      ja: 'アルバイト' },
-] as const;
-
 const CAMPUS_CATEGORIES = CATEGORIES.filter(c =>
   ['school-life', 'announcements', 'translation-help'].includes(c.slug)
 );
 
 const getCatIcon = (slug: string) =>
-  CATEGORIES.find(c => c.slug === slug)?.Icon ?? null;
+  getCategoryBySlug(slug)?.Icon ?? null;
+
+/** 학사일정 제목 번역 — app/schedule/page.tsx의 localTitle과 동일한 관례 */
+const localScheduleTitle = (koTitle: string, lang: Lang): string => {
+  if (lang === 'ko') return koTitle;
+  return SCHEDULE_TITLE_I18N[koTitle]?.[lang] ?? koTitle;
+};
 
 // 최근 게시글 카테고리 칩의 연한 파스텔 색상 (slug별)
 const CATEGORY_CHIP: Record<string, string> = {
@@ -203,8 +176,6 @@ export default function Home() {
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
 
   const t = T[lang];
-  const bLabel = (c: { ko: string; en: string; zh: string; ja: string }) =>
-    lang === 'ko' ? c.ko : lang === 'en' ? c.en : lang === 'zh' ? c.zh : c.ja;
 
   // 인증 상태
   useEffect(() => {
@@ -318,7 +289,6 @@ export default function Home() {
 
   async function handleLogout() {
     await getSupabaseClient().auth.signOut();
-    setUser(null);
   }
 
   // 차단한 사용자의 게시글 숨김
@@ -378,32 +348,31 @@ export default function Home() {
       </header>
 
       {/* ── DESKTOP NAV ── */}
-      <nav className="hidden xl:block bg-[#2F2F2F] sticky top-0 z-[200] shadow-[0_2px_8px_rgba(0,0,0,0.18)]">
+      <nav className="hidden xl:block bg-white border-b border-[#EBEBEB] sticky top-0 z-[200]">
         <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
 
           <Link href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-[19px] text-[#1D4ED8] leading-[1.1]"><span className="font-normal">The</span> <span className="font-bold">Well</span></div>
-              <div className="text-[11px] text-[#aaa] leading-[1.3]">{t.subtitle}</div>
-              <div className="text-[11px] text-[#F6C21A] leading-[1.5] mt-0.5">{t.subSlogan}</div>
+              <div className="text-[11px] text-[#64748B] leading-snug">{t.subtitle}</div>
             </div>
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <div className="flex items-center border border-[#666] rounded-full overflow-hidden text-[12px]">
+            <div className="flex items-center border border-[#EBEBEB] rounded-full overflow-hidden text-[12px]">
               {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
                 <button
                   key={l}
                   onClick={() => { setLang(l); persistLang(l); }}
                   className={`px-2.5 py-1.5 border-none cursor-pointer transition-colors font-medium
-                    ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#999]'}`}
+                    ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#BBBBBB]'}`}
                 >
                   {LANG_LABELS[l]}
                 </button>
               ))}
             </div>
-            <Link href="/notifications" aria-label={t.notifAria} className="text-[#ccc] no-underline flex items-center relative hover:text-white transition-colors">
+            <Link href="/notifications" aria-label={t.notifAria} className="text-gray-700 no-underline flex items-center relative hover:text-[#1D4ED8] transition-colors">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-[#F6C21A] text-[#1A1A1A] text-[10px] font-bold rounded-full flex items-center justify-center px-[3px] leading-none">
@@ -411,21 +380,15 @@ export default function Home() {
                 </span>
               )}
             </Link>
-            {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-[#F6C21A] text-sm font-semibold">{user.user_metadata?.nickname || user.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-transparent text-[#ddd] border border-[#666] rounded-full text-sm cursor-pointer"
-                >
-                  {t.logout}
-                </button>
-              </div>
-            ) : (
-              <a href="/auth" className="px-[22px] py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-full text-[15px] font-bold no-underline">
-                {t.login}
-              </a>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="text-[#111827] text-sm font-semibold">{user?.user_metadata?.nickname || user?.email}</span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-white text-[#555] border border-[#E5E7EB] rounded-full text-sm cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+              >
+                {t.logout}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -438,36 +401,16 @@ export default function Home() {
 
           {/* 프로필 카드 */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-[22px_16px] mb-4 text-center">
-            {user ? (
-              <>
-                <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-3" />
-                <div className="text-[15px] font-bold mb-4">
-                  {user.user_metadata?.nickname || user.email}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full py-2 border border-[#E5E7EB] rounded-lg text-sm text-[#555] cursor-pointer bg-white hover:bg-[#F5F5F5] transition-colors"
-                >
-                  {t.logout}
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="w-[68px] h-[68px] bg-[#F5F5F5] rounded-full mx-auto mb-[10px] flex items-center justify-center text-[30px] border-2 border-[#E5E7EB]">
-                  👤
-                </div>
-                <div className="text-[15px] font-bold mb-[3px]">{t.pleaseLogin}</div>
-                <div className="text-xs text-[#6B7280] mb-4">BUFS International</div>
-                <div className="flex gap-2">
-                  <a href="/auth" className="flex-1 py-2 border border-[#E5E7EB] rounded-lg bg-white text-sm no-underline text-[#333333] flex items-center justify-center">
-                    {t.signUp}
-                  </a>
-                  <a href="/auth" className="flex-1 py-2 bg-[#F6C21A] text-[#2F2F2F] rounded-lg text-sm font-bold no-underline flex items-center justify-center">
-                    {t.login}
-                  </a>
-                </div>
-              </>
-            )}
+            <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-3" />
+            <div className="text-[15px] font-bold mb-4">
+              {user?.user_metadata?.nickname || user?.email}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full py-2 border border-[#E5E7EB] rounded-lg text-sm text-[#555] cursor-pointer bg-white hover:bg-[#F5F5F5] transition-colors"
+            >
+              {t.logout}
+            </button>
           </div>
 
           {/* 빠른 메뉴 (로그인 후에만) */}
@@ -494,7 +437,7 @@ export default function Home() {
         <div className="flex-1 min-w-0">
 
           {/* ── 히어로 배너 ── */}
-          <HeroBanner lang={lang} user={user} />
+          <HeroBanner lang={lang} />
 
           {/* ── 학사공지 ── */}
           <NoticeSection lang={lang} />
@@ -536,7 +479,7 @@ export default function Home() {
             </div>
             <div className="bg-white rounded-2xl border border-[#E5E7EB] px-3 py-4">
               <div className="grid grid-cols-3 gap-x-2 gap-y-4">
-                {CAMPUS_CATEGORIES.map(({ slug, Icon, ...labels }) => (
+                {CAMPUS_CATEGORIES.map(({ slug, Icon, labels }) => (
                   <Link
                     key={slug}
                     href={`/category/${slug}`}
@@ -546,7 +489,7 @@ export default function Home() {
                       <Icon size={22} strokeWidth={1.7} />
                     </span>
                     <span className="text-[11px] font-medium leading-tight text-center text-[#374151] break-words w-full px-0.5">
-                      {bLabel(labels)}
+                      {labels[uiLangToLanguage(lang)]}
                     </span>
                   </Link>
                 ))}
@@ -707,15 +650,15 @@ export default function Home() {
         {/* ── RIGHT SIDEBAR (lg 이상) ── */}
         <div className="hidden lg:block w-[240px] shrink-0">
           <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-            <div className="px-[18px] py-[13px] bg-[#2F2F2F] border-b-2 border-b-[#F6C21A]">
-              <span className="text-base font-bold text-white">📅 {t.calendar}</span>
+            <div className="px-[18px] py-[13px] bg-white border-b border-[#EBEBEB]">
+              <span className="text-base font-bold text-[#111827]">📅 {t.calendar}</span>
             </div>
             {getUpcoming(4).map((item, i, arr) => (
               <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < arr.length - 1 ? 'border-b border-[#F5F5F5]' : ''}`}>
-                <span className="text-[12px] text-[#F6C21A] font-bold shrink-0 bg-[#2F2F2F] px-[7px] py-0.5 rounded whitespace-nowrap">
+                <span className="text-[12px] text-[#92702A] font-bold shrink-0 bg-[#F9F3E8] border border-[#EEE0C4] px-[7px] py-0.5 rounded whitespace-nowrap">
                   {fmtRange(item)}
                 </span>
-                <span className="text-sm line-clamp-1">{item.title}</span>
+                <span className="text-sm line-clamp-1">{localScheduleTitle(item.title, lang)}</span>
               </div>
             ))}
           </div>

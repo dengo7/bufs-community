@@ -4,7 +4,6 @@ type Lang = 'ko' | 'en' | 'zh' | 'ja';
 
 interface HeroBannerProps {
   lang?: Lang;
-  user?: any;
 }
 
 const HERO_T = {
@@ -15,6 +14,7 @@ const HERO_T = {
     title3: '이 함께해요.',
     desc: '비자, 집, 은행, 병원, 알바, 학교생활 정보를 함께 나눠요.',
     cta: '커뮤니티 둘러보기 →',
+    illustAlt: 'The Well 캠퍼스 일러스트',
   },
   en: {
     badge: 'WELCOME TO THE WELL 👋',
@@ -23,6 +23,7 @@ const HERO_T = {
     title3: 'is here for you.',
     desc: 'Visa, housing, banking, hospital, part-time jobs and more.',
     cta: 'Explore Community →',
+    illustAlt: 'The Well campus illustration',
   },
   zh: {
     badge: 'WELCOME TO THE WELL 👋',
@@ -31,6 +32,7 @@ const HERO_T = {
     title3: '与您同行。',
     desc: '签证、住房、银行、医院、兼职等生活信息一网打尽。',
     cta: '浏览社区 →',
+    illustAlt: 'The Well 校园插画',
   },
   ja: {
     badge: 'WELCOME TO THE WELL 👋',
@@ -39,10 +41,11 @@ const HERO_T = {
     title3: 'がサポートします。',
     desc: 'ビザ、住居、銀行、病院、アルバイトなど生活情報をシェアしましょう。',
     cta: 'コミュニティを見る →',
+    illustAlt: 'The Well キャンパスイラスト',
   },
 } as const;
 
-export default function HeroBanner({ lang = 'ko' }: HeroBannerProps = {}) {
+export default function HeroBanner({ lang = 'ko' }: HeroBannerProps) {
   const ht = HERO_T[lang];
   return (
     <section className="relative mt-1 min-h-[206px] overflow-hidden rounded-[20px] border border-[#D6E8FB] bg-gradient-to-br from-[#E7F2FF] via-[#ECF5FE] to-[#F0F7FE] sm:min-h-[248px] lg:min-h-[272px]">
@@ -74,7 +77,7 @@ export default function HeroBanner({ lang = 'ko' }: HeroBannerProps = {}) {
       {/* 우측: 메인 우물·캠퍼스 일러스트 (투명 PNG → 카드 우하단까지 자연스럽게 bleed) */}
       <img
         src="/hero-illustration-transparent-soft.png"
-        alt="The Well 캠퍼스 일러스트"
+        alt={ht.illustAlt}
         aria-hidden
         className="pointer-events-none select-none absolute bottom-0 right-0 z-0 w-[48%] max-w-[400px] object-contain object-bottom"
       />
