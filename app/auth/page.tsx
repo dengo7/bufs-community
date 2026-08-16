@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import { subscribeToPush } from '../lib/push';
-import { setLang as persistLang, LANG_KEY } from '../lib/lang';
+import { useLang, setLang, LANG_KEY } from '../lib/lang';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 type Mode = 'login' | 'signup';
@@ -27,6 +27,7 @@ const T = {
     google: 'Google로 계속하기', kakao: 'Kakao로 계속하기',
     home: '← 홈으로 돌아가기', loading: '처리 중...',
     errLogin: '이메일 또는 비밀번호가 올바르지 않아요.',
+    errEmailNotConfirmed: '이메일 인증이 아직 완료되지 않았어요. 메일함(스팸함 포함)을 확인해주세요.',
     errName: '이름을 입력해주세요.',
     errNickname: '닉네임을 입력해주세요.',
     successSignup: '✅ 가입 완료! 이메일 인증 후 로그인해주세요.',
@@ -46,6 +47,7 @@ const T = {
     google: 'Continue with Google', kakao: 'Continue with Kakao',
     home: '← Back to Home', loading: 'Processing...',
     errLogin: 'Invalid email or password.',
+    errEmailNotConfirmed: 'Your email isn\'t verified yet. Please check your inbox (and spam folder).',
     errName: 'Please enter your name.',
     errNickname: 'Please enter a nickname.',
     successSignup: '✅ Done! Please check your email to verify.',
@@ -65,6 +67,7 @@ const T = {
     google: '使用Google继续', kakao: '使用Kakao继续',
     home: '← 返回首页', loading: '处理中...',
     errLogin: '邮箱或密码不正确。',
+    errEmailNotConfirmed: '邮箱验证尚未完成。请查看您的邮箱（包括垃圾邮件箱）。',
     errName: '请输入姓名。',
     errNickname: '请输入昵称。',
     successSignup: '✅ 注册成功！请验证邮箱后登录。',
@@ -84,6 +87,7 @@ const T = {
     google: 'Googleで続ける', kakao: 'Kakaoで続ける',
     home: '← ホームへ戻る', loading: '処理中...',
     errLogin: 'メールまたはパスワードが正しくありません。',
+    errEmailNotConfirmed: 'メール認証がまだ完了していません。メールボックス（迷惑メールフォルダを含む）をご確認ください。',
     errName: 'お名前を入力してください。',
     errNickname: 'ニックネームを入力してください。',
     successSignup: '✅ 登録完了！メール認証後にログインしてください。',
@@ -95,7 +99,7 @@ const inputCls =
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function AuthPage() {
-  const [lang, setLang] = useState<Lang>('ko');
+  const lang = useLang();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -117,7 +121,10 @@ export default function AuthPage() {
       const supabase = getSupabaseClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setError(t.errLogin);
+        // 미인증 계정은 비밀번호 오류와 원인이 달라 안내를 구분한다.
+        const notConfirmed =
+          error.code === 'email_not_confirmed' || error.message.includes('Email not confirmed');
+        setError(notConfirmed ? t.errEmailNotConfirmed : t.errLogin);
       } else {
         // 로그인 성공 시 푸시 알림 구독 요청 (실패해도 로그인은 정상 진행)
         try {
@@ -144,19 +151,32 @@ export default function AuthPage() {
     if (!name.trim()) { setError(t.errName); setLoading(false); return; }
     if (!nickname.trim()) { setError(t.errNickname); setLoading(false); return; }
     const supabase = getSupabaseClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name: name.trim(), nickname: nickname.trim() } },
+      options: {
+        data: { name: name.trim(), nickname: nickname.trim() },
+        // 가입한 환경(로컬/프로덕션)으로 인증 링크가 돌아오게 한다.
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
-    if (error) setError(error.message);
-    else setStep('lang'); // 회원가입 성공 → 언어 선택 화면
+    if (error) {
+      setError(error.message);
+    } else if (!data.session) {
+      // Confirm email이 켜져 있으면 세션 없이 인증 메일만 발송된다.
+      // 홈으로 보내면 세션이 없어 /auth로 되튕기므로, 로그인 탭에서 안내한다.
+      // email/password 입력값은 유지해 인증 후 바로 로그인할 수 있게 둔다.
+      setMode('login');
+      setMessage(t.successSignup);
+    } else {
+      setStep('lang'); // 세션 즉시 발급(인증 비활성) → 기존대로 언어 선택 화면
+    }
     setLoading(false);
   }
 
   // 언어 선택 → localStorage 저장 후 홈으로 이동
   function chooseLang(l: Lang) {
-    persistLang(l);
+    setLang(l);
     window.location.href = '/';
   }
 
