@@ -7,7 +7,7 @@ import { subscribeToPush } from '../lib/push';
 import { useLang, setLang, LANG_KEY } from '../lib/lang';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
-type Mode = 'login' | 'signup';
+type Mode = 'login' | 'signup' | 'forgot';
 
 const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
 
@@ -31,6 +31,13 @@ const T = {
     errName: '이름을 입력해주세요.',
     errNickname: '닉네임을 입력해주세요.',
     successSignup: '✅ 가입 완료! 이메일 인증 후 로그인해주세요.',
+    forgot: '비밀번호를 잊으셨나요?',
+    resetTitle: '비밀번호 재설정',
+    resetDesc: '가입한 이메일 주소를 입력하면 재설정 링크를 보내드려요.',
+    resetSend: '재설정 링크 발송',
+    resetSent: '✉️ 메일함을 확인해주세요. 가입된 이메일이라면 재설정 링크를 보내드렸어요.',
+    backToLogin: '← 로그인으로 돌아가기',
+    errEmailRequired: '이메일을 입력해주세요.',
   },
   en: {
     titleLogin: 'Sign In', titleSignup: 'Sign Up',
@@ -51,6 +58,13 @@ const T = {
     errName: 'Please enter your name.',
     errNickname: 'Please enter a nickname.',
     successSignup: '✅ Done! Please check your email to verify.',
+    forgot: 'Forgot your password?',
+    resetTitle: 'Reset Password',
+    resetDesc: "Enter your email and we'll send you a reset link.",
+    resetSend: 'Send Reset Link',
+    resetSent: "✉️ Check your inbox. If the email is registered, we've sent a reset link.",
+    backToLogin: '← Back to Sign In',
+    errEmailRequired: 'Please enter your email.',
   },
   zh: {
     titleLogin: '登录', titleSignup: '注册',
@@ -71,6 +85,13 @@ const T = {
     errName: '请输入姓名。',
     errNickname: '请输入昵称。',
     successSignup: '✅ 注册成功！请验证邮箱后登录。',
+    forgot: '忘记密码？',
+    resetTitle: '重置密码',
+    resetDesc: '输入注册邮箱，我们将发送重置链接。',
+    resetSend: '发送重置链接',
+    resetSent: '✉️ 请查看您的邮箱。如果该邮箱已注册，我们已发送重置链接。',
+    backToLogin: '← 返回登录',
+    errEmailRequired: '请输入邮箱。',
   },
   ja: {
     titleLogin: 'ログイン', titleSignup: '新規登録',
@@ -91,6 +112,13 @@ const T = {
     errName: 'お名前を入力してください。',
     errNickname: 'ニックネームを入力してください。',
     successSignup: '✅ 登録完了！メール認証後にログインしてください。',
+    forgot: 'パスワードをお忘れですか？',
+    resetTitle: 'パスワード再設定',
+    resetDesc: 'ご登録のメールアドレスを入力すると、再設定リンクをお送りします。',
+    resetSend: '再設定リンクを送信',
+    resetSent: '✉️ メールボックスをご確認ください。登録済みのメールアドレスであれば、再設定リンクをお送りしました。',
+    backToLogin: '← ログインに戻る',
+    errEmailRequired: 'メールアドレスを入力してください。',
   },
 };
 
@@ -174,6 +202,21 @@ export default function AuthPage() {
     setLoading(false);
   }
 
+  async function handleForgot() {
+    reset();
+    if (!email.trim()) { setError(t.errEmailRequired); return; }
+    setLoading(true);
+    const supabase = getSupabaseClient();
+    // PKCE 코드 교환은 기존 callback 라우트가 처리하고,
+    // next 파라미터로 재설정 페이지까지 이동시킨다.
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset`,
+    });
+    // 계정 존재 여부를 노출하지 않도록 결과와 무관하게 동일한 안내를 보여준다.
+    setMessage(t.resetSent);
+    setLoading(false);
+  }
+
   // 언어 선택 → localStorage 저장 후 홈으로 이동
   function chooseLang(l: Lang) {
     setLang(l);
@@ -231,12 +274,13 @@ export default function AuthPage() {
           <div className="text-center mb-7">
             <div className="text-4xl mb-3">🎓</div>
             <h1 className="text-xl font-bold text-gray-900 mb-1">
-              {mode === 'login' ? t.titleLogin : t.titleSignup}
+              {mode === 'login' ? t.titleLogin : mode === 'signup' ? t.titleSignup : t.resetTitle}
             </h1>
             <p className="text-sm text-gray-500">{t.subtitle}</p>
           </div>
 
-          {/* Mode tabs */}
+          {/* Mode tabs (비밀번호 찾기 화면에서는 숨김) */}
+          {mode !== 'forgot' && (
           <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
             {(['login', 'signup'] as Mode[]).map(m => (
               <button
@@ -250,9 +294,13 @@ export default function AuthPage() {
               </button>
             ))}
           </div>
+          )}
 
           {/* Fields */}
           <div className="flex flex-col gap-3">
+            {mode === 'forgot' && (
+              <p className="text-sm text-gray-500 -mb-1">{t.resetDesc}</p>
+            )}
             {mode === 'signup' && (
               <>
                 {/* 0. 프로필 아바타 */}
@@ -306,7 +354,8 @@ export default function AuthPage() {
               />
             </div>
 
-            {/* 6. 비밀번호 */}
+            {/* 6. 비밀번호 (비밀번호 찾기 화면에서는 숨김) */}
+            {mode !== 'forgot' && (
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">
                 {mode === 'login' ? t.pw : t.pwNew}
@@ -320,6 +369,20 @@ export default function AuthPage() {
                 className={inputCls}
               />
             </div>
+            )}
+
+            {/* 비밀번호 찾기 진입 링크 */}
+            {mode === 'login' && (
+              <div className="text-right -mt-1">
+                <button
+                  type="button"
+                  onClick={() => switchMode('forgot')}
+                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {t.forgot}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Feedback */}
@@ -336,12 +399,25 @@ export default function AuthPage() {
 
           {/* Submit */}
           <button
-            onClick={mode === 'login' ? handleLogin : handleSignup}
+            onClick={mode === 'login' ? handleLogin : mode === 'signup' ? handleSignup : handleForgot}
             disabled={loading}
             className="w-full mt-5 py-3 text-base font-bold rounded-xl bg-blue-500 text-white active:scale-[0.98] transition-all hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? t.loading : mode === 'login' ? t.submit : t.submitSignup}
+            {loading ? t.loading : mode === 'login' ? t.submit : mode === 'signup' ? t.submitSignup : t.resetSend}
           </button>
+
+          {/* 비밀번호 찾기 → 로그인 복귀 */}
+          {mode === 'forgot' && (
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => switchMode('login')}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {t.backToLogin}
+              </button>
+            </div>
+          )}
 
           {/* Back */}
           <div className="text-center mt-7">
