@@ -8,6 +8,7 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
 import { getCategoryLabel, uiLangToLanguage } from '../../lib/categories';
 import { formatTimeAgo } from '../../lib/utils';
+import { useLang } from '../../lib/lang';
 
 type FeedPost = {
   id: string;
@@ -22,6 +23,7 @@ type FeedPost = {
 };
 
 export default function MyPostsPage() {
+  const lang = useLang();
   const router = useRouter();
   const [user, setUser]         = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
@@ -166,7 +168,7 @@ export default function MyPostsPage() {
         )}
       </div>
 
-      <BottomTabBar user={user} />
+      <BottomTabBar lang={lang} user={user} />
     </div>
   );
 }

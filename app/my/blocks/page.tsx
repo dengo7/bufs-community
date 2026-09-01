@@ -217,7 +217,7 @@ export default function BlocksPage() {
         </div>
       )}
 
-      <BottomTabBar user={user} />
+      <BottomTabBar lang={lang} user={user} />
     </div>
   );
 }

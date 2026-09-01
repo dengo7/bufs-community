@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createSupabaseServerClient } from '../../lib/supabase/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 모듈 스코프에서 생성하면 RESEND_API_KEY 없는 빌드 환경에서
+// page data 수집 단계가 죽으므로, 핸들러 안에서 lazy 생성한다.
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 const REASON_LABELS: Record<string, string> = {
   spam:    '스팸 / 광고',
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
     const reporterId = user.id;
     const safeTargetId = escapeHtml(target_id);
 
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'The Well <onboarding@resend.dev>',
       to: process.env.ADMIN_EMAIL!,
       subject: `[The Well] 새 신고가 접수됐어요`,

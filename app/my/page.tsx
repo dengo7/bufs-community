@@ -381,7 +381,7 @@ export default function MyPage() {
         </div>
       )}
 
-      <BottomTabBar user={user} />
+      <BottomTabBar lang={lang} user={user} />
     </div>
   );
 }
