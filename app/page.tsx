@@ -29,6 +29,7 @@ const T = {
   ko: {
     logout: '로그아웃',
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
+    myInfo: '내정보',
     calendar: '학사 일정',
     noPosts: '아직 게시글이 없어요', more: '더보기',
     headerSub: '외국인 유학생을 위한 커뮤니티',
@@ -51,6 +52,7 @@ const T = {
   en: {
     logout: 'Logout',
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
+    myInfo: 'My',
     calendar: 'Calendar',
     noPosts: 'No posts yet', more: 'More',
     headerSub: 'Community for Int\'l Students',
@@ -73,6 +75,7 @@ const T = {
   zh: {
     logout: '退出',
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
+    myInfo: '我的',
     calendar: '学校日程',
     noPosts: '暂无帖子', more: '更多',
     headerSub: '留学生社区',
@@ -95,6 +98,7 @@ const T = {
   ja: {
     logout: 'ログアウト',
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
+    myInfo: 'MY',
     calendar: '学事日程',
     noPosts: 'まだ投稿がありません', more: 'もっと見る',
     headerSub: '留学生コミュニティ',
@@ -342,7 +346,7 @@ export default function Home() {
 
       {/* ── DESKTOP NAV ── */}
       <nav className="hidden xl:block bg-white border-b border-[#EBEBEB] sticky top-0 z-[200]">
-        <div className="max-w-[1400px] mx-auto px-7 flex items-center h-[68px]">
+        <div className="max-w-[1200px] mx-auto px-7 flex items-center h-[68px]">
 
           <Link href="/" className="flex items-center gap-3 mr-11 cursor-pointer shrink-0 no-underline">
             <img src="/the-well-logo-icon-transparent.png" alt="The Well" className="h-10 w-auto object-contain" />
@@ -387,13 +391,13 @@ export default function Home() {
       </nav>
 
       {/* ── BODY LAYOUT ── */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-7 pt-4 sm:pt-6 pb-28 md:pb-10 flex gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-7 pt-4 sm:pt-6 pb-28 md:pb-10 flex gap-6">
 
         {/* ── LEFT SIDEBAR (xl 이상) ── */}
-        <div className="hidden xl:block w-[220px] shrink-0">
+        <div className="hidden xl:block w-[220px] shrink-0 space-y-8">
 
           {/* 프로필 카드 */}
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-[22px_16px] mb-4 text-center">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-[24px_16px] text-center">
             <div className="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-3" />
             <div className="text-[15px] font-bold mb-4">
               {user?.user_metadata?.nickname || user?.email}
@@ -406,24 +410,54 @@ export default function Home() {
             </button>
           </div>
 
+          {/* 글쓰기 (데스크톱 전용 — 모바일은 FAB) */}
+          <Link
+            href="/write"
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-white text-[#555] text-sm font-medium border border-[#E5E7EB] rounded-lg no-underline hover:bg-[#F5F5F5] transition-colors"
+          >
+            <PenLine size={16} strokeWidth={1.5} />
+            {t.fabAria}
+          </Link>
+
           {/* 빠른 메뉴 (로그인 후에만) */}
           {user && (
             <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
               {[
-                { icon: '📝', label: t.myPosts },
-                { icon: '💬', label: t.commented },
-                { icon: '⭐', label: t.scrapped },
+                { icon: '👤', label: t.myInfo, href: '/my' },
+                { icon: '📝', label: t.myPosts, href: '/my/posts' },
+                { icon: '⭐', label: t.scrapped, href: '/my/saved' },
               ].map((item, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-2.5 px-4 py-[13px] cursor-pointer text-[15px] hover:bg-[#F5F5F5] transition-colors ${i < 2 ? 'border-b border-[#F5F5F5]' : ''}`}
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2.5 px-4 py-[15px] text-[15px] text-[#1A1A1A] no-underline hover:bg-[#F5F5F5] transition-colors ${i < 2 ? 'border-b border-[#F5F5F5]' : ''}`}
                 >
                   <span>{item.icon}</span>
                   <span>{item.label}</span>
-                </div>
+                </Link>
               ))}
             </div>
           )}
+
+          {/* 학사일정 카드 — 빠른 메뉴와 시각적으로 분리되게 간격을 크게 둔다 */}
+          <div className="mt-24 bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+            <div className="px-[18px] py-[15px] bg-white border-b border-[#EBEBEB]">
+              <span className="text-base font-bold text-[#111827]">📅 {t.calendar}</span>
+            </div>
+            {getUpcoming(6).map((item, i) => (
+              <div key={i} className="flex gap-3 px-[18px] py-2.5 items-center border-b border-[#F5F5F5]">
+                <span className="text-[12px] text-[#92702A] font-bold shrink-0 bg-[#F9F3E8] border border-[#EEE0C4] px-[7px] py-0.5 rounded whitespace-nowrap">
+                  {fmtRange(item)}
+                </span>
+                <span className="text-sm line-clamp-1">{localScheduleTitle(item.title, lang)}</span>
+              </div>
+            ))}
+            <div className="px-[18px] py-2.5 text-right">
+              <Link href="/schedule" className="text-[12px] text-gray-400 no-underline hover:text-gray-600 transition-colors">
+                {t.viewAll}
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* ── MAIN CONTENT ── */}
@@ -606,23 +640,6 @@ export default function Home() {
                 )}
               </>
             )}
-          </div>
-        </div>
-
-        {/* ── RIGHT SIDEBAR (lg 이상) ── */}
-        <div className="hidden lg:block w-[240px] shrink-0">
-          <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-            <div className="px-[18px] py-[13px] bg-white border-b border-[#EBEBEB]">
-              <span className="text-base font-bold text-[#111827]">📅 {t.calendar}</span>
-            </div>
-            {getUpcoming(4).map((item, i, arr) => (
-              <div key={i} className={`flex gap-3 px-[18px] py-2.5 items-center ${i < arr.length - 1 ? 'border-b border-[#F5F5F5]' : ''}`}>
-                <span className="text-[12px] text-[#92702A] font-bold shrink-0 bg-[#F9F3E8] border border-[#EEE0C4] px-[7px] py-0.5 rounded whitespace-nowrap">
-                  {fmtRange(item)}
-                </span>
-                <span className="text-sm line-clamp-1">{localScheduleTitle(item.title, lang)}</span>
-              </div>
-            ))}
           </div>
         </div>
 
