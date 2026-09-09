@@ -9,9 +9,12 @@
     "lint": "eslint",
     "crawl:notices": "node scripts/crawl-notices.mjs",
     "cap:sync": "npx cap sync",
-    "cap:open": "npx cap open ios"
+    "cap:open": "npx cap open ios",
+    "capacitor:copy:before": "mkdir -p out",
+    "capacitor:sync:before": "mkdir -p out"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
     "@capacitor/core": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
     "@supabase/ssr": "^0.10.3",
