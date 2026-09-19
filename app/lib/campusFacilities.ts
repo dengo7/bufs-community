@@ -213,6 +213,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'D113', building: 'D동', room: 'D113', phone: CU_PHONE,
     hours: { text: ['월~금 08:00~18:00'], rules: [{ days: WEEKDAYS, open: '08:00', close: '18:00' }] },
     description: '편의점 물품 판매', services: ['음료', '간식', '생활용품'],
+    image: '/campus/cu-d.jpg',
     keywords: ['편의점', 'convenience store', '便利店', 'コンビニ'],
   }),
   make({
@@ -230,6 +231,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'A126', building: 'A동', room: 'A126', phone: CU_PHONE,
     hours: { text: ['월~일 24시간'], rules: ALL_DAY },
     description: '편의점 물품 판매', services: ['음료', '간식', '생활용품'],
+    image: '/campus/cu-a.jpg',
     keywords: ['편의점', '24시간', 'convenience store', '便利店', 'コンビニ'],
   }),
   make({
@@ -238,6 +240,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: '기숙사', building: '기숙사',
     hours: { text: ['월~일 24시간'], rules: ALL_DAY },
     description: '편의점 물품 판매', notes: '기숙사생만 이용할 수 있어요.',
+    image: '/campus/cu-dorm.jpg',
     keywords: ['편의점', '기숙사', '24시간', 'dormitory', 'convenience store', '便利店', 'コンビニ'],
   }),
   make({
@@ -268,6 +271,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
       ],
     },
     description: '음료 및 디저트 판매',
+    image: '/campus/cafe-blueport-a.jpg',
     keywords: ['카페', '커피', 'cafe', 'coffee', '咖啡', 'カフェ'],
   }),
   make({
@@ -283,6 +287,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
       ],
     },
     description: '학생식당 (조식·중식)',
+    image: '/campus/ourhome-student.jpg',
     keywords: ['학식', '학생식당', '밥', 'cafeteria', 'meal', '食堂', '学食'],
   }),
   make({
