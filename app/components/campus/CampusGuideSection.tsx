@@ -3,6 +3,7 @@ import { Store, BookOpen, Bus, MapPinned } from 'lucide-react';
 import type { UILang } from '../../lib/categories';
 import { CAMPUS_T } from '../../lib/campusI18n';
 import { CAMPUS_TONES, type CampusTone } from './FacilityThumb';
+import ShuttleQuickCard from './ShuttleQuickCard';
 
 interface Props {
   lang: UILang;
@@ -55,6 +56,9 @@ export default function CampusGuideSection({ lang }: Props) {
           );
         })}
       </div>
+
+      {/* 통학버스 다음 출발 퀵 카드 */}
+      <ShuttleQuickCard lang={lang} />
     </div>
   );
 }
