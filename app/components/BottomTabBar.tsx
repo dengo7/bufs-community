@@ -26,7 +26,8 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
 
   const COMMUNITY_PATHS = ['/community', '/category', '/post', '/guide', '/search'];
   const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
+    // 캠퍼스 가이드(/campus)는 홈 섹션에서만 진입하므로 홈 탭으로 표시
+    if (path === '/') return pathname === '/' || pathname.startsWith('/campus');
     if (path === '/community') return COMMUNITY_PATHS.some(p => pathname.startsWith(p));
     return pathname.startsWith(path);
   };

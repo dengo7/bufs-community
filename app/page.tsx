@@ -8,6 +8,7 @@ import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
 import HeroBanner from './components/HeroBanner';
 import NoticeSection from './components/NoticeSection';
+import CampusGuideSection from './components/campus/CampusGuideSection';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
@@ -468,6 +469,9 @@ export default function Home() {
 
           {/* ── 학사공지 ── */}
           <NoticeSection lang={lang} />
+
+          {/* ── 캠퍼스 가이드 ── */}
+          <CampusGuideSection lang={lang} />
 
           {/* ── LIFE GUIDE ── */}
           <div className="mt-4 mb-4">
