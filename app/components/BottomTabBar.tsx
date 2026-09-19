@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Calendar, User } from 'lucide-react';
+import { Home, MessageCircle, Calendar, Table2, User } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 
@@ -10,6 +10,7 @@ const TAB_LABELS = {
   home:      { ko: '홈',      en: 'Home',      zh: '首页', ja: 'ホーム' },
   community: { ko: '커뮤니티', en: 'Community', zh: '社区', ja: 'コミュニティ' },
   schedule:  { ko: '학사일정', en: 'Schedule',  zh: '日程', ja: '学事日程' },
+  timetable: { ko: '시간표',  en: 'Timetable', zh: '课程表', ja: '時間割' },
   my:        { ko: '내정보',  en: 'My',         zh: '我的', ja: 'MY' },
 } as const;
 
@@ -59,6 +60,12 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
         <Link href="/schedule" className={tabCls('/schedule')}>
           <Calendar size={24} strokeWidth={iconW('/schedule')} />
           <span className={labelCls('/schedule')}>{label('schedule')}</span>
+        </Link>
+
+        {/* 시간표 */}
+        <Link href="/timetable" className={tabCls('/timetable')}>
+          <Table2 size={24} strokeWidth={iconW('/timetable')} />
+          <span className={labelCls('/timetable')}>{label('timetable')}</span>
         </Link>
 
         {/* 내정보 */}
