@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 통학버스 UI 참고 자료 (임시)
+_shuttle-src/

@@ -397,8 +397,8 @@ const PENDING_ITEMS: CampusFacility[] = [
   }),
   make({
     id: 'shuttle', title: '셔틀버스 시간표가 궁금해요', category: 'transport', type: 'shuttle',
-    sourceType: 'official', icon: 'Bus', situations: ['move'], pending: true,
-    description: '노선 · 승차장 안내', notes: PENDING_NOTE,
+    sourceType: 'official', icon: 'Bus', situations: ['move'],
+    description: '노선 · 승차장 안내',
     keywords: ['셔틀', '버스', '시간표', 'shuttle', 'bus', '校车', 'シャトルバス'],
   }),
   make({

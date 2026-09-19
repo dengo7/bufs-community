@@ -319,9 +319,9 @@ export const FACILITY_TRANSLATIONS: Record<string, Translations> = {
     ja: { title: '図書館の利用時間を知りたい', location: '中央図書館', description: '中央図書館 · 閲覧室の情報', notes: PENDING_NOTE.ja },
   },
   'shuttle': {
-    en: { title: 'What is the shuttle bus timetable?', description: 'Routes · boarding points', notes: PENDING_NOTE.en },
-    zh: { title: '想知道校车时刻表', description: '路线 · 乘车点', notes: PENDING_NOTE.zh },
-    ja: { title: 'シャトルバスの時刻表を知りたい', description: '路線 · 乗り場の案内', notes: PENDING_NOTE.ja },
+    en: { title: 'What is the shuttle bus timetable?', description: 'Routes · boarding points' },
+    zh: { title: '想知道校车时刻表', description: '路线 · 乘车点' },
+    ja: { title: 'シャトルバスの時刻表を知りたい', description: '路線 · 乗り場の案内' },
   },
   'campus-map': {
     en: { title: 'Campus map', description: 'Find buildings', notes: PENDING_NOTE.en },
