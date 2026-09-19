@@ -42,3 +42,7 @@ next-env.d.ts
 
 # 통학버스 UI 참고 자료 (임시)
 _shuttle-src/
+
+# Xcode personal settings
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcworkspace/xcuserdata/
