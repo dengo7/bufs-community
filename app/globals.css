@@ -47,40 +47,53 @@ body {
   touch-action: manipulation;
 }
 
-/* ── 하단 탭바 여백 토큰 ──────────────────────────────────────
-   env(safe-area-inset-bottom)는 여기와 BottomTabBar 두 곳에서만 다룬다.
-   페이지 본문·고정 요소는 아래 유틸리티만 쓰고 env()를 직접 쓰지 않는다.
-   BottomTabBar의 h-16(64px)과 --tabbar-h는 항상 함께 맞출 것. */
-:root {
-  --tabbar-h: 64px;        /* BottomTabBar 높이 (safe-area 제외) */
-  --tabbar-input-h: 72px;  /* 게시글 상세의 고정 댓글 입력창 높이 */
-}
-@layer utilities {
-  /* 본문 하단 여백: 마지막 카드가 탭바에 가려지지 않게 */
-  .pb-tabbar {
-    padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom));
-  }
-  /* 고정 댓글 입력창까지 있는 게시글 상세용 */
-  .pb-tabbar-input {
-    padding-bottom: calc(var(--tabbar-h) + var(--tabbar-input-h) + 24px + env(safe-area-inset-bottom));
-  }
-  /* 탭바 바로 위에 붙는 고정 요소(댓글 입력창 등) */
-  .bottom-tabbar {
-    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
-  }
-  /* 탭바 위에 띄우는 FAB */
-  .bottom-tabbar-fab {
-    bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom));
-  }
-  /* 탭바를 덮는 하단 시트 등, 화면 맨 아래에 직접 붙는 요소의 safe-area 여백 */
-  .pb-safe {
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-  }
-  /* md 이상에서는 BottomTabBar가 숨겨지므로(md:hidden) 탭바 높이를 빼준다 */
+/* ── 하단 탭바 여백 유틸리티 ──────────────────────────────────
+   ⚠ 반드시 @utility로 선언할 것. 손으로 쓴 `@layer utilities { ... }` 블록은
+   Tailwind v4 프로덕션 빌드(배포 환경)에서 통째로 제거되어, 클래스만 남고
+   규칙이 사라진다(= 하단 여백 0 → 콘텐츠가 탭바에 가려짐). 같은 파일의
+   @utility scrollbar-hide는 배포본에도 정상적으로 남아 있다.
+
+   수치는 커스텀 프로퍼티 대신 직접 적는다(사용처가 없으면 변수도 함께
+   제거될 수 있음). BottomTabBar의 h-16(64px)과 아래 64px를 함께 맞출 것.
+   env(safe-area-inset-bottom)은 여기와 BottomTabBar에서만 다룬다.
+
+   최소값(max)을 두는 이유: env()가 0으로 잡히는 WebView에서도 탭바(64px)와
+   홈 인디케이터 영역을 확실히 비우기 위해, 기존에 문제가 없던 112px(pb-28)을
+   바닥값으로 삼는다. md 이상은 BottomTabBar가 숨겨지므로 탭바 높이를 뺀다. */
+
+/* 본문 하단 여백: 마지막 카드가 탭바에 가려지지 않게 */
+@utility pb-tabbar {
+  padding-bottom: max(112px, calc(64px + 24px + env(safe-area-inset-bottom)));
   @media (min-width: 48rem) {
-    .pb-tabbar { padding-bottom: 2.5rem; }
-    .pb-tabbar-input { padding-bottom: calc(var(--tabbar-input-h) + 2.5rem); }
-    .bottom-tabbar { bottom: 0; }
-    .bottom-tabbar-fab { bottom: 1.5rem; }
+    padding-bottom: 2.5rem;
   }
+}
+
+/* 고정 댓글 입력창(72px)까지 있는 게시글 상세용 */
+@utility pb-tabbar-input {
+  padding-bottom: max(184px, calc(64px + 72px + 24px + env(safe-area-inset-bottom)));
+  @media (min-width: 48rem) {
+    padding-bottom: calc(72px + 2.5rem);
+  }
+}
+
+/* 탭바 바로 위에 붙는 고정 요소(댓글 입력창 등) */
+@utility bottom-tabbar {
+  bottom: calc(64px + env(safe-area-inset-bottom));
+  @media (min-width: 48rem) {
+    bottom: 0;
+  }
+}
+
+/* 탭바 위에 띄우는 FAB */
+@utility bottom-tabbar-fab {
+  bottom: calc(64px + 16px + env(safe-area-inset-bottom));
+  @media (min-width: 48rem) {
+    bottom: 1.5rem;
+  }
+}
+
+/* 탭바를 덮는 하단 시트 등, 화면 맨 아래에 직접 붙는 요소의 safe-area 여백 */
+@utility pb-safe {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
