@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sun } from 'lucide-react';
 import BottomTabBar from '../components/BottomTabBar';
 import {
@@ -91,12 +91,18 @@ function buildGroups(today: string): MonthGroup[] {
 // ── 페이지 ────────────────────────────────────────────────────
 export default function SchedulePage() {
   const lang = useLang();
-  const today   = kstToday();
-  const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000);
-  const todayMD = `${kstDate.getUTCMonth() + 1}.${String(kstDate.getUTCDate()).padStart(2, '0')}`;
+  // "오늘"은 마운트(첫 렌더) 시점에 한 번만 계산해서 고정한다 — 렌더 중 매번
+  // Date.now()를 직접 호출하지 않도록 함(react-hooks/purity).
+  const [today]  = useState(() => kstToday());
+  const [todayMD] = useState(() => {
+    const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    return `${kstDate.getUTCMonth() + 1}.${String(kstDate.getUTCDate()).padStart(2, '0')}`;
+  });
   const groups  = buildGroups(today);
   const labels  = SCHEDULE_LABELS[lang];
-  let todayLineShown = false;
+  // 오늘 구분선은 "표시 순서상 가장 먼저 나오는 nearest/ongoing 항목" 위치에만 표시.
+  // 렌더 중 외부 변수를 mutate하지 않도록(react-hooks/immutability) 미리 위치를 계산해둔다.
+  const todayLineIdx = groups.flatMap(g => g.items).find(item => item.nearest || item.ongoing)?.idx;
   const nearRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -162,8 +168,7 @@ export default function SchedulePage() {
             <div className="flex flex-col gap-[7px]">
               {group.items.map(item => {
                 const style = SCHEDULE_STYLES[item.type];
-                const showTodayLine = (item.nearest || item.ongoing) && !todayLineShown;
-                if (showTodayLine) todayLineShown = true;
+                const showTodayLine = item.idx === todayLineIdx;
                 return (
                   <div key={item.idx}>
 
