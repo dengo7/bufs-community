@@ -1,7 +1,7 @@
 import { after } from 'next/server';
 import { notFound } from 'next/navigation';
 import { createSupabaseServerClient } from '../../lib/supabase/server';
-import PostView from './PostView';
+import PostView, { type PostWithProfile, type CommentRow } from './PostView';
 
 export default async function PostPage({
   params,
@@ -67,7 +67,7 @@ export default async function PostPage({
         nationality: profileResult.data.nationality ?? null,
         avatar_url: profileResult.data.avatar_url ?? null,
       };
-      isCurrentUserAdmin = (profileResult.data as any).role === 'admin';
+      isCurrentUserAdmin = profileResult.data.role === 'admin';
     }
   }
 
@@ -99,12 +99,12 @@ export default async function PostPage({
 
   return (
     <PostView
-      post={post as any}
+      post={post as unknown as PostWithProfile}
       currentUserId={user?.id ?? null}
       currentUserProfile={currentUserProfile}
       isCurrentUserAdmin={isCurrentUserAdmin}
       isLiked={isLiked}
-      initialComments={(comments ?? []) as any}
+      initialComments={(comments ?? []) as unknown as CommentRow[]}
     />
   );
 }

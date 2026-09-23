@@ -354,8 +354,9 @@ export default function CommentSection({
       });
       setReportTarget(null);
       setReportReason('');
-    } catch (e: any) {
-      if (e?.code === '23505') alert(t.alreadyReported);
+    } catch (e) {
+      const code = e && typeof e === 'object' && 'code' in e ? e.code : undefined;
+      if (code === '23505') alert(t.alreadyReported);
       else alert(t.genericError);
     } finally {
       setReportBusy(false);

@@ -16,7 +16,8 @@ const TAB_LABELS = {
 
 interface Props {
   lang?: Lang;
-  user?: any;
+  // 컴포넌트 내부에서 사용하진 않지만, 호출부에서 로그인 상태를 함께 넘기는 곳들이 있어 시그니처로 받아둔다.
+  user?: { id: string } | null;
 }
 
 export default function BottomTabBar({ lang = 'ko' }: Props) {

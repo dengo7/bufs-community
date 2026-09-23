@@ -305,8 +305,9 @@ export default function PostView({
       showToast(true, t.reportDone);
       setShowReportModal(false);
       setReportReason('');
-    } catch (e: any) {
-      if (e?.code === '23505') showToast(false, t.alreadyReported);
+    } catch (e) {
+      const code = e && typeof e === 'object' && 'code' in e ? e.code : undefined;
+      if (code === '23505') showToast(false, t.alreadyReported);
       else showToast(false, t.genericError);
     } finally {
       setReportBusy(false);

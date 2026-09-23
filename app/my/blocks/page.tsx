@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User, Session } from '@supabase/supabase-js';
 import { ArrowLeft, UserX } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { unblockUser } from '../../lib/blocks';
@@ -56,7 +57,7 @@ type BlockedProfile = {
 export default function BlocksPage() {
   const router = useRouter();
   const lang = useLang();
-  const [user, setUser]         = useState<any>(null);
+  const [user, setUser]         = useState<User | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [blocked, setBlocked]   = useState<BlockedProfile[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -73,7 +74,7 @@ export default function BlocksPage() {
   useEffect(() => {
     const client = getSupabaseClient();
     // 로컬 세션 읽기(네트워크 왕복 없음)
-    client.auth.getSession().then(async ({ data }: { data: { session: any } }) => {
+    client.auth.getSession().then(async ({ data }: { data: { session: Session | null } }) => {
       const u = data.session?.user ?? null;
       setUser(u);
       setAuthLoaded(true);

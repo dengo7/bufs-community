@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
@@ -183,7 +184,7 @@ function SectionCard({ label, children }: { label: string; children: React.React
 // ── 페이지 ────────────────────────────────────────────────────
 export default function MyPage() {
   const lang = useLang();
-  const [user, setUser]             = useState<any>(null);
+  const [user, setUser]             = useState<SupabaseUser | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);
   const [totalLikes, setTotalLikes] = useState(0);
@@ -202,7 +203,7 @@ export default function MyPage() {
   useEffect(() => {
     const client = getSupabaseClient();
 
-    const load = async (u: any) => {
+    const load = async (u: SupabaseUser | null) => {
       setUser(u);
       setAuthLoaded(true);
       if (!u) return;
@@ -219,9 +220,9 @@ export default function MyPage() {
     };
 
     // authLoaded 게이트용 — 로컬 세션 읽기(네트워크 왕복 없음)
-    client.auth.getSession().then(({ data }: { data: { session: any } }) => load(data.session?.user ?? null));
+    client.auth.getSession().then(({ data }: { data: { session: Session | null } }) => load(data.session?.user ?? null));
 
-    const { data: { subscription } } = client.auth.onAuthStateChange((_e: any, session: any) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((_e: AuthChangeEvent, session: Session | null) => {
       load(session?.user ?? null);
     });
     return () => subscription.unsubscribe();

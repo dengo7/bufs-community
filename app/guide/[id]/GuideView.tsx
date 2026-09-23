@@ -33,7 +33,7 @@ const PLACE_BTN = {
   ja: { map: '地図',     call: '電話',    visit: 'リンク'   },
 } as const;
 
-type Guide = {
+export type Guide = {
   id: string;
   category_slug: string;
   card_type: 'procedure' | 'places' | 'checklist' | 'info';

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
@@ -158,9 +159,15 @@ type FeedPost = {
   bookmarked?: boolean;
 };
 
+type PinnedPost = FeedPost & {
+  pinned: boolean;
+  pin_scope: string;
+  pinned_at: string | null;
+};
+
 export default function Home() {
   const lang = useLang();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -169,7 +176,7 @@ export default function Home() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedLoadingMore, setFeedLoadingMore] = useState(false);
   const [feedHasMore, setFeedHasMore] = useState(true);
-  const [pinnedPosts, setPinnedPosts] = useState<any[]>([]);
+  const [pinnedPosts, setPinnedPosts] = useState<PinnedPost[]>([]);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
 
@@ -179,7 +186,7 @@ export default function Home() {
   useEffect(() => {
     const client = getSupabaseClient();
     // 화면 표시 여부(authChecked) 판단용 — 로컬 세션 읽기(네트워크 왕복 없음)
-    client.auth.getSession().then(async ({ data }: { data: { session: any } }) => {
+    client.auth.getSession().then(async ({ data }: { data: { session: Session | null } }) => {
       const u = data.session?.user ?? null;
       // 비로그인 시 로그인 페이지로 리다이렉트
       if (!u) { router.push('/auth'); return; }
@@ -193,7 +200,7 @@ export default function Home() {
       fetchUnreadCount(u.id).then(setUnreadCount);
       getBlockedIds(u.id).then(setBlockedIds);
     });
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event: any, session: any) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       const u = session?.user ?? null;
       if (!u) { router.push('/auth'); return; }
       setUser(u);
@@ -216,7 +223,7 @@ export default function Home() {
         .eq('pin_scope', 'global');
       if (blockedIds.length) query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
       const { data } = await query.order('pinned_at', { ascending: false });
-      if (data) setPinnedPosts(data as any[]);
+      if (data) setPinnedPosts(data as unknown as PinnedPost[]);
     };
     fetchPinned();
   }, [blockedIds]);
@@ -291,7 +298,7 @@ export default function Home() {
 
   // 차단한 사용자의 게시글 숨김
   const visibleFeedPosts = feedPosts.filter(p => !blockedIds.includes(p.author_id));
-  const visiblePinnedPosts = pinnedPosts.filter((p: any) => !blockedIds.includes(p.author_id));
+  const visiblePinnedPosts = pinnedPosts.filter((p) => !blockedIds.includes(p.author_id));
 
   // 인증 확인 전에는 빈 화면 (비로그인이면 /auth로 리다이렉트됨)
   if (!authChecked) {
@@ -504,7 +511,7 @@ export default function Home() {
                 <span className="text-[12px] font-semibold text-[#1B7CC0]">{t.allNotices}</span>
               </div>
               <div className="space-y-2">
-                {visiblePinnedPosts.map((post: any) => (
+                {visiblePinnedPosts.map((post) => (
                   <Link key={post.id} href={`/post/${post.id}`}
                     className="block bg-[#DBEAFE] rounded-xl border border-[#93C5FD] p-4 no-underline">
                     <div className="flex items-center gap-1.5 mb-2">

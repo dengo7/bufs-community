@@ -1,5 +1,4 @@
 import sharp from 'sharp';
-import { readFileSync } from 'fs';
 import { mkdirSync } from 'fs';
 
 const sizes = [20, 29, 40, 58, 60, 76, 80, 87, 120, 152, 167, 180, 1024];

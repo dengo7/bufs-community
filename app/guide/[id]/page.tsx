@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createSupabaseServerClient } from '../../lib/supabase/server';
-import GuideView from './GuideView';
+import GuideView, { type Guide } from './GuideView';
 
 export default async function GuidePage({
   params,
@@ -30,6 +30,6 @@ export default async function GuidePage({
   }
 
   return (
-    <GuideView guide={guide as any} isAdmin={isAdmin} />
+    <GuideView guide={guide as unknown as Guide} isAdmin={isAdmin} />
   );
 }

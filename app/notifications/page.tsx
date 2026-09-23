@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import type { User, Session } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo } from '../lib/utils';
@@ -65,7 +66,7 @@ const T = {
 export default function NotificationsPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Lang>(getLang);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -89,7 +90,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     const supabase = getSupabaseClient();
     // 로컬 세션 읽기(네트워크 왕복 없음)
-    supabase.auth.getSession().then(({ data }: { data: { session: any } }) => {
+    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
       const u = data.session?.user ?? null;
       setUser(u);
       if (u) load(u.id);

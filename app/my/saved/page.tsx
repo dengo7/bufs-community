@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { User, Session } from '@supabase/supabase-js';
 import { ArrowLeft, ShieldCheck, Heart, MessageCircle, Eye } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import BottomTabBar from '../../components/BottomTabBar';
@@ -25,7 +26,7 @@ type FeedPost = {
 export default function SavedPage() {
   const lang = useLang();
   const router = useRouter();
-  const [user, setUser]         = useState<any>(null);
+  const [user, setUser]         = useState<User | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [posts, setPosts]       = useState<FeedPost[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -33,7 +34,7 @@ export default function SavedPage() {
   useEffect(() => {
     const client = getSupabaseClient();
     // 로컬 세션 읽기(네트워크 왕복 없음)
-    client.auth.getSession().then(async ({ data }: { data: { session: any } }) => {
+    client.auth.getSession().then(async ({ data }: { data: { session: Session | null } }) => {
       const u = data.session?.user ?? null;
       setUser(u);
       setAuthLoaded(true);
