@@ -23,7 +23,7 @@ const GUIDE_CATEGORY_SLUGS = ['housing', 'bank', 'telecom', 'insurance', 'medica
 const SELECT_FIELDS = `
   id, author_id, title, content, created_at,
   pinned, pin_scope, pinned_at,
-  profiles ( nickname, nationality, avatar_url, role )
+  profiles ( nickname, avatar_url, role )
 `;
 
 const T = {
@@ -33,7 +33,7 @@ const T = {
     write: '글쓰기',
     justNow: '방금 전',
     homeAria: '홈으로',
-    adminGuide: '관리자 가이드',
+    adminGuide: '한국 생활 가이드',
     lastUpdated: '최종 수정',
     noticeSection: '공지',
     pinGlobal: '전체 공지',
@@ -45,7 +45,7 @@ const T = {
     write: 'Write',
     justNow: 'just now',
     homeAria: 'Home',
-    adminGuide: 'Admin Guide',
+    adminGuide: 'Life in Korea Guide',
     lastUpdated: 'Last updated',
     noticeSection: 'Notice',
     pinGlobal: 'Global Notice',
@@ -57,7 +57,7 @@ const T = {
     write: '写作',
     justNow: '刚刚',
     homeAria: '首页',
-    adminGuide: '管理员指南',
+    adminGuide: '韩国生活指南',
     lastUpdated: '最后更新',
     noticeSection: '公告',
     pinGlobal: '全体公告',
@@ -69,7 +69,7 @@ const T = {
     write: '投稿',
     justNow: 'たった今',
     homeAria: 'ホーム',
-    adminGuide: '管理者ガイド',
+    adminGuide: '韓国生活ガイド',
     lastUpdated: '最終更新',
     noticeSection: 'お知らせ',
     pinGlobal: '全体お知らせ',
@@ -88,7 +88,6 @@ export interface PostRow {
   pinned_at: string | null;
   profiles: {
     nickname: string;
-    nationality: string | null;
     avatar_url: string | null;
     role: string | null;
   } | null;
@@ -252,7 +251,7 @@ export default function CategoryView({ slug }: Props) {
           <button
             type="button"
             onClick={handleBack}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
             aria-label={t.homeAria}
           >
             <ChevronLeft size={22} strokeWidth={2} />
@@ -267,7 +266,7 @@ export default function CategoryView({ slug }: Props) {
       </header>
 
       {/* 글 목록 */}
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
         {loading ? (
           /* 로딩 중 — 게시글 목록 자리에 스켈레톤 표시 (헤더/언어필터는 그대로) */
           <div className="space-y-2.5">
@@ -425,7 +424,7 @@ export default function CategoryView({ slug }: Props) {
       {/* 플로팅 글쓰기 버튼 (모바일) */}
       <Link
         href="/write"
-        className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
+        className="md:hidden fixed bottom-tabbar-fab right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
         aria-label={t.write}
       >

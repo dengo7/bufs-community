@@ -76,26 +76,30 @@ const CATEGORY_DESC: Record<string, Record<UILang, string>> = {
 
 const T = {
   ko: {
-    title: '관리자 가이드',
-    intro: '한국 생활이 처음이라도 걱정 마세요! 정착에 필요한 정보를 관리자가 직접 정리했어요 ✨',
+    title: '한국 생활 가이드',
+    introTitle: '한국 생활, 하나씩 준비해요',
+    introDesc: '정착에 필요한 정보를 모았어요',
     empty: '곧 채워질 예정이에요 🌱',
     backAria: '뒤로가기',
   },
   en: {
-    title: 'Admin Guide',
-    intro: "New to life in Korea? Don't worry — we've organized everything you need to settle in ✨",
+    title: 'Life in Korea Guide',
+    introTitle: 'Settle into Korea, step by step',
+    introDesc: 'Everything you need to get started',
     empty: 'Coming soon 🌱',
     backAria: 'Back',
   },
   zh: {
-    title: '管理员指南',
-    intro: '初来韩国也不用担心！管理员为你整理了定居所需的一切信息 ✨',
+    title: '韩国生活指南',
+    introTitle: '韩国生活，一步步准备',
+    introDesc: '汇集了定居所需的信息',
     empty: '即将上线 🌱',
     backAria: '返回',
   },
   ja: {
-    title: '管理者ガイド',
-    intro: '韓国での生活が初めてでも大丈夫！定着に必要な情報を管理者がまとめました ✨',
+    title: '韓国生活ガイド',
+    introTitle: '韓国生活、ひとつずつ準備しよう',
+    introDesc: '定着に必要な情報をまとめました',
     empty: '近日公開予定です 🌱',
     backAria: '戻る',
   },
@@ -161,7 +165,7 @@ export default function GuidesPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label={t.backAria}
           >
             <ArrowLeft size={22} strokeWidth={2} />
@@ -170,16 +174,17 @@ export default function GuidesPage() {
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         {/* ── 인트로 배너 ── */}
-        <div className="mb-4 rounded-2xl bg-gradient-to-br from-[#EFF6FF] to-[#E0F2FE] border border-blue-100 px-4 py-3.5">
-          <p className="text-[13px] leading-relaxed text-[#1E3A5F]">{t.intro}</p>
+        <div className="mb-4 rounded-2xl bg-gradient-to-br from-[#EFF6FF] to-[#E0F2FE] border border-blue-100 px-4 py-4">
+          <p className="text-[16px] font-bold leading-snug text-[#1E3A5F]">{t.introTitle}</p>
+          <p className="mt-1 text-[13.5px] leading-snug text-[#475569]">{t.introDesc}</p>
         </div>
 
         {/* ── 카테고리 아코디언 ── */}
         {loading ? (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {GUIDE_CATEGORY_SLUGS.map(slug => (
               <div key={slug} className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 animate-pulse">
                 <div className="flex items-center gap-3">
@@ -193,7 +198,7 @@ export default function GuidesPage() {
             ))}
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {GUIDE_CATEGORY_SLUGS.map(slug => {
               const category = getCategoryBySlug(slug);
               const Icon = category?.Icon;
@@ -216,16 +221,16 @@ export default function GuidesPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-[#1A1A1A] truncate leading-tight">
+                      <p className="text-[15px] font-semibold text-[#1A1A1A] truncate leading-tight">
                         {getCategoryLabel(slug, dbLang)}
                       </p>
-                      <p className="mt-0.5 text-[12px] text-gray-400 truncate leading-snug">
+                      <p className="mt-0.5 text-[13px] text-gray-500 truncate leading-snug">
                         {CATEGORY_DESC[slug]?.[lang]}
                       </p>
                     </div>
 
                     {items.length > 0 && (
-                      <span className="text-[11px] font-bold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5 shrink-0">
+                      <span className="text-[12px] font-bold text-blue-600 bg-blue-50 rounded-full px-2 py-0.5 shrink-0">
                         {items.length}
                       </span>
                     )}
@@ -253,7 +258,7 @@ export default function GuidesPage() {
                               <Link
                                 key={g.id}
                                 href={`/guide/${g.id}`}
-                                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-100
+                                className="flex items-center gap-2.5 px-3 py-3 min-h-[44px] rounded-xl border border-gray-100
                                            bg-[#FAFBFC] no-underline transition-all
                                            hover:bg-white hover:border-blue-200 hover:shadow-sm
                                            active:scale-[0.99] active:bg-blue-50/40 group"
@@ -262,7 +267,7 @@ export default function GuidesPage() {
                                                  justify-center shrink-0 group-hover:border-blue-100 transition-colors">
                                   <CardIcon size={14} strokeWidth={1.8} className="text-[#1B7CC0]" />
                                 </span>
-                                <span className="flex-1 min-w-0 text-[13px] font-medium text-[#1A1A1A] truncate">
+                                <span className="flex-1 min-w-0 text-[14px] font-medium text-[#1A1A1A] truncate">
                                   {guideTitle(g)}
                                 </span>
                                 <ChevronRight

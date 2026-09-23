@@ -29,7 +29,7 @@ export default function Loading() {
       </header>
 
       {/* ── 본문 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-44">
+      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-tabbar-input">
 
         {/* 제목 (2줄) */}
         <div className="mt-1 space-y-2">
@@ -88,7 +88,7 @@ export default function Loading() {
       </div>
 
       {/* ── 하단 고정 댓글 입력창 자리 (CommentSection의 fixed 입력바 위치와 일치) ── */}
-      <div className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-tabbar left-0 right-0 z-[60] bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.04)]">
         <div className="max-w-[600px] mx-auto px-4 py-2.5">
           <div className="h-10 w-full rounded-full bg-gray-100 animate-pulse" />
         </div>

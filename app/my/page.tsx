@@ -287,7 +287,7 @@ export default function MyPage() {
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-6 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-6 pb-tabbar">
 
         {/* ── 비로그인 상태 ── */}
         {authLoaded && !user && (

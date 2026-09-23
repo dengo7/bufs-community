@@ -19,7 +19,7 @@ export default async function PostPage({
         id, title, content, category, created_at, view_count,
         comment_count, like_count, author_id, image_urls,
         pinned, pin_scope, pinned_at,
-        profiles ( nickname, nationality, avatar_url, role )
+        profiles ( nickname, avatar_url, role )
       `)
       .eq('id', id)
       .eq('is_deleted', false)
@@ -37,7 +37,7 @@ export default async function PostPage({
   // (차단목록은 이후 본문 노출 여부 판정과 댓글 필터에 사용된다)
   let blockedIds: string[] = [];
   let isLiked = false;
-  let currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null = null;
+  let currentUserProfile: { nickname: string; avatar_url: string | null } | null = null;
   let isCurrentUserAdmin = false;
 
   if (user) {
@@ -54,7 +54,7 @@ export default async function PostPage({
         .maybeSingle(),
       supabase
         .from('profiles')
-        .select('nickname, nationality, avatar_url, role')
+        .select('nickname, avatar_url, role')
         .eq('id', user.id)
         .single(),
     ]);
@@ -64,7 +64,6 @@ export default async function PostPage({
     if (profileResult.data) {
       currentUserProfile = {
         nickname: profileResult.data.nickname,
-        nationality: profileResult.data.nationality ?? null,
         avatar_url: profileResult.data.avatar_url ?? null,
       };
       isCurrentUserAdmin = profileResult.data.role === 'admin';
@@ -80,7 +79,7 @@ export default async function PostPage({
     .from('comments')
     .select(`
       id, post_id, author_id, parent_id, content, is_deleted, created_at,
-      profiles ( nickname, nationality, avatar_url, role )
+      profiles ( nickname, avatar_url, role )
     `)
     .eq('post_id', id)
     .eq('is_deleted', false);

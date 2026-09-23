@@ -416,9 +416,8 @@ function Sheet({ onClose, children }: { onClose: () => void; children: ReactNode
         onClick={onClose}
       />
       <div
-        className="relative bg-white w-full max-w-[480px] rounded-t-[24px] md:rounded-[24px] shadow-xl max-h-[90vh] overflow-y-auto px-5 pt-3"
+        className="relative bg-white w-full max-w-[480px] rounded-t-[24px] md:rounded-[24px] shadow-xl max-h-[90vh] overflow-y-auto px-5 pt-3 pb-safe"
         style={{
-          paddingBottom: 'calc(20px + env(safe-area-inset-bottom))',
           animation: 'sheet-up 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
       >
@@ -647,7 +646,7 @@ export default function TimetablePage() {
       </header>
 
       {/* ── 본문 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-tabbar">
 
         {/* 타이틀 + 추가 버튼 */}
         <div className="flex items-start gap-3 mb-4">

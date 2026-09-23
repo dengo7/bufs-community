@@ -107,19 +107,19 @@ export default function CampusView() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label={t.back}
           >
             <ArrowLeft size={22} strokeWidth={2} />
           </button>
           <div className="flex-1 min-w-0 leading-tight">
             <p className="text-[15px] font-bold truncate">{t.title}</p>
-            <p className="text-[10.5px] text-[#94A3B8] truncate">{t.school}</p>
+            <p className="text-[12px] text-[#64748B] truncate">{t.school}</p>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         {/* ── 타이틀 + 검색 ── */}
         <div className="relative overflow-hidden rounded-2xl border border-[#DBE7FE] bg-gradient-to-br from-[#EAF1FE] to-[#F5F9FF] px-4 pt-5 pb-4">

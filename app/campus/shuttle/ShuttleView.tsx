@@ -82,19 +82,19 @@ export default function ShuttleView() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label={t.back}
           >
             <ArrowLeft size={22} strokeWidth={2} />
           </button>
           <div className="flex-1 min-w-0 leading-tight">
             <p className="text-[15px] font-bold truncate">{t.title}</p>
-            <p className="text-[10.5px] text-[#94A3B8] truncate">{t.school}</p>
+            <p className="text-[12px] text-[#64748B] truncate">{t.school}</p>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         {/* ── 다음 버스 카드 ── */}
         <div className="rounded-2xl border-2 border-[#1D4ED8]/25 bg-[#EFF6FF] px-4 py-4">
@@ -171,7 +171,7 @@ export default function ShuttleView() {
           <div className="flex items-center gap-1.5 mb-3">
             <CalendarDays size={15} strokeWidth={2} className="text-[#1D4ED8]" />
             <h2 className="text-[14px] font-bold text-[#111827]">{t.timetableTitle}</h2>
-            <span className="text-[10.5px] text-[#94A3B8]">· {t.tabs[activeKey]}</span>
+            <span className="text-[12px] text-[#64748B]">· {t.tabs[activeKey]}</span>
           </div>
 
           {/* 방학·주말 탭에만 노선 토글 (상위 탭과 구분되는 하위 세그먼트 컨트롤) */}
@@ -300,7 +300,7 @@ export default function ShuttleView() {
         </div>
 
         {/* 출처 · 기준일 */}
-        <p className="mt-4 text-[10.5px] text-[#94A3B8] text-center">
+        <p className="mt-4 text-[12px] text-[#64748B] text-center">
           {t.sourceLabel}: {SHUTTLE_SOURCE.name} · {t.lastVerified}: {SHUTTLE_SOURCE.lastVerified}
         </p>
       </div>

@@ -37,7 +37,7 @@ type FeedPost = {
   pinned: boolean;
   pin_scope: 'global' | 'category' | null;
   pinned_at: string | null;
-  profiles: { nickname: string; nationality: string | null; role: string | null } | null;
+  profiles: { nickname: string; role: string | null } | null;
 };
 
 export default function CommunityPage() {
@@ -68,7 +68,7 @@ export default function CommunityPage() {
       const client = getSupabaseClient();
       let query = client
         .from('posts')
-        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, pinned, pin_scope, pinned_at, profiles(nickname, role)')
         .eq('is_deleted', false)
         .eq('pinned', true)
         .eq('pin_scope', 'global');
@@ -92,7 +92,7 @@ export default function CommunityPage() {
       const client = getSupabaseClient();
       let query = client
         .from('posts')
-        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+        .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, role)')
         .eq('is_deleted', false)
         .eq('pinned', false);
 
@@ -122,7 +122,7 @@ export default function CommunityPage() {
     const client = getSupabaseClient();
     let query = client
       .from('posts')
-      .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')
+      .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, role)')
       .eq('is_deleted', false)
       .eq('pinned', false);
 
@@ -167,7 +167,7 @@ export default function CommunityPage() {
       </div>
 
       {/* ── 피드 리스트 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-[calc(88px+env(safe-area-inset-bottom))]">
+      <div className="max-w-[600px] mx-auto px-4 pt-3 pb-tabbar">
         {!loading && visiblePinned.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-2 px-0.5">
@@ -308,14 +308,16 @@ export default function CommunityPage() {
         )}
       </div>
 
-      {/* ── 글쓰기 FAB ── */}
+      {/* ── 글쓰기 버튼 (아이콘 + 라벨이 보이는 확장형 FAB) ── */}
       <Link
         href="/write"
-        className="md:hidden fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
-                   flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
+        className="md:hidden fixed bottom-tabbar-fab right-4 z-40 flex h-12 items-center gap-1.5 rounded-full
+                   bg-[#F6C21A] pl-4 pr-5 text-[14px] font-bold text-[#2F2F2F] shadow-lg
+                   active:opacity-80 transition-opacity no-underline"
         aria-label={t.fabAria}
       >
-        <PenLine size={24} color="white" strokeWidth={2} />
+        <PenLine size={20} strokeWidth={2.2} />
+        {t.fabAria}
       </Link>
 
       <BottomTabBar lang={lang} />

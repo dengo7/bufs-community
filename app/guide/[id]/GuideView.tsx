@@ -212,7 +212,7 @@ export default function GuideView({ guide, isAdmin }: Props) {
           <button
             type="button"
             onClick={handleBack}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer flex items-center shrink-0"
             aria-label="뒤로가기"
           >
             <ChevronLeft size={22} strokeWidth={2} />

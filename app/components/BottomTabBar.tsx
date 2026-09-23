@@ -27,21 +27,22 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
 
   const COMMUNITY_PATHS = ['/community', '/category', '/post', '/guide', '/search'];
   const isActive = (path: string) => {
-    // 캠퍼스 가이드(/campus)는 홈 섹션에서만 진입하므로 홈 탭으로 표시
-    if (path === '/') return pathname === '/' || pathname.startsWith('/campus');
+    // 캠퍼스 가이드(/campus)·학사공지(/notices)는 홈 섹션에서만 진입하므로 홈 탭으로 표시
+    if (path === '/') return pathname === '/' || pathname.startsWith('/campus') || pathname.startsWith('/notices');
     if (path === '/community') return COMMUNITY_PATHS.some(p => pathname.startsWith(p));
     return pathname.startsWith(path);
   };
 
   const tabCls = (path: string) =>
     `flex-1 flex flex-col items-center justify-end pb-[11px] gap-[3px] no-underline
-     ${isActive(path) ? 'text-[#1B7CC0]' : 'text-gray-400'}`;
+     ${isActive(path) ? 'text-[#1B7CC0]' : 'text-gray-500'}`;
 
   const iconW = (path: string) => isActive(path) ? 2 : 1.8;
 
   const labelCls = (path: string) =>
-    `text-[11px] ${isActive(path) ? 'font-medium' : ''}`;
+    `text-[12px] ${isActive(path) ? 'font-medium' : ''}`;
 
+  // safe-area는 여기서만 처리한다. 높이 h-16(64px)은 globals.css의 --tabbar-h와 동일해야 한다.
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
       <div className="flex h-16">

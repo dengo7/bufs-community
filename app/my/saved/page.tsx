@@ -20,7 +20,7 @@ type FeedPost = {
   view_count: number;
   comment_count: number;
   like_count: number;
-  profiles: { nickname: string; nationality: string | null; role: string | null } | null;
+  profiles: { nickname: string; role: string | null } | null;
 };
 
 export default function SavedPage() {
@@ -47,7 +47,7 @@ export default function SavedPage() {
           created_at,
           posts (
             id, title, content, category, created_at, view_count, comment_count, like_count,
-            profiles ( nickname, nationality, role )
+            profiles ( nickname, role )
           )
         `)
         .eq('user_id', u.id)
@@ -72,7 +72,7 @@ export default function SavedPage() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label="뒤로가기"
           >
             <ArrowLeft size={22} strokeWidth={2} />
@@ -82,7 +82,7 @@ export default function SavedPage() {
       </header>
 
       {/* ── 본문 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         {/* 비로그인 */}
         {authLoaded && !user && (

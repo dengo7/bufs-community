@@ -46,3 +46,41 @@ body {
 * {
   touch-action: manipulation;
 }
+
+/* ── 하단 탭바 여백 토큰 ──────────────────────────────────────
+   env(safe-area-inset-bottom)는 여기와 BottomTabBar 두 곳에서만 다룬다.
+   페이지 본문·고정 요소는 아래 유틸리티만 쓰고 env()를 직접 쓰지 않는다.
+   BottomTabBar의 h-16(64px)과 --tabbar-h는 항상 함께 맞출 것. */
+:root {
+  --tabbar-h: 64px;        /* BottomTabBar 높이 (safe-area 제외) */
+  --tabbar-input-h: 72px;  /* 게시글 상세의 고정 댓글 입력창 높이 */
+}
+@layer utilities {
+  /* 본문 하단 여백: 마지막 카드가 탭바에 가려지지 않게 */
+  .pb-tabbar {
+    padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom));
+  }
+  /* 고정 댓글 입력창까지 있는 게시글 상세용 */
+  .pb-tabbar-input {
+    padding-bottom: calc(var(--tabbar-h) + var(--tabbar-input-h) + 24px + env(safe-area-inset-bottom));
+  }
+  /* 탭바 바로 위에 붙는 고정 요소(댓글 입력창 등) */
+  .bottom-tabbar {
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+  /* 탭바 위에 띄우는 FAB */
+  .bottom-tabbar-fab {
+    bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom));
+  }
+  /* 탭바를 덮는 하단 시트 등, 화면 맨 아래에 직접 붙는 요소의 safe-area 여백 */
+  .pb-safe {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  /* md 이상에서는 BottomTabBar가 숨겨지므로(md:hidden) 탭바 높이를 빼준다 */
+  @media (min-width: 48rem) {
+    .pb-tabbar { padding-bottom: 2.5rem; }
+    .pb-tabbar-input { padding-bottom: calc(var(--tabbar-input-h) + 2.5rem); }
+    .bottom-tabbar { bottom: 0; }
+    .bottom-tabbar-fab { bottom: 1.5rem; }
+  }
+}

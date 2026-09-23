@@ -89,7 +89,7 @@ export default function NoticesPage() {
           <button
             type="button"
             onClick={handleBack}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label={t.backAria}
           >
             <ArrowLeft size={22} strokeWidth={2} />
@@ -98,7 +98,7 @@ export default function NoticesPage() {
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         {/* ── 소스 필터 칩 ── */}
         <div className="flex gap-2 mb-3">

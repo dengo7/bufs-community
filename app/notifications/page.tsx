@@ -126,7 +126,7 @@ export default function NotificationsPage() {
         </div>
       </header>
 
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-24">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
 
         <div className="flex items-center justify-between mb-3 h-9">
           <h1 className="text-[18px] font-bold m-0">{t.title}</h1>

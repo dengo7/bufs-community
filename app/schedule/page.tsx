@@ -138,7 +138,7 @@ export default function SchedulePage() {
       </div>
 
       {/* ── 타임라인 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-24">
+      <div className="max-w-[600px] mx-auto px-4 pt-4 pb-tabbar">
         {groups.map(group => (
           <div key={group.key} className="mb-6">
 

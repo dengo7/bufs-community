@@ -35,7 +35,6 @@ export type CommentRow = {
   created_at: string;
   profiles: {
     nickname: string;
-    nationality: string | null;
     avatar_url: string | null;
     role: string;
   } | null;
@@ -57,7 +56,6 @@ export type PostWithProfile = {
   pinned_at: string | null;
   profiles: {
     nickname: string;
-    nationality: string | null;
     avatar_url: string | null;
     role: string;
   } | null;
@@ -66,7 +64,7 @@ export type PostWithProfile = {
 interface Props {
   post: PostWithProfile;
   currentUserId: string | null;
-  currentUserProfile: { nickname: string; nationality: string | null; avatar_url: string | null } | null;
+  currentUserProfile: { nickname: string; avatar_url: string | null } | null;
   isCurrentUserAdmin: boolean;
   isLiked: boolean;
   initialComments: CommentRow[];
@@ -383,7 +381,7 @@ export default function PostView({
           <button
             type="button"
             onClick={() => router.back()}
-            className="p-1.5 -ml-1 text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
+            className="w-11 h-11 -ml-2 flex items-center justify-center text-gray-700 bg-transparent border-none cursor-pointer shrink-0"
             aria-label="뒤로가기"
           >
             <ArrowLeft size={22} strokeWidth={2} />
@@ -396,7 +394,7 @@ export default function PostView({
       </header>
 
       {/* ── 본문 ── */}
-      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-44">
+      <div className="max-w-[600px] mx-auto px-4 pt-5 pb-tabbar-input">
 
         {/* 핀 배지 */}
         {isPinned && (
@@ -641,7 +639,7 @@ export default function PostView({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap leading-relaxed text-[14px] text-gray-700">{displayContent}</p>
+          <p className="whitespace-pre-wrap leading-relaxed text-[16px] text-[#1F2937]">{displayContent}</p>
         )}
 
         {/* 첨부 이미지 */}
