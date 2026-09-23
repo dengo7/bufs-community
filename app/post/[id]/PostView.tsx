@@ -89,6 +89,9 @@ export default function PostView({
   const [liked, setLiked] = useState(isLiked);
   const [likeCount, setLikeCount] = useState(post.like_count ?? 0);
   const [commentCount, setCommentCount] = useState(post.comment_count ?? 0);
+  // 수정 후 표시용 제목/본문 — post는 prop이라 직접 변경하지 않고 별도 상태로 관리
+  const [displayTitle, setDisplayTitle] = useState(post.title);
+  const [displayContent, setDisplayContent] = useState(post.content);
   const [showMenu, setShowMenu] = useState(false);
   const [adminModal, setAdminModal] = useState<AdminModal>(null);
   const [adminLoading, setAdminLoading] = useState(false);
@@ -341,8 +344,8 @@ export default function PostView({
         showToast(false, t.editFailed);
         return;
       }
-      post.title = editTitle.trim();
-      post.content = editContent.trim();
+      setDisplayTitle(editTitle.trim());
+      setDisplayContent(editContent.trim());
       setIsEditing(false);
     } catch {
       showToast(false, t.editFailed);
@@ -432,7 +435,7 @@ export default function PostView({
             className="w-full text-xl font-bold leading-snug border border-blue-300 rounded-lg px-3 py-2 outline-none focus:border-[#1B7CC0]"
           />
         ) : (
-          <h1 className="text-[18px] font-bold leading-snug text-gray-900 mt-1">{post.title}</h1>
+          <h1 className="text-[18px] font-bold leading-snug text-gray-900 mt-1">{displayTitle}</h1>
         )}
 
         {/* 작성자 행 */}
@@ -481,8 +484,8 @@ export default function PostView({
                     <div className="absolute right-0 top-full mt-1 z-[300] bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden min-w-[130px]">
                       <button
                         onClick={() => {
-                          setEditTitle(post.title);
-                          setEditContent(post.content ?? '');
+                          setEditTitle(displayTitle);
+                          setEditContent(displayContent ?? '');
                           setIsEditing(true);
                           setShowMenu(false);
                         }}
@@ -655,7 +658,7 @@ export default function PostView({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap leading-relaxed text-[14px] text-gray-700">{post.content}</p>
+          <p className="whitespace-pre-wrap leading-relaxed text-[14px] text-gray-700">{displayContent}</p>
         )}
 
         {/* 첨부 이미지 */}
