@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import { subscribeToPush } from '../lib/push';
@@ -421,9 +422,9 @@ export default function AuthPage() {
 
           {/* Back */}
           <div className="text-center mt-7">
-            <a href="/" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            <Link href="/" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
               {t.home}
-            </a>
+            </Link>
           </div>
         </div>
       </div>
