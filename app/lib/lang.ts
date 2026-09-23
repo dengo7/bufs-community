@@ -7,7 +7,7 @@ export type { UILang };
 
 export const LANG_KEY = 'the-well-lang';
 
-const DEFAULT_LANG: UILang = 'ko';
+const DEFAULT_LANG: UILang = 'en';
 const LANGS: readonly UILang[] = ['ko', 'en', 'zh', 'ja'];
 
 const isUILang = (v: unknown): v is UILang => LANGS.includes(v as UILang);

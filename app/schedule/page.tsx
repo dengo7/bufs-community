@@ -13,10 +13,9 @@ import {
   type ScheduleType,
 } from '../lib/schedule';
 import { SCHEDULE_LABELS, SCHEDULE_TITLE_I18N } from '../lib/scheduleI18n';
-import { useLang, setLang } from '../lib/lang';
+import { useLang } from '../lib/lang';
 
 type UILang = 'ko' | 'en' | 'zh' | 'ja';
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 // ── 날짜 칩 포맷 ──────────────────────────────────────────────
 function fmtChip(item: ScheduleItem): string {
@@ -123,19 +122,6 @@ export default function SchedulePage() {
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2">
           <span className="flex-1 text-[15px] font-bold">{labels.title}</span>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

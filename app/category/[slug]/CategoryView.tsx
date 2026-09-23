@@ -14,11 +14,9 @@ import {
   uiLangToLanguage,
   type UILang,
 } from '../../lib/categories';
-import { useLang, setLang } from '../../lib/lang';
+import { useLang } from '../../lib/lang';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { getBlockedIds } from '../../lib/blocks';
-
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const GUIDE_CATEGORY_SLUGS = ['housing', 'bank', 'telecom', 'insurance', 'medical', 'visa', 'part-time'];
 
@@ -263,20 +261,6 @@ export default function CategoryView({ slug }: Props) {
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             {Icon && <Icon size={17} className="text-gray-700 shrink-0" strokeWidth={1.8} />}
             <span className="text-[15px] font-bold text-[#1A1A1A] truncate">{categoryName}</span>
-          </div>
-
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
           </div>
 
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -10,7 +10,9 @@ import { useLang, setLang, LANG_KEY } from '../lib/lang';
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 type Mode = 'login' | 'signup' | 'forgot';
 
-const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
+// 언어 선택 화면 전용 — 아직 UI 언어를 모르는 사용자에게 보여주는 라벨이라
+// 약어가 아니라 각 언어의 원어 표기를 그대로 쓴다.
+const LANG_NATIVE_NAMES: Record<Lang, string> = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 
 const T = {
   ko: {
@@ -137,7 +139,21 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [step, setStep] = useState<'form' | 'lang'>('form');
+  // 언어 선택 화면 표시 여부 — localStorage 확인은 클라이언트에서만 가능하므로
+  // 마운트 전까지는 langKnown=false로 두고 빈 화면을 보여준다(폼이 먼저 잠깐
+  // 보였다가 언어 선택 화면으로 바뀌는 깜빡임을 방지).
+  const [langKnown, setLangKnown] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
+
+  useEffect(() => {
+    const hasLang = typeof window !== 'undefined' && localStorage.getItem(LANG_KEY) !== null;
+    // queueMicrotask로 감싸 effect 본문에서 직접 호출하지 않도록 함
+    // (react-hooks/set-state-in-effect) — 체감 지연 없이 즉시 실행됨.
+    queueMicrotask(() => {
+      setShowLangPicker(!hasLang);
+      setLangKnown(true);
+    });
+  }, []);
 
   const t = T[lang];
 
@@ -161,17 +177,14 @@ export default function AuthPage() {
         } catch {
           // 푸시 구독 실패는 무시
         }
-        // 언어가 저장돼 있지 않으면 언어 선택 화면 표시, 있으면 바로 홈으로
-        const hasLang = typeof window !== 'undefined' && localStorage.getItem(LANG_KEY) !== null;
-        if (hasLang) {
-          // 의도적 풀 리로드: 쿠키 기반 세션(@supabase/ssr)이 proxy.ts(미들웨어)를 거쳐
-          // 확실히 갱신된 뒤 홈으로 이동해야, 이어지는 서버 컴포넌트(예: /post/[id])가
-          // 아직 안 갱신된 쿠키를 읽어 비로그인으로 보이는 문제를 피할 수 있다.
-          // router.push()로 바꾸지 말 것.
-          window.location.href = '/';
-          return;
-        }
-        setStep('lang');
+        // 언어는 이미 진입 시(언어 선택 화면 또는 기존 저장값)로 확정돼 있으므로
+        // 바로 홈으로 이동한다.
+        // 의도적 풀 리로드: 쿠키 기반 세션(@supabase/ssr)이 proxy.ts(미들웨어)를 거쳐
+        // 확실히 갱신된 뒤 홈으로 이동해야, 이어지는 서버 컴포넌트(예: /post/[id])가
+        // 아직 안 갱신된 쿠키를 읽어 비로그인으로 보이는 문제를 피할 수 있다.
+        // router.push()로 바꾸지 말 것.
+        window.location.href = '/';
+        return;
       }
     } catch {
       setError(t.errLogin);
@@ -202,7 +215,11 @@ export default function AuthPage() {
       setMode('login');
       setMessage(t.successSignup);
     } else {
-      setStep('lang'); // 세션 즉시 발급(인증 비활성) → 기존대로 언어 선택 화면
+      // 세션 즉시 발급(이메일 인증 비활성) → 언어는 이미 확정돼 있으므로 바로 홈으로.
+      // 의도적 풀 리로드: handleLogin과 같은 이유(쿠키 기반 세션이 proxy.ts를
+      // 거쳐 갱신된 뒤 이동). router.push()로 바꾸지 말 것.
+      window.location.href = '/';
+      return;
     }
     setLoading(false);
   }
@@ -222,35 +239,41 @@ export default function AuthPage() {
     setLoading(false);
   }
 
-  // 언어 선택 → localStorage 저장 후 홈으로 이동
-  // 의도적 풀 리로드: 위 handleLogin의 window.location.href와 같은 이유
-  // (쿠키 기반 세션이 proxy.ts를 거쳐 갱신된 뒤 이동). router.push()로 바꾸지 말 것.
-  function chooseLang(l: Lang) {
+  // 언어 선택 → 즉시 저장하고(전역 UI 언어에도 반영), 같은 화면에서 폼을 보여준다.
+  // (풀 리로드 없음 — 아직 로그인 전이라 쿠키 동기화와 무관)
+  function handlePickLang(l: Lang) {
     setLang(l);
-    // eslint-disable-next-line react-hooks/immutability
-    window.location.href = '/';
+    setShowLangPicker(false);
   }
 
-  // ── 언어 선택 화면 ──────────────────────────────────────────
-  if (step === 'lang') {
+  // 언어를 아직 모르는 첫 렌더(클라이언트 마운트 전)에는 빈 화면만 보여준다 —
+  // 폼이 잠깐 보였다가 언어 선택 화면으로 바뀌는 깜빡임을 막기 위함.
+  if (!langKnown) {
+    return <div className="min-h-screen bg-gray-50" />;
+  }
+
+  // ── 언어 선택 화면 (신규 사용자 진입 시 폼보다 먼저 표시) ──────────────
+  // 아직 어떤 언어를 쓰는 사용자인지 모르므로, 안내 문구도 특정 언어에
+  // 치우치지 않게 4개 언어를 원어 표기로 병기한다.
+  if (showLangPicker) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 sm:px-6 py-10">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 sm:px-8 pt-8 pb-8">
             <div className="text-center mb-7">
               <div className="text-4xl mb-3">🌐</div>
-              <h1 className="text-xl font-bold text-gray-900 mb-1">언어 선택</h1>
-              <p className="text-sm text-gray-500">Choose your language · 选择语言 · 言語を選択</p>
+              <h1 className="text-xl font-bold text-gray-900 mb-1">한국어 · English · 中文 · 日本語</h1>
+              <p className="text-sm text-gray-500">Select your language to continue</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+              {(Object.keys(LANG_NATIVE_NAMES) as Lang[]).map(l => (
                 <button
                   key={l}
-                  onClick={() => chooseLang(l)}
+                  onClick={() => handlePickLang(l)}
                   className="py-4 text-base font-bold rounded-xl border border-gray-200 bg-white text-gray-800
                              hover:border-blue-400 hover:bg-blue-50 active:scale-[0.98] transition-all"
                 >
-                  {LANG_LABELS[l]}
+                  {LANG_NATIVE_NAMES[l]}
                 </button>
               ))}
             </div>
@@ -262,19 +285,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 sm:px-6 py-10">
-      {/* Language selector */}
-      <div className="w-full max-w-md flex justify-end mb-3">
-        <select
-          value={lang}
-          onChange={e => setLang(e.target.value as Lang)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-600 outline-none focus:border-blue-400 transition-colors"
-        >
-          {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
-            <option key={l} value={l}>{LANG_LABELS[l]}</option>
-          ))}
-        </select>
-      </div>
-
       {/* Card */}
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 sm:px-8 pt-8 pb-6">

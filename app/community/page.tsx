@@ -11,14 +11,11 @@ import {
   CATEGORIES,
   getCategoryLabel,
   uiLangToLanguage,
-  type UILang,
 } from '../lib/categories';
 import { formatTimeAgo } from '../lib/utils';
-import { useLang, setLang } from '../lib/lang';
+import { useLang } from '../lib/lang';
 
 const PAGE_SIZE = 20;
-
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
   ko: { title: '커뮤니티', searchPlaceholder: '게시글 검색', noticeSection: '전체 공지', noticeBadge: '공지', empty: '게시글이 없어요', loadingMore: '불러오는 중...', more: '더보기', fabAria: '글쓰기' },
@@ -154,19 +151,6 @@ export default function CommunityPage() {
       <header className="sticky top-0 z-[200] bg-white border-b border-[#EBEBEB]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[600px] mx-auto flex items-center min-h-[54px] px-4 gap-2">
           <span className="flex-1 text-[15px] font-bold text-[#1A1A1A]">{t.title}</span>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

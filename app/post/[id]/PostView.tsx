@@ -13,12 +13,10 @@ import BottomTabBar from '../../components/BottomTabBar';
 import CommentSection from './CommentSection';
 import AdminConfirmModal from '../../components/AdminConfirmModal';
 import Avatar from '../../components/Avatar';
-import { getCategoryLabel, uiLangToLanguage, type UILang } from '../../lib/categories';
-import { useLang, setLang } from '../../lib/lang';
+import { getCategoryLabel, uiLangToLanguage } from '../../lib/categories';
+import { useLang } from '../../lib/lang';
 import { formatTimeAgo } from '../../lib/utils';
 import { REPORT_REASONS } from '../../lib/constants';
-
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const T = {
   ko: { confirmDelete: '정말 삭제하시겠습니까?', delete: '삭제', block: '차단하기', confirmBlock: '이 사용자를 차단하시겠어요?', blockFailed: '차단에 실패했어요', editFailed: '수정에 실패했어요', reportTitle: '신고하기', reportGuide: '신고 사유를 선택해주세요', cancel: '취소', report: '신고', reporting: '신고 중...', loginRequired: '로그인이 필요해요', bookmarkSaved: '저장했어요', bookmarkRemoved: '저장을 해제했어요', genericError: '오류가 발생했어요', reportGuideToast: '신고 사유를 선택해주세요', reportDone: '신고가 접수됐어요', alreadyReported: '이미 신고한 게시글이에요', deleteFailed: '삭제 실패', deleteNoAuth: '삭제 권한이 없거나 이미 삭제된 글입니다.', banDone: '밴 처리 완료', banFailed: '처리 실패', unbanDone: '밴 해제 완료', unbanFailed: '처리 실패', pinGlobal: '전체 공지로 고정됐어요', pinCategory: '카테고리 공지로 고정됐어요', pinRemoved: '공지 해제됐어요', pinFailed: '처리 실패', pinLabelGlobal: '전체 공지', pinLabelCategory: '카테고리 공지', bookmarkAria: '저장', bookmarkRemoveAria: '저장 해제', editSaving: '저장 중...', editSave: '저장', editCancel: '취소', menuEdit: '글 수정', menuDelete: '게시물 삭제', menuBan: '작성자 밴', menuUnban: '밴 해제', menuUnpin: '공지 해제', menuPinGlobal: '전체 공지 고정', menuPinCategory: '카테고리 고정' },
@@ -394,21 +392,6 @@ export default function PostView({
           <span className="flex-1 text-[15px] font-medium text-center truncate">
             {categoryLabel}
           </span>
-
-          {/* 언어 선택 */}
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

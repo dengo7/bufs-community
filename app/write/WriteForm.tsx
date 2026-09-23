@@ -7,7 +7,7 @@ import imageCompression from 'browser-image-compression';
 import { getSupabaseClient } from '../lib/supabase/client';
 import { uiLangToLanguage, type UILang } from '../lib/categories';
 import BottomTabBar from '../components/BottomTabBar';
-import { getLang, setLang as persistLang } from '../lib/lang';
+import { getLang } from '../lib/lang';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
@@ -191,13 +191,13 @@ export default function WriteForm({ userId }: Props) {
             {t.pageTitle}
           </span>
 
-          {/* 언어 선택 */}
+          {/* 게시글 작성 언어 — 앱 UI 언어와는 별개로 이 글이 어떤 언어로 쓰였는지만 표시/저장한다 */}
           <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
             {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
               <button
                 key={l}
                 type="button"
-                onClick={() => { setLang(l); persistLang(l); }}
+                onClick={() => setLang(l)}
                 className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
                   ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
               >

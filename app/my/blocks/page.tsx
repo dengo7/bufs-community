@@ -9,9 +9,7 @@ import { getSupabaseClient } from '../../lib/supabase/client';
 import { unblockUser } from '../../lib/blocks';
 import Avatar from '../../components/Avatar';
 import BottomTabBar from '../../components/BottomTabBar';
-import { useLang, setLang, type UILang } from '../../lib/lang';
-
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
+import { useLang } from '../../lib/lang';
 
 const T = {
   ko: {
@@ -130,19 +128,6 @@ export default function BlocksPage() {
             <ArrowLeft size={22} strokeWidth={2} />
           </button>
           <span className="flex-1 text-[15px] font-bold">{t.blockedUsers}</span>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

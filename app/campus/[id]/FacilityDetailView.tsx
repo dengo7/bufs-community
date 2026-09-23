@@ -7,13 +7,10 @@ import { ArrowLeft, MapPin, Clock, Phone, Wallet, ConciergeBell, TriangleAlert, 
 import BottomTabBar from '../../components/BottomTabBar';
 import FacilityThumb, { toneOf } from '../../components/campus/FacilityThumb';
 import { SourceBadge, StatusBadge } from '../../components/campus/CampusBadges';
-import { useLang, setLang } from '../../lib/lang';
+import { useLang } from '../../lib/lang';
 import { useNowMinute } from '../../lib/useNowMinute';
 import { CAMPUS_T } from '../../lib/campusI18n';
 import { getFacilityStatus, localizeFacility, type CampusFacility } from '../../lib/campusFacilities';
-
-type UILang = 'ko' | 'en' | 'zh' | 'ja';
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 const COPIED_FEEDBACK_MS = 1500;
 
@@ -85,19 +82,6 @@ export default function FacilityDetailView({ facility }: { facility: CampusFacil
           <div className="flex-1 min-w-0 leading-tight">
             <p className="text-[15px] font-bold truncate">{t.detailTitle}</p>
             <p className="text-[10.5px] text-[#94A3B8] truncate">{t.school}</p>
-          </div>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
           </div>
         </div>
       </header>

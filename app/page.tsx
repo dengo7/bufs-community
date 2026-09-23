@@ -15,7 +15,7 @@ import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
 import { SCHEDULE_TITLE_I18N } from './lib/scheduleI18n';
 import { getCategoryBySlug, getCategoryLabel, uiLangToLanguage } from './lib/categories';
-import { useLang, setLang } from './lib/lang';
+import { useLang } from './lib/lang';
 import {
   ShieldCheck,
   Search, Bell, User, Eye, Heart, MessageCircle, Bookmark, BookmarkCheck, Pin,
@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
-const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
 
 const PAGE_SIZE = 20;
 
@@ -320,19 +319,6 @@ export default function Home() {
             </div>
           </Link>
 
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {l === 'ko' ? 'KR' : l === 'en' ? 'EN' : l === 'zh' ? '中' : '日'}
-              </button>
-            ))}
-          </div>
-
           <div className="flex items-center gap-3 shrink-0">
             <Link href="/search" aria-label={t.searchAria} className="text-gray-700 no-underline flex items-center">
               <Search size={20} strokeWidth={1.8} />
@@ -365,18 +351,6 @@ export default function Home() {
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <div className="flex items-center border border-[#EBEBEB] rounded-full overflow-hidden text-[12px]">
-              {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={`px-2.5 py-1.5 border-none cursor-pointer transition-colors font-medium
-                    ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] font-bold' : 'bg-transparent text-[#BBBBBB]'}`}
-                >
-                  {LANG_LABELS[l]}
-                </button>
-              ))}
-            </div>
             <Link href="/notifications" aria-label={t.notifAria} className="text-gray-700 no-underline flex items-center relative hover:text-[#1D4ED8] transition-colors">
               <Bell size={20} strokeWidth={1.8} />
               {unreadCount > 0 && (

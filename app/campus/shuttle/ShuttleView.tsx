@@ -6,7 +6,7 @@ import {
   ArrowLeft, Bus, Clock, MapPin, Info, TriangleAlert, Wallet, CalendarDays, Route as RouteIcon,
 } from 'lucide-react';
 import BottomTabBar from '../../components/BottomTabBar';
-import { useLang, setLang } from '../../lib/lang';
+import { useLang } from '../../lib/lang';
 import { useNowMinute } from '../../lib/useNowMinute';
 import { SHUTTLE_T } from '../../lib/shuttleI18n';
 import {
@@ -15,9 +15,6 @@ import {
   classifyShuttleDay, kstMinutesOfDay, getNextBus, getNextBusForKey, getFirstBusForKey,
   type ShuttleScheduleKey, type ShuttleSection, type ShuttleLineKey,
 } from '../../lib/shuttleBus';
-
-type UILang = 'ko' | 'en' | 'zh' | 'ja';
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 /** 시간표 grid 한 개 (탭의 섹션 단위). 오늘 탭일 때만 지난 시각 흐림·다음 차 강조 */
 function TimeGrid({ times, nowMinutes, isToday }: {
@@ -93,19 +90,6 @@ export default function ShuttleView() {
           <div className="flex-1 min-w-0 leading-tight">
             <p className="text-[15px] font-bold truncate">{t.title}</p>
             <p className="text-[10.5px] text-[#94A3B8] truncate">{t.school}</p>
-          </div>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
           </div>
         </div>
       </header>

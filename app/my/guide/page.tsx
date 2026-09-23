@@ -138,7 +138,7 @@ const isUILang = (v: string | null): v is UILang =>
 
 export default function GuidePage() {
   const router = useRouter();
-  const [lang, setLang]   = useState<UILang>('ko');
+  const [lang, setLang]   = useState<UILang>(getLang);
   const [index, setIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
 

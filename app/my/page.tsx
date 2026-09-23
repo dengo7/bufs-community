@@ -7,7 +7,7 @@ import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/s
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
-  Heart, User, UserX,
+  Heart, User, UserX, Globe,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -15,6 +15,9 @@ import { useLang, setLang, type UILang } from '../lib/lang';
 import BottomTabBar from '../components/BottomTabBar';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
+// 현재 선택된 언어를 오른쪽에 표시할 때는 원어 표기로 보여준다(약어만으로는
+// 사용자가 자기 언어가 맞는지 바로 알아보기 어려움).
+const LANG_NATIVE_NAMES: Record<UILang, string> = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 
 const T = {
   ko: {
@@ -24,6 +27,7 @@ const T = {
     signup: '회원가입',
     likes: (n: number) => `받은 좋아요 ${n}`,
     sectionSettings: '환경 설정',
+    language: '언어',
     pushNotification: '알림 설정',
     pushDesc: '관심 있는 소식 기준으로 알림을 설정해요',
     sectionActivity: '활동',
@@ -49,6 +53,7 @@ const T = {
     signup: 'Sign Up',
     likes: (n: number) => `${n} likes received`,
     sectionSettings: 'Settings',
+    language: 'Language',
     pushNotification: 'Notifications',
     pushDesc: 'Set alerts for topics you care about',
     sectionActivity: 'Activity',
@@ -74,6 +79,7 @@ const T = {
     signup: '注册',
     likes: (n: number) => `获得 ${n} 个点赞`,
     sectionSettings: '环境设置',
+    language: '语言',
     pushNotification: '通知设置',
     pushDesc: '根据感兴趣的内容设置通知',
     sectionActivity: '活动',
@@ -99,6 +105,7 @@ const T = {
     signup: '会員登録',
     likes: (n: number) => `もらったいいね ${n}`,
     sectionSettings: '環境設定',
+    language: '言語',
     pushNotification: '通知設定',
     pushDesc: '関心のある情報の通知を設定します',
     sectionActivity: 'アクティビティ',
@@ -189,6 +196,7 @@ export default function MyPage() {
   const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);
   const [totalLikes, setTotalLikes] = useState(0);
   const [toast, setToast]           = useState<string | null>(null);
+  const [langExpanded, setLangExpanded] = useState(false);
 
   // ── 토스트 ────────────────────────────────────────────────
   const router = useRouter();
@@ -269,19 +277,6 @@ export default function MyPage() {
               <span className="text-[11px] text-gray-500 truncate leading-tight">{t.subtitle}</span>
             </div>
           </Link>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
           <Link
             href="/notifications"
             className="text-gray-700 no-underline flex items-center shrink-0"
@@ -337,6 +332,36 @@ export default function MyPage() {
 
             {/* ── 환경 설정 ── */}
             <SectionCard label={t.sectionSettings}>
+              <MenuRow
+                icon={Globe}
+                title={t.language}
+                onClick={() => setLangExpanded(v => !v)}
+                right={
+                  <span className="flex items-center gap-1 shrink-0">
+                    <span className="text-[12px] text-gray-400">{LANG_NATIVE_NAMES[lang]}</span>
+                    <ChevronRight
+                      size={16}
+                      strokeWidth={2}
+                      className={`text-gray-300 transition-transform ${langExpanded ? 'rotate-90' : ''}`}
+                    />
+                  </span>
+                }
+              />
+              {langExpanded && (
+                <div className="flex items-center gap-2 px-4 py-3">
+                  {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setLang(l)}
+                      className={`flex-1 py-2 text-[12px] font-bold rounded-full border transition-colors cursor-pointer
+                        ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F] border-[#F6C21A]' : 'bg-white text-gray-500 border-gray-200'}`}
+                    >
+                      {LANG_LABELS[l]}
+                    </button>
+                  ))}
+                </div>
+              )}
               <MenuRow
                 icon={Bell}
                 title={t.pushNotification}

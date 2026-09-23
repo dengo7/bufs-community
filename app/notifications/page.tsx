@@ -7,7 +7,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
 import { formatTimeAgo } from '../lib/utils';
-import { getLang, setLang as persistLang } from '../lib/lang';
+import { useLang } from '../lib/lang';
 import {
   fetchNotifications,
   fetchUnreadCount,
@@ -15,10 +15,6 @@ import {
   markAllAsRead,
   type NotificationRow,
 } from '../lib/notifications';
-
-type Lang = 'ko' | 'en' | 'zh' | 'ja';
-
-const LANG_LABELS: Record<Lang, string> = { ko: 'KR', en: 'EN', zh: '中文', ja: '日本語' };
 
 const T = {
   ko: {
@@ -65,7 +61,7 @@ const T = {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Lang>(getLang);
+  const lang = useLang();
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -127,18 +123,6 @@ export default function NotificationsPage() {
               <span className="text-[11px] text-gray-500 truncate leading-tight">{t.subtitle}</span>
             </div>
           </Link>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
-              <button
-                key={l}
-                onClick={() => { setLang(l); persistLang(l); }}
-                className={`px-[8px] py-[6px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {l === 'ko' ? 'KR' : l === 'en' ? 'EN' : l === 'zh' ? '中' : '日'}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

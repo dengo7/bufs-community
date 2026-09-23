@@ -8,10 +8,9 @@ import {
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import BottomTabBar from '../components/BottomTabBar';
-import { useLang, setLang } from '../lib/lang';
+import { useLang } from '../lib/lang';
 
 type UILang = 'ko' | 'en' | 'zh' | 'ja';
-const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
 
 // ── 타입 ──────────────────────────────────────────────────────
 type Course = {
@@ -644,19 +643,6 @@ export default function TimetablePage() {
           <Link href="/" className="flex-1 min-w-0 text-[15px] text-[#1D4ED8] no-underline leading-tight">
             <span className="font-normal">The</span> <span className="font-bold">Well</span>
           </Link>
-          <div className="flex border border-[#EBEBEB] rounded-full overflow-hidden text-[10px] shrink-0">
-            {(Object.keys(LANG_LABELS) as UILang[]).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                className={`px-[7px] py-[5px] border-none cursor-pointer transition-colors font-bold
-                  ${lang === l ? 'bg-[#F6C21A] text-[#2F2F2F]' : 'bg-transparent text-[#BBBBBB]'}`}
-              >
-                {LANG_LABELS[l]}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 
