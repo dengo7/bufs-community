@@ -46,3 +46,6 @@ _shuttle-src/
 # Xcode personal settings
 ios/App/App.xcodeproj/xcuserdata/
 ios/App/App.xcworkspace/xcuserdata/
+
+android/.idea/
+.idea/
