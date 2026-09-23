@@ -230,7 +230,7 @@ export default function CommentSection({
     if (!currentUserId || !text.trim() || isSubmitting) return;
     setIsSubmitting(true);
 
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${crypto.randomUUID()}`;
     const optimistic: CommentRow = {
       id: tempId,
       post_id: postId,
