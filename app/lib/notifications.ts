@@ -11,7 +11,6 @@ export type NotificationRow = {
   created_at: string;
   actor: {
     nickname: string;
-    nationality: string | null;
     avatar_url: string | null;
   } | null;
 };
@@ -20,7 +19,7 @@ export async function fetchNotifications(userId: string): Promise<NotificationRo
   const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from('notifications')
-    .select('*, actor:profiles!notifications_actor_id_fkey(nickname, nationality, avatar_url)')
+    .select('*, actor:profiles!notifications_actor_id_fkey(nickname, avatar_url)')
     .eq('recipient_id', userId)
     .order('created_at', { ascending: false })
     .limit(50);
