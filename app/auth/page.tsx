@@ -164,6 +164,10 @@ export default function AuthPage() {
         // 언어가 저장돼 있지 않으면 언어 선택 화면 표시, 있으면 바로 홈으로
         const hasLang = typeof window !== 'undefined' && localStorage.getItem(LANG_KEY) !== null;
         if (hasLang) {
+          // 의도적 풀 리로드: 쿠키 기반 세션(@supabase/ssr)이 proxy.ts(미들웨어)를 거쳐
+          // 확실히 갱신된 뒤 홈으로 이동해야, 이어지는 서버 컴포넌트(예: /post/[id])가
+          // 아직 안 갱신된 쿠키를 읽어 비로그인으로 보이는 문제를 피할 수 있다.
+          // router.push()로 바꾸지 말 것.
           window.location.href = '/';
           return;
         }
@@ -219,8 +223,11 @@ export default function AuthPage() {
   }
 
   // 언어 선택 → localStorage 저장 후 홈으로 이동
+  // 의도적 풀 리로드: 위 handleLogin의 window.location.href와 같은 이유
+  // (쿠키 기반 세션이 proxy.ts를 거쳐 갱신된 뒤 이동). router.push()로 바꾸지 말 것.
   function chooseLang(l: Lang) {
     setLang(l);
+    // eslint-disable-next-line react-hooks/immutability
     window.location.href = '/';
   }
 
