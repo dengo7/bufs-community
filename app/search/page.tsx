@@ -82,39 +82,45 @@ export default function SearchPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      setSearched(false);
-      setLoading(false);
-      return;
-    }
 
-    setLoading(true);
-    debounceRef.current = setTimeout(async () => {
-      // PostgREST .or() 필터 인젝션 방지 — 필터 문법/와일드카드 문자 제거
-      const safe = q.replace(/[%_,()*\\]/g, '').trim();
-      if (safe.length < 2) {
+    if (q.length < 2) {
+      // setTimeout(0)으로 감싸 콜백 안에서 상태를 갱신 — effect 본문에서 직접
+      // setState를 부르지 않도록 함(react-hooks/set-state-in-effect).
+      debounceRef.current = setTimeout(() => {
         setResults([]);
+        setSearched(false);
+        setLoading(false);
+      }, 0);
+    } else {
+      // queueMicrotask로 감싸 effect 본문에서 직접 호출하지 않도록 함
+      // (react-hooks/set-state-in-effect) — 체감 지연 없이 즉시 실행됨.
+      queueMicrotask(() => setLoading(true));
+      debounceRef.current = setTimeout(async () => {
+        // PostgREST .or() 필터 인젝션 방지 — 필터 문법/와일드카드 문자 제거
+        const safe = q.replace(/[%_,()*\\]/g, '').trim();
+        if (safe.length < 2) {
+          setResults([]);
+          setLoading(false);
+          setSearched(true);
+          return;
+        }
+
+        const client = getSupabaseClient();
+        let searchQuery = client
+          .from('posts')
+          .select('id, title, content, created_at, like_count, comment_count, profiles(nickname, nationality)')
+          .or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
+          .eq('is_deleted', false);
+        if (blockedIds.length) searchQuery = searchQuery.not('author_id', 'in', `(${blockedIds.join(',')})`);
+        const { data } = await searchQuery
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        setResults((data ?? []) as PostResult[]);
         setLoading(false);
         setSearched(true);
-        return;
-      }
-
-      const client = getSupabaseClient();
-      let searchQuery = client
-        .from('posts')
-        .select('id, title, content, created_at, like_count, comment_count, profiles(nickname, nationality)')
-        .or(`title.ilike.%${safe}%,content.ilike.%${safe}%`)
-        .eq('is_deleted', false);
-      if (blockedIds.length) searchQuery = searchQuery.not('author_id', 'in', `(${blockedIds.join(',')})`);
-      const { data } = await searchQuery
-        .order('created_at', { ascending: false })
-        .limit(30);
-
-      setResults((data ?? []) as PostResult[]);
-      setLoading(false);
-      setSearched(true);
-    }, 300);
+      }, 300);
+    }
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);

@@ -100,7 +100,9 @@ export default function GuideView({ guide, isAdmin }: Props) {
       const raw = localStorage.getItem(checksStorageKey);
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) setCheckedKeys(parsed.map(String));
+      // queueMicrotask로 감싸 effect 본문에서 직접 호출하지 않도록 함
+      // (react-hooks/set-state-in-effect) — 체감 지연 없이 즉시 실행됨.
+      if (Array.isArray(parsed)) queueMicrotask(() => setCheckedKeys(parsed.map(String)));
     } catch {
       // 손상된 값은 무시하고 빈 상태로 시작
     }

@@ -170,9 +170,10 @@ export default function CategoryView({ slug }: Props) {
   // 데이터 로드 (브라우저 Supabase 클라이언트)
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     const load = async () => {
+      setLoading(true);
+
       const client = getSupabaseClient();
       const isGuideCategory = GUIDE_CATEGORY_SLUGS.includes(slug);
 

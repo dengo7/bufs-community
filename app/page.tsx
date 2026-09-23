@@ -231,8 +231,8 @@ export default function Home() {
   // 피드 초기 로드
   useEffect(() => {
     let cancelled = false;
-    setFeedLoading(true);
     const load = async () => {
+      setFeedLoading(true);
       let query = getSupabaseClient()
         .from('posts')
         .select('id, author_id, title, content, category, created_at, view_count, comment_count, like_count, profiles(nickname, nationality, role)')

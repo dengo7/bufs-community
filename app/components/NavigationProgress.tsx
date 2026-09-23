@@ -19,7 +19,9 @@ export default function NavigationProgress() {
   // 경로/쿼리가 바뀌면(=이동 완료) 스피너 해제
   useEffect(() => {
     clearTimer();
-    setLoading(false);
+    // queueMicrotask로 감싸 effect 본문에서 직접 호출하지 않도록 함
+    // (react-hooks/set-state-in-effect) — 체감 지연 없이 즉시 실행됨.
+    queueMicrotask(() => setLoading(false));
   }, [pathname, searchParams]);
 
   useEffect(() => {

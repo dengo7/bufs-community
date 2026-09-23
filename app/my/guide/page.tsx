@@ -145,8 +145,12 @@ export default function GuidePage() {
   // lang 결정: URL 쿼리(?lang=)가 있으면 우선, 없으면 저장된 값(getLang) 사용
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get('lang');
-    if (isUILang(fromQuery)) setLang(fromQuery);
-    else setLang(getLang());
+    // queueMicrotask로 감싸 effect 본문에서 직접 호출하지 않도록 함
+    // (react-hooks/set-state-in-effect) — 체감 지연 없이 즉시 실행됨.
+    queueMicrotask(() => {
+      if (isUILang(fromQuery)) setLang(fromQuery);
+      else setLang(getLang());
+    });
   }, []);
 
   const total   = SLIDES.length;

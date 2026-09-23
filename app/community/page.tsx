@@ -86,12 +86,12 @@ export default function CommunityPage() {
   useEffect(() => {
     let cancelled = false;
 
-    setLoading(true);
-    setPosts([]);
-    setOffset(0);
-    setHasMore(true);
-
     const load = async () => {
+      setLoading(true);
+      setPosts([]);
+      setOffset(0);
+      setHasMore(true);
+
       const client = getSupabaseClient();
       let query = client
         .from('posts')

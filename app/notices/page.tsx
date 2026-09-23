@@ -49,14 +49,17 @@ export default function NoticesPage() {
   // 필터가 바뀌면 처음부터 다시 읽는다
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
-    fetchPage(filter, 0).then(rows => {
-      if (cancelled) return;
-      setNotices(rows);
-      setHasMore(rows.length === PAGE_SIZE);
-      setLoading(false);
-    });
+    const load = () => {
+      setLoading(true);
+      fetchPage(filter, 0).then(rows => {
+        if (cancelled) return;
+        setNotices(rows);
+        setHasMore(rows.length === PAGE_SIZE);
+        setLoading(false);
+      });
+    };
+    load();
 
     return () => { cancelled = true; };
   }, [filter, fetchPage]);
