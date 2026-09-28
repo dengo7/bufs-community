@@ -1,0 +1,5 @@
+/* 게시글에 사진을 첨부하기 위한 카메라 사용 */
+"NSCameraUsageDescription" = "用于拍摄照片并将其附加到社区帖子中。";
+
+/* 게시글에 사진을 첨부하기 위한 사진 보관함 사용 */
+"NSPhotoLibraryUsageDescription" = "用于从相册中选择照片并附加到社区帖子中。";

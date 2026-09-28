@@ -1,0 +1,5 @@
+/* 게시글에 사진을 첨부하기 위한 카메라 사용 */
+"NSCameraUsageDescription" = "Allows you to take a photo with the camera and attach it to your community post.";
+
+/* 게시글에 사진을 첨부하기 위한 사진 보관함 사용 */
+"NSPhotoLibraryUsageDescription" = "Allows you to choose photos from your library to attach to your community post.";
