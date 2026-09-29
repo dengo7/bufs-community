@@ -59,38 +59,30 @@ body {
 
    최소값(max)을 두는 이유: env()가 0으로 잡히는 WebView에서도 탭바(64px)와
    홈 인디케이터 영역을 확실히 비우기 위해, 기존에 문제가 없던 112px(pb-28)을
-   바닥값으로 삼는다. md 이상은 BottomTabBar가 숨겨지므로 탭바 높이를 뺀다. */
+   바닥값으로 삼는다.
+
+   ⚠ BottomTabBar는 폭과 무관하게 항상 표시되므로(md 이상에서 숨기면 태블릿에
+   네비게이션이 사라짐) 아래 유틸리티에도 md 오버라이드를 두지 않는다.
+   탭바 표시 기준과 여백 기준은 반드시 일치해야 한다. */
 
 /* 본문 하단 여백: 마지막 카드가 탭바에 가려지지 않게 */
 @utility pb-tabbar {
   padding-bottom: max(112px, calc(64px + 24px + env(safe-area-inset-bottom)));
-  @media (min-width: 48rem) {
-    padding-bottom: 2.5rem;
-  }
 }
 
 /* 고정 댓글 입력창(72px)까지 있는 게시글 상세용 */
 @utility pb-tabbar-input {
   padding-bottom: max(184px, calc(64px + 72px + 24px + env(safe-area-inset-bottom)));
-  @media (min-width: 48rem) {
-    padding-bottom: calc(72px + 2.5rem);
-  }
 }
 
 /* 탭바 바로 위에 붙는 고정 요소(댓글 입력창 등) */
 @utility bottom-tabbar {
   bottom: calc(64px + env(safe-area-inset-bottom));
-  @media (min-width: 48rem) {
-    bottom: 0;
-  }
 }
 
 /* 탭바 위에 띄우는 FAB */
 @utility bottom-tabbar-fab {
   bottom: calc(64px + 16px + env(safe-area-inset-bottom));
-  @media (min-width: 48rem) {
-    bottom: 1.5rem;
-  }
 }
 
 /* 탭바를 덮는 하단 시트 등, 화면 맨 아래에 직접 붙는 요소의 safe-area 여백 */

@@ -424,7 +424,7 @@ export default function CategoryView({ slug }: Props) {
       {/* 플로팅 글쓰기 버튼 (모바일) */}
       <Link
         href="/write"
-        className="md:hidden fixed bottom-tabbar-fab right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
+        className="fixed bottom-tabbar-fab right-4 z-40 w-14 h-14 bg-[#F6C21A] rounded-full
                    flex items-center justify-center shadow-lg active:opacity-80 transition-opacity"
         aria-label={t.write}
       >

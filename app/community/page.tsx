@@ -311,7 +311,7 @@ export default function CommunityPage() {
       {/* ── 글쓰기 버튼 (아이콘 + 라벨이 보이는 확장형 FAB) ── */}
       <Link
         href="/write"
-        className="md:hidden fixed bottom-tabbar-fab right-4 z-40 flex h-12 items-center gap-1.5 rounded-full
+        className="fixed bottom-tabbar-fab right-4 z-40 flex h-12 items-center gap-1.5 rounded-full
                    bg-[#F6C21A] pl-4 pr-5 text-[14px] font-bold text-[#2F2F2F] shadow-lg
                    active:opacity-80 transition-opacity no-underline"
         aria-label={t.fabAria}

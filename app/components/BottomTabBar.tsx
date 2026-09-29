@@ -42,10 +42,14 @@ export default function BottomTabBar({ lang = 'ko' }: Props) {
   const labelCls = (path: string) =>
     `text-[12px] ${isActive(path) ? 'font-medium' : ''}`;
 
-  // safe-area는 여기서만 처리한다. 높이 h-16(64px)은 globals.css의 --tabbar-h와 동일해야 한다.
+  // 폭과 무관하게 항상 표시한다. 데스크톱 nav는 홈(app/page.tsx)의 xl 이상에만 있어서,
+  // 예전처럼 md에서 숨기면 768~1279px 구간과 1280px 이상의 비(非)홈 페이지에
+  // 네비게이션이 전혀 없어진다(App Store 심사 반려 사유).
+  // safe-area는 여기서만 처리한다. 높이 h-16(64px)은 globals.css의 여백 유틸리티와 맞출 것.
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex h-16">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 pb-[env(safe-area-inset-bottom)]">
+      {/* 배경 바는 전체 폭, 탭은 본문과 같은 600px 안에서 가운데 정렬 */}
+      <div className="flex h-16 max-w-[600px] mx-auto">
 
         {/* 홈 */}
         <Link href="/" className={tabCls('/')}>
