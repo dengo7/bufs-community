@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { School, BookOpen, CalendarDays, MapPinned, type LucideIcon } from 'lucide-react';
+import { School, BookOpen, CalendarDays, type LucideIcon } from 'lucide-react';
 import type { UILang } from '../lib/categories';
-import { CAMPUS_T } from '../lib/campusI18n';
 
 const QUICK_T = {
   ko: { campus: '캠퍼스',   guide: '생활가이드', schedule: '학사일정' },
@@ -15,22 +14,20 @@ interface Props {
 }
 
 /**
- * 홈 — 주요 페이지 바로가기 4개. 모두 기존 페이지로 연결한다.
- * 통학버스는 바로 위 ShuttleQuickCard가 직행 입구라 여기서는 빼고,
- * 대신 다른 입구가 없던 캠퍼스맵을 둔다(라벨은 CAMPUS_T.homeCards.map 재사용).
+ * 홈 — 주요 페이지 바로가기 3개. 모두 기존 페이지로 연결한다.
+ * 통학버스는 바로 위 ShuttleQuickCard가 직행 입구라 여기서는 빼둔다.
  */
 export default function HomeQuickLinks({ lang }: Props) {
   const t = QUICK_T[lang];
 
   const items: { href: string; Icon: LucideIcon; label: string }[] = [
-    { href: '/campus',            Icon: School,       label: t.campus },
-    { href: '/guides',            Icon: BookOpen,     label: t.guide },
-    { href: '/schedule',          Icon: CalendarDays, label: t.schedule },
-    { href: '/campus/campus-map', Icon: MapPinned,    label: CAMPUS_T[lang].homeCards.map[0] },
+    { href: '/campus',   Icon: School,       label: t.campus },
+    { href: '/guides',   Icon: BookOpen,     label: t.guide },
+    { href: '/schedule', Icon: CalendarDays, label: t.schedule },
   ];
 
   return (
-    <div className="mt-4 grid grid-cols-4 gap-2">
+    <div className="mt-4 grid grid-cols-3 gap-2">
       {items.map(({ href, Icon, label }) => (
         <Link
           key={href}

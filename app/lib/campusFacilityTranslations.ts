@@ -323,9 +323,4 @@ export const FACILITY_TRANSLATIONS: Record<string, Translations> = {
     zh: { title: '想知道校车时刻表', description: '路线 · 乘车点' },
     ja: { title: 'シャトルバスの時刻表を知りたい', description: '路線 · 乗り場の案内' },
   },
-  'campus-map': {
-    en: { title: 'Campus map', description: 'Find buildings', notes: PENDING_NOTE.en },
-    zh: { title: '校园地图', description: '建筑位置指引', notes: PENDING_NOTE.zh },
-    ja: { title: 'キャンパスマップ', description: '建物の位置案内', notes: PENDING_NOTE.ja },
-  },
 };

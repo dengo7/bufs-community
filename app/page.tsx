@@ -354,7 +354,7 @@ export default function Home() {
           {/* ── ② 통학버스 다음 출발 (매일 쓰는 정보라 상단에 둔다) ── */}
           <ShuttleQuickCard lang={lang} />
 
-          {/* ── ③ 바로가기 4개 ── */}
+          {/* ── ③ 바로가기 3개 ── */}
           <HomeQuickLinks lang={lang} />
 
           {/* ── ④ 학사공지 (2개 미리보기 + 전체보기) ── */}

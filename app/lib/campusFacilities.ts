@@ -22,7 +22,7 @@ export type FacilityType =
   | 'convenience-store' | 'cafe' | 'restaurant' | 'bookstore' | 'print-shop' | 'post-office'
   | 'stationery' | 'photo-studio' | 'travel-agency' | 'real-estate'
   | 'student-room' | 'lounge' | 'study-room' | 'clinic' | 'shower' | 'elevator'
-  | 'lost-found' | 'contact' | 'library' | 'shuttle' | 'campus-map';
+  | 'lost-found' | 'contact' | 'library' | 'shuttle';
 
 export type SourceType = 'official' | 'student-tip';
 
@@ -406,12 +406,6 @@ const PENDING_ITEMS: CampusFacility[] = [
     sourceType: 'official', icon: 'Bus', situations: ['move'],
     description: '노선 · 승차장 안내',
     keywords: ['셔틀', '버스', '시간표', 'shuttle', 'bus', '校车', 'シャトルバス'],
-  }),
-  make({
-    id: 'campus-map', title: '캠퍼스맵', category: 'transport', type: 'campus-map',
-    sourceType: 'official', icon: 'MapPinned', situations: ['move'], pending: true,
-    description: '건물 위치 안내', notes: PENDING_NOTE,
-    keywords: ['지도', '캠퍼스맵', '건물', 'map', 'campus map', '地图', 'マップ'],
   }),
 ];
 

@@ -46,7 +46,6 @@ const TYPE_TONE: Record<FacilityType, CampusTone> = {
   contact: 'blue',
   library: 'mint',
   shuttle: 'blue',
-  'campus-map': 'purple',
 };
 
 export const toneOf = (f: CampusFacility) => CAMPUS_TONES[TYPE_TONE[f.type]];

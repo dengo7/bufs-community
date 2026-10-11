@@ -13,7 +13,7 @@ type CampusDict = {
   searchPh: string;
   clearSearch: string;
   back: string;
-  homeCards: { facility: [string, string]; library: [string, string]; shuttle: [string, string]; map: [string, string] };
+  homeCards: { facility: [string, string]; library: [string, string]; shuttle: [string, string] };
   categories: Record<CampusCategoryFilter, string>;
   facilityGroups: Record<FacilityGroupKey, string>;
   popularTitle: string;
@@ -65,7 +65,6 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       facility: ['교내시설', '운영시간 안내'],
       library:  ['도서관', '이용시간·열람실'],
       shuttle:  ['셔틀버스', '노선·시간표'],
-      map:      ['캠퍼스맵', '건물 위치 안내'],
     },
     categories: {
       all: '전체', facility: '교내시설', food: '식당·카페', study: '도서관·공부',
@@ -84,7 +83,7 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       'print-shop': '프린트·인쇄', 'post-office': '우체국', stationery: '문구점', 'photo-studio': '사진관',
       'travel-agency': '여행사', 'real-estate': '부동산', 'student-room': '학생 공간', lounge: '휴게실',
       'study-room': '열람실', clinic: '의원', shower: '샤워실', elevator: '엘리베이터',
-      'lost-found': '분실물', contact: '학교 문의', library: '도서관', shuttle: '셔틀버스', 'campus-map': '캠퍼스맵',
+      'lost-found': '분실물', contact: '학교 문의', library: '도서관', shuttle: '셔틀버스',
     },
     resultsFor: '관련 정보',
     searchResults: '검색 결과',
@@ -128,7 +127,6 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       facility: ['Facilities', 'Opening hours'],
       library:  ['Library', 'Hours · reading rooms'],
       shuttle:  ['Shuttle bus', 'Routes · timetable'],
-      map:      ['Campus map', 'Find buildings'],
     },
     categories: {
       all: 'All', facility: 'Facilities', food: 'Food & cafés', study: 'Library & study',
@@ -147,7 +145,7 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       'print-shop': 'Print shop', 'post-office': 'Post office', stationery: 'Stationery', 'photo-studio': 'Photo studio',
       'travel-agency': 'Travel agency', 'real-estate': 'Real estate', 'student-room': 'Student room', lounge: 'Lounge',
       'study-room': 'Reading room', clinic: 'Clinic', shower: 'Shower room', elevator: 'Elevator',
-      'lost-found': 'Lost & found', contact: 'School contact', library: 'Library', shuttle: 'Shuttle bus', 'campus-map': 'Campus map',
+      'lost-found': 'Lost & found', contact: 'School contact', library: 'Library', shuttle: 'Shuttle bus',
     },
     resultsFor: 'Related info',
     searchResults: 'Search results',
@@ -191,7 +189,6 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       facility: ['校内设施', '营业时间'],
       library:  ['图书馆', '开放时间·阅览室'],
       shuttle:  ['校车', '路线·时刻表'],
-      map:      ['校园地图', '建筑位置'],
     },
     categories: {
       all: '全部', facility: '校内设施', food: '食堂·咖啡', study: '图书馆·学习',
@@ -210,7 +207,7 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       'print-shop': '打印·印刷', 'post-office': '邮局', stationery: '文具店', 'photo-studio': '照相馆',
       'travel-agency': '旅行社', 'real-estate': '房产中介', 'student-room': '学生空间', lounge: '休息室',
       'study-room': '阅览室', clinic: '诊所', shower: '淋浴室', elevator: '电梯',
-      'lost-found': '失物招领', contact: '学校咨询', library: '图书馆', shuttle: '校车', 'campus-map': '校园地图',
+      'lost-found': '失物招领', contact: '学校咨询', library: '图书馆', shuttle: '校车',
     },
     resultsFor: '相关信息',
     searchResults: '搜索结果',
@@ -254,7 +251,6 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       facility: ['学内施設', '営業時間の案内'],
       library:  ['図書館', '利用時間・閲覧室'],
       shuttle:  ['シャトルバス', '路線・時刻表'],
-      map:      ['キャンパスマップ', '建物の位置'],
     },
     categories: {
       all: 'すべて', facility: '学内施設', food: '食堂・カフェ', study: '図書館・勉強',
@@ -273,7 +269,7 @@ export const CAMPUS_T: Record<UILang, CampusDict> = {
       'print-shop': 'プリント・印刷', 'post-office': '郵便局', stationery: '文具店', 'photo-studio': '写真館',
       'travel-agency': '旅行会社', 'real-estate': '不動産', 'student-room': '学生スペース', lounge: '休憩室',
       'study-room': '閲覧室', clinic: '医院', shower: 'シャワー室', elevator: 'エレベーター',
-      'lost-found': '落とし物', contact: '学校への問い合わせ', library: '図書館', shuttle: 'シャトルバス', 'campus-map': 'キャンパスマップ',
+      'lost-found': '落とし物', contact: '学校への問い合わせ', library: '図書館', shuttle: 'シャトルバス',
     },
     resultsFor: '関連情報',
     searchResults: '検索結果',

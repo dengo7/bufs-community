@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Store, BookOpen, Bus, MapPinned } from 'lucide-react';
+import { Store, BookOpen, Bus } from 'lucide-react';
 import type { UILang } from '../../lib/categories';
 import { CAMPUS_T } from '../../lib/campusI18n';
 import { CAMPUS_TONES, type CampusTone } from './FacilityThumb';
@@ -17,7 +17,6 @@ export default function CampusGuideSection({ lang }: Props) {
     { href: '/campus?category=facility',  Icon: Store,     tone: 'yellow', label: t.homeCards.facility },
     { href: '/campus?category=study',     Icon: BookOpen,  tone: 'blue',   label: t.homeCards.library },
     { href: '/campus?category=transport', Icon: Bus,       tone: 'purple', label: t.homeCards.shuttle },
-    { href: '/campus/campus-map',         Icon: MapPinned, tone: 'mint',   label: t.homeCards.map },
   ];
 
   return (
@@ -36,7 +35,7 @@ export default function CampusGuideSection({ lang }: Props) {
       </div>
       <p className="mt-1 mb-3 px-0.5 text-[12px] text-[#6B7280] leading-snug">{t.homeSub}</p>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {cards.map(({ href, Icon, tone, label }) => {
           const c = CAMPUS_TONES[tone];
           return (
