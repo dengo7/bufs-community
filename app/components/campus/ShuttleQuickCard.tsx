@@ -31,7 +31,7 @@ export default function ShuttleQuickCard({ lang }: Props) {
   return (
     <Link
       href="/campus/shuttle"
-      className="mt-2 flex items-center gap-3 bg-white rounded-2xl border border-[#E5E7EB] px-3.5 py-3 no-underline
+      className="mt-4 flex items-center gap-3 bg-white rounded-2xl border border-[#E5E7EB] px-3.5 py-3 no-underline
                  hover:border-[#CBD5E1] active:scale-[0.99] transition-all"
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] shrink-0">

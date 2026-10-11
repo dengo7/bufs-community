@@ -10,7 +10,7 @@ import BottomTabBar from './components/BottomTabBar';
 import HeroBanner from './components/HeroBanner';
 import HomeQuickLinks from './components/HomeQuickLinks';
 import NoticeSection from './components/NoticeSection';
-import CampusGuideSection from './components/campus/CampusGuideSection';
+import ShuttleQuickCard from './components/campus/ShuttleQuickCard';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
 import { getUpcoming, fmtRange } from './lib/schedule';
@@ -36,6 +36,7 @@ const T = {
     calendar: '학사 일정',
     headerSub: '외국인 유학생을 위한 커뮤니티',
     noPosts: '아직 게시글이 없어요',
+    writeFirst: '첫 글을 써보세요',
     loadError: '게시글을 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
     recentCommunity: '최근 커뮤니티',
     searchAria: '검색',
@@ -51,6 +52,7 @@ const T = {
     calendar: 'Calendar',
     headerSub: 'Community for Int\'l Students',
     noPosts: 'No posts yet',
+    writeFirst: 'Write the first post',
     loadError: "Couldn't load posts. Please try again later.",
     recentCommunity: 'Recent Community',
     searchAria: 'Search',
@@ -66,6 +68,7 @@ const T = {
     calendar: '学校日程',
     headerSub: '留学生社区',
     noPosts: '暂无帖子',
+    writeFirst: '来写第一篇帖子吧',
     loadError: '无法加载帖子，请稍后再试。',
     recentCommunity: '最新社区',
     searchAria: '搜索',
@@ -81,6 +84,7 @@ const T = {
     calendar: '学事日程',
     headerSub: '留学生コミュニティ',
     noPosts: 'まだ投稿がありません',
+    writeFirst: '最初の投稿を書いてみましょう',
     loadError: '投稿を読み込めませんでした。しばらくしてからもう一度お試しください。',
     recentCommunity: '最近のコミュニティ',
     searchAria: '検索',
@@ -347,13 +351,16 @@ export default function Home() {
           {/* ── ① 환영 배너 (축소) ── */}
           <HeroBanner lang={lang} />
 
-          {/* ── ② 바로가기 4개 ── */}
+          {/* ── ② 통학버스 다음 출발 (매일 쓰는 정보라 상단에 둔다) ── */}
+          <ShuttleQuickCard lang={lang} />
+
+          {/* ── ③ 바로가기 4개 ── */}
           <HomeQuickLinks lang={lang} />
 
-          {/* ── ③ 학사공지 (2개 미리보기 + 전체보기) ── */}
+          {/* ── ④ 학사공지 (2개 미리보기 + 전체보기) ── */}
           <NoticeSection lang={lang} />
 
-          {/* ── ④ 최근 커뮤니티 (최신 RECENT_LIMIT개 + 전체보기) ── */}
+          {/* ── ⑤ 최근 커뮤니티 (최신 RECENT_LIMIT개 + 전체보기) ── */}
           <div className="mt-4">
             <div className="flex items-center justify-between mb-3 px-0.5">
               <div className="flex items-center gap-2">
@@ -380,9 +387,16 @@ export default function Home() {
                 {t.loadError}
               </p>
             ) : visibleFeedPosts.length === 0 ? (
-              <p className="text-center text-gray-500 text-[14px] py-8 bg-white rounded-2xl border border-[#E5EAF2]">
-                {t.noPosts}
-              </p>
+              // 빈 상태는 한 줄로 줄이고, 빈 자리를 글쓰기 유도로 쓴다
+              <Link
+                href="/write"
+                className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-4
+                           bg-white rounded-2xl border border-[#E5EAF2] no-underline
+                           hover:border-[#CBD5E1] transition-colors"
+              >
+                <span className="text-[13px] text-gray-500">{t.noPosts}</span>
+                <span className="text-[13px] font-semibold text-[#1D4ED8]">{t.writeFirst} ›</span>
+              </Link>
             ) : (
               <div className="space-y-2">
                 {visibleFeedPosts.map(post => (
@@ -436,8 +450,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* ── ⑤ 캠퍼스 가이드 (기존 콘텐츠 그대로) ── */}
-          <CampusGuideSection lang={lang} />
         </div>
 
       </div>
