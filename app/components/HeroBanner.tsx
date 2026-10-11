@@ -1,46 +1,44 @@
-import Link from "next/link";
-
 type Lang = 'ko' | 'en' | 'zh' | 'ja';
 
 interface HeroBannerProps {
   lang?: Lang;
 }
 
+/**
+ * 브랜드 태그라인 — 번역하지 않는다.
+ * 4개 언어 키에 같은 영문을 넣으면 "번역이 빠진 것"으로 오해해 누가 번역해 버릴 수 있어,
+ * 언어와 무관한 상수로 분리해 둔다.
+ */
+const TAGLINE = "A place to belong, wherever you're from.";
+
 const HERO_T = {
   ko: {
     title1: '외국인 유학생의',
     title2: '든든한 학교생활',
-    desc: '필요한 정보와 이야기를 한곳에서',
-    cta: '커뮤니티 둘러보기 →',
     illustAlt: 'The Well 캠퍼스 일러스트',
   },
   en: {
     title1: 'Reliable campus life',
     title2: 'for international students',
-    desc: 'Info and stories, all in one place',
-    cta: 'Explore Community →',
     illustAlt: 'The Well campus illustration',
   },
   zh: {
     title1: '外国留学生的',
     title2: '安心校园生活',
-    desc: '所需信息与交流，尽在一处',
-    cta: '浏览社区 →',
     illustAlt: 'The Well 校园插画',
   },
   ja: {
     title1: '外国人留学生の',
     title2: '心強い学校生活',
-    desc: '必要な情報と話題をひとつの場所で',
-    cta: 'コミュニティを見る →',
     illustAlt: 'The Well キャンパスイラスト',
   },
 } as const;
 
 /**
  * 홈 상단 환영 배너.
- * 높이를 고정하지 않고 내용(패딩 + 제목 2줄 + 보조문구 + 버튼)으로 결정한다 —
- * 390px 기준 약 150px, 번역이나 글자 확대 시에는 내용에 맞춰 늘어난다.
+ * 높이를 고정하지 않고 내용(패딩 + 제목 2줄 + 태그라인)으로 결정한다 —
+ * 390px 기준 약 110px, 번역이나 글자 확대 시에는 내용에 맞춰 늘어난다.
+ * 커뮤니티 진입은 하단 탭바와 "최근 커뮤니티" 전체보기가 담당하므로 CTA 버튼은 두지 않는다.
  */
 export default function HeroBanner({ lang = 'ko' }: HeroBannerProps) {
   const ht = HERO_T[lang];
@@ -67,26 +65,20 @@ export default function HeroBanner({ lang = 'ko' }: HeroBannerProps) {
         src="/hero-illustration-transparent-soft.png"
         alt={ht.illustAlt}
         aria-hidden
-        className="pointer-events-none select-none absolute bottom-0 right-0 z-0 w-[42%] max-w-[240px] object-contain object-bottom"
+        className="pointer-events-none select-none absolute bottom-0 right-0 z-0 w-[38%] max-w-[200px] object-contain object-bottom"
       />
 
-      {/* 좌측: 문구 + 버튼 */}
-      <div className="relative z-10 max-w-[62%] px-4 py-4 sm:max-w-[58%] sm:px-6 sm:py-6">
+      {/* 좌측: 제목 + 태그라인 */}
+      <div className="relative z-10 max-w-[64%] px-4 py-4 sm:max-w-[58%] sm:px-6 sm:py-5">
         <h2 className="break-keep text-[18px] font-extrabold leading-[1.3] tracking-[-0.01em] text-[#0F172A] sm:text-[22px]">
           {ht.title1}<br />
           {ht.title2}
         </h2>
 
-        <p className="mt-1 break-keep text-[13px] leading-snug text-[#334155] sm:text-[14px]">
-          {ht.desc}
+        {/* 브랜드 태그라인 — 언어와 무관하게 항상 영문 */}
+        <p lang="en" className="mt-1.5 text-[12.5px] font-semibold leading-snug tracking-[0.01em] text-[#1D4ED8] sm:text-[13.5px]">
+          {TAGLINE}
         </p>
-
-        <Link
-          href="/community"
-          className="mt-3 inline-flex min-h-[44px] items-center rounded-full bg-[#1D4ED8] px-4 text-[13.5px] font-semibold text-white shadow-sm shadow-[#1D4ED8]/20 transition-colors hover:bg-[#1A45BE]"
-        >
-          {ht.cta}
-        </Link>
       </div>
     </section>
   );
