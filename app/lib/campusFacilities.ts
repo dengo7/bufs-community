@@ -325,6 +325,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'A119', building: 'A동', room: 'A119', phone: '051-509-6833',
     hours: { text: ['월~금 09:00~17:00'], rules: [{ days: WEEKDAYS, open: '09:00', close: '17:00' }] },
     description: '도서 및 학습용품 판매',
+    image: '/campus/bookstore.jpg',
     keywords: ['서점', '교재', '책', 'bookstore', 'textbook', '书店', '書店'],
   }),
   make({
@@ -333,6 +334,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'A130', building: 'A동', room: 'A130', phone: '051-517-9848',
     hours: { text: ['월~금 09:00~18:00'], rules: [{ days: WEEKDAYS, open: '09:00', close: '18:00' }] },
     description: '프린트·인쇄',
+    image: '/campus/print-center.jpg',
     keywords: ['프린트', '인쇄', '출력', '복사', 'print', 'copy', '打印', '印刷'],
   }),
   make({
@@ -347,6 +349,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
       ],
     },
     description: '우편 발송',
+    image: '/campus/post-office.jpg',
     keywords: ['우체국', '우편', '택배', 'post office', 'mail', 'EMS', '邮局', '郵便局'],
   }),
   make({
@@ -355,6 +358,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'A131', building: 'A동', room: 'A131', phone: '010-3245-6573',
     hours: { text: ['월~금 09:30~17:30'], rules: [{ days: WEEKDAYS, open: '09:30', close: '17:30' }] },
     description: '문구·사무용품 판매',
+    image: '/campus/stationery-mbg.jpg',
     keywords: ['문구', '펜', '노트', 'stationery', '文具'],
   }),
   make({
@@ -371,6 +375,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     location: 'A127', building: 'A동', room: 'A127', phone: '051-518-7080',
     hours: { text: ['월~금 09:00~18:00'], rules: [{ days: WEEKDAYS, open: '09:00', close: '18:00' }] },
     description: '여행 상품 상담·예약',
+    image: '/campus/hanatour.jpg',
     keywords: ['여행', '항공권', 'travel', 'flight', '旅行'],
   }),
   make({
@@ -380,6 +385,7 @@ const OFFICIAL_FACILITIES: CampusFacility[] = [
     hours: { text: ['월~금 10:00~17:00'], rules: [{ days: WEEKDAYS, open: '10:00', close: '17:00' }] },
     description: '방 구하기 상담',
     notes: '자리를 비우는 경우가 많아요. 방문 전에 꼭 전화로 확인하세요.',
+    image: '/campus/realestate-daeho.jpg',
     keywords: ['부동산', '원룸', '방', '집', 'real estate', 'housing', 'room', '房产', '不動産'],
   }),
 ];
