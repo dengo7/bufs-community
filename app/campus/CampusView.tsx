@@ -58,9 +58,14 @@ export default function CampusView() {
   const categoryParam = searchParams.get('category');
   const needParam     = searchParams.get('need');
   const groupParam    = searchParams.get('group');
-  const category: CampusCategoryFilter = isCategoryFilter(categoryParam) ? categoryParam : 'all';
-  const need: SituationKey | null      = isSituation(needParam) ? needParam : null;
-  const group: FacilityGroupKey        = category === 'facility' && isFacilityGroup(groupParam) ? groupParam : 'all';
+  const needValid = isSituation(needParam) ? needParam : null;
+  // 상황 선택은 학교 꿀팁 화면에만 있다 → ?need= 만 있는 옛 주소는 꿀팁으로 연다
+  const category: CampusCategoryFilter =
+    isCategoryFilter(categoryParam) ? categoryParam : needValid ? 'tips' : 'all';
+  const need: SituationKey | null      = category === 'tips' ? needValid : null;
+  // 하위 칩은 교내시설 목록이 보이는 화면(교내시설, 전체)에서만
+  const group: FacilityGroupKey        =
+    (category === 'facility' || category === 'all') && isFacilityGroup(groupParam) ? groupParam : 'all';
 
   const [query, setQuery] = useState('');
   const needResultsRef = useRef<HTMLDivElement | null>(null);
@@ -70,7 +75,7 @@ export default function CampusView() {
     const c = next.category ?? 'all';
     if (c !== 'all') params.set('category', c);
     if (next.need) params.set('need', next.need);
-    if (c === 'facility' && next.group && next.group !== 'all') params.set('group', next.group);
+    if ((c === 'facility' || c === 'all') && next.group && next.group !== 'all') params.set('group', next.group);
     const qs = params.toString();
     router.replace(qs ? `/campus?${qs}` : '/campus', { scroll: false });
   };
@@ -81,19 +86,27 @@ export default function CampusView() {
   }, [need]);
 
   const trimmedQuery = query.trim();
-  const browsing = category !== 'all' || trimmedQuery !== '';
+  const searching = trimmedQuery !== '';
+  // 팁 섹션(많이 찾는 정보·뭐가 필요하세요?)은 학교 꿀팁 화면에서, 검색 중이 아닐 때만
+  const showTips = category === 'tips' && !searching;
 
-  const browseResults = browsing
-    ? CAMPUS_FACILITIES
-        .filter(f => inCategory(f, category) && inFacilityGroup(f, group) && matchesQuery(f, trimmedQuery, t.types[f.type]))
-        .sort(pendingLast)
-    : [];
-  const needResults = need
-    ? CAMPUS_FACILITIES.filter(f => f.situations.includes(need)).sort(pendingLast)
-    : [];
+  // "전체"는 검색어가 없으면 교내시설 목록을, 검색 중이면 전체에서 찾은 결과를 보여준다
+  const listCategory: CampusCategoryFilter = category === 'all' && !searching ? 'facility' : category;
+  const listGroup: FacilityGroupKey = listCategory === 'facility' ? group : 'all';
+
   const popular = POPULAR_IDS
     .map(id => CAMPUS_FACILITIES.find(f => f.id === id))
     .filter((f): f is CampusFacility => !!f);
+  // 많이 찾는 정보가 보일 때는 거기 나온 항목을 목록에서 뺀다(중복 방지)
+  const shownAbove = new Set(showTips ? popular.map(f => f.id) : []);
+
+  const listResults = CAMPUS_FACILITIES
+    .filter(f => !shownAbove.has(f.id))
+    .filter(f => inCategory(f, listCategory) && inFacilityGroup(f, listGroup) && matchesQuery(f, trimmedQuery, t.types[f.type]))
+    .sort(pendingLast);
+  const needResults = need && showTips
+    ? CAMPUS_FACILITIES.filter(f => f.situations.includes(need)).sort(pendingLast)
+    : [];
 
   const sectionTitleCls = 'text-[16px] font-extrabold text-[#0F172A]';
   const cardCls = 'bg-white rounded-2xl border border-[#E5E7EB]';
@@ -184,54 +197,8 @@ export default function CampusView() {
           })}
         </div>
 
-        {/* ── 카테고리·검색 결과 ── */}
-        {browsing && (
-          <section className="mt-6">
-            <div className="flex items-baseline gap-2 mb-3 px-0.5">
-              <h2 className={sectionTitleCls}>{trimmedQuery ? t.searchResults : t.categories[category]}</h2>
-              <span className="text-[12px] font-semibold text-[#94A3B8]">{browseResults.length}</span>
-            </div>
-
-            {/* 교내시설 하위 필터 */}
-            {category === 'facility' && (
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-4 px-4 mb-3">
-                {FACILITY_GROUPS.map(g => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setFilters({ category: 'facility', group: g })}
-                    aria-pressed={group === g}
-                    className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold border cursor-pointer transition-colors
-                      ${group === g ? 'bg-[#1D4ED8] border-[#1D4ED8] text-white' : 'bg-white border-[#E5E7EB] text-[#475569]'}`}
-                  >
-                    {t.facilityGroups[g]}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {browseResults.length > 0 ? (
-              <div className="space-y-2">
-                {browseResults.map(f => <FacilityCard key={f.id} facility={f} lang={lang} now={now} />)}
-              </div>
-            ) : (
-              <div className={`${cardCls} flex flex-col items-center py-10 px-5 text-center`}>
-                <p className="text-[14px] font-semibold text-[#111827]">{t.noResults}</p>
-                <p className="mt-1 text-[12px] text-[#94A3B8]">{t.noResultsSub}</p>
-                <button
-                  type="button"
-                  onClick={() => { setQuery(''); setFilters({}); }}
-                  className="mt-4 px-5 py-2 rounded-full bg-[#EFF6FF] border border-[#DBE7FE] text-[12.5px] font-semibold text-[#1D4ED8] cursor-pointer"
-                >
-                  {t.resetFilter}
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
         {/* ── 지금 많이 찾는 정보 ── */}
-        {!browsing && (
+        {showTips && (
           <section className="mt-6">
             <h2 className={`${sectionTitleCls} mb-3 px-0.5`}>{t.popularTitle}</h2>
             <div className={`${cardCls} overflow-hidden divide-y divide-[#F1F5F9]`}>
@@ -241,53 +208,99 @@ export default function CampusView() {
         )}
 
         {/* ── 학교에서 뭐가 필요하세요? ── */}
-        <section className={`${cardCls} mt-6 px-4 py-4`}>
-          <h2 className={sectionTitleCls}>{t.needTitle}</h2>
-          <p className="mt-1 text-[12.5px] text-[#64748B] leading-snug">{t.needSub}</p>
+        {showTips && (
+          <section className={`${cardCls} mt-6 px-4 py-4`}>
+            <h2 className={sectionTitleCls}>{t.needTitle}</h2>
+            <p className="mt-1 text-[12.5px] text-[#64748B] leading-snug">{t.needSub}</p>
 
-          <div className="mt-3.5 grid grid-cols-2 min-[400px]:grid-cols-4 gap-2">
-            {SITUATIONS.map(key => {
-              const { emoji, tone } = SITUATION_META[key];
-              const c = CAMPUS_TONES[tone];
-              const selected = need === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setFilters({ category, group, need: selected ? null : key })}
-                  aria-pressed={selected}
-                  className="flex flex-col items-center justify-center gap-1.5 min-h-[84px] rounded-2xl px-2 py-3 cursor-pointer transition-all active:scale-[0.97]"
-                  style={{
-                    backgroundColor: c.bg,
-                    border: selected ? `2px solid ${c.fg}` : `1px solid ${c.border}`,
-                  }}
-                >
-                  <span className="text-[22px] leading-none" style={key === 'etc' ? { color: c.fg, fontWeight: 800 } : undefined} aria-hidden="true">
-                    {emoji}
-                  </span>
-                  <span className="text-[12px] font-bold leading-tight text-center break-keep" style={{ color: c.fg }}>
-                    {t.situations[key]}
-                  </span>
-                </button>
-              );
-            })}
+            <div className="mt-3.5 grid grid-cols-2 min-[400px]:grid-cols-4 gap-2">
+              {SITUATIONS.map(key => {
+                const { emoji, tone } = SITUATION_META[key];
+                const c = CAMPUS_TONES[tone];
+                const selected = need === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFilters({ category, group, need: selected ? null : key })}
+                    aria-pressed={selected}
+                    className="flex flex-col items-center justify-center gap-1.5 min-h-[84px] rounded-2xl px-2 py-3 cursor-pointer transition-all active:scale-[0.97]"
+                    style={{
+                      backgroundColor: c.bg,
+                      border: selected ? `2px solid ${c.fg}` : `1px solid ${c.border}`,
+                    }}
+                  >
+                    <span className="text-[22px] leading-none" style={key === 'etc' ? { color: c.fg, fontWeight: 800 } : undefined} aria-hidden="true">
+                      {emoji}
+                    </span>
+                    <span className="text-[12px] font-bold leading-tight text-center break-keep" style={{ color: c.fg }}>
+                      {t.situations[key]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 선택한 상황의 관련 시설·팁 */}
+            {need && (
+              <div ref={needResultsRef} className="mt-5 scroll-mt-[72px]">
+                <div className="flex items-baseline gap-2 mb-3">
+                  <h3 className="text-[14px] font-extrabold text-[#0F172A]">
+                    {SITUATION_META[need].emoji !== '···' && <span className="mr-1" aria-hidden="true">{SITUATION_META[need].emoji}</span>}
+                    {t.situations[need]}
+                    <span className="mx-1.5 text-[#CBD5E1]">·</span>
+                    <span className="font-semibold text-[#64748B]">{t.resultsFor}</span>
+                  </h3>
+                  <span className="text-[12px] font-semibold text-[#94A3B8]">{needResults.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {needResults.map(f => <FacilityCard key={f.id} facility={f} lang={lang} now={now} />)}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── 목록: 카테고리 결과 / 검색 결과 / (전체) 교내시설 ── */}
+        <section className="mt-6">
+          <div className="flex items-baseline gap-2 mb-3 px-0.5">
+            <h2 className={sectionTitleCls}>{searching ? t.searchResults : t.categories[listCategory]}</h2>
+            <span className="text-[12px] font-semibold text-[#94A3B8]">{listResults.length}</span>
           </div>
 
-          {/* 선택한 상황의 관련 시설·팁 */}
-          {need && (
-            <div ref={needResultsRef} className="mt-5 scroll-mt-[72px]">
-              <div className="flex items-baseline gap-2 mb-3">
-                <h3 className="text-[14px] font-extrabold text-[#0F172A]">
-                  {SITUATION_META[need].emoji !== '···' && <span className="mr-1" aria-hidden="true">{SITUATION_META[need].emoji}</span>}
-                  {t.situations[need]}
-                  <span className="mx-1.5 text-[#CBD5E1]">·</span>
-                  <span className="font-semibold text-[#64748B]">{t.resultsFor}</span>
-                </h3>
-                <span className="text-[12px] font-semibold text-[#94A3B8]">{needResults.length}</span>
-              </div>
-              <div className="space-y-2">
-                {needResults.map(f => <FacilityCard key={f.id} facility={f} lang={lang} now={now} />)}
-              </div>
+          {/* 교내시설 하위 필터 */}
+          {listCategory === 'facility' && (
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide -mx-4 px-4 mb-3">
+              {FACILITY_GROUPS.map(g => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setFilters({ category, group: g })}
+                  aria-pressed={listGroup === g}
+                  className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12.5px] font-semibold border cursor-pointer transition-colors
+                    ${listGroup === g ? 'bg-[#1D4ED8] border-[#1D4ED8] text-white' : 'bg-white border-[#E5E7EB] text-[#475569]'}`}
+                >
+                  {t.facilityGroups[g]}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {listResults.length > 0 ? (
+            <div className="space-y-2">
+              {listResults.map(f => <FacilityCard key={f.id} facility={f} lang={lang} now={now} />)}
+            </div>
+          ) : (
+            <div className={`${cardCls} flex flex-col items-center py-10 px-5 text-center`}>
+              <p className="text-[14px] font-semibold text-[#111827]">{t.noResults}</p>
+              <p className="mt-1 text-[12px] text-[#94A3B8]">{t.noResultsSub}</p>
+              <button
+                type="button"
+                onClick={() => { setQuery(''); setFilters({}); }}
+                className="mt-4 px-5 py-2 rounded-full bg-[#EFF6FF] border border-[#DBE7FE] text-[12.5px] font-semibold text-[#1D4ED8] cursor-pointer"
+              >
+                {t.resetFilter}
+              </button>
             </div>
           )}
         </section>
