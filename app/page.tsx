@@ -34,6 +34,7 @@ const T = {
     myPosts: '내가 쓴 글', commented: '댓글 단 글', scrapped: '내 스크랩',
     myInfo: '내정보',
     calendar: '학사 일정',
+    noUpcoming: '예정된 일정이 없어요',
     headerSub: '외국인 유학생을 위한 커뮤니티',
     noPosts: '아직 게시글이 없어요',
     writeFirst: '첫 글을 써보세요',
@@ -50,6 +51,7 @@ const T = {
     myPosts: 'My Posts', commented: 'Commented', scrapped: 'Scrapped',
     myInfo: 'My',
     calendar: 'Calendar',
+    noUpcoming: 'No upcoming events',
     headerSub: 'Community for Int\'l Students',
     noPosts: 'No posts yet',
     writeFirst: 'Write the first post',
@@ -66,6 +68,7 @@ const T = {
     myPosts: '我的帖子', commented: '我的评论', scrapped: '我的收藏',
     myInfo: '我的',
     calendar: '学校日程',
+    noUpcoming: '暂无即将到来的日程',
     headerSub: '留学生社区',
     noPosts: '暂无帖子',
     writeFirst: '来写第一篇帖子吧',
@@ -82,6 +85,7 @@ const T = {
     myPosts: '自分の投稿', commented: 'コメントした投稿', scrapped: 'スクラップ',
     myInfo: 'MY',
     calendar: '学事日程',
+    noUpcoming: '予定されている日程はありません',
     headerSub: '留学生コミュニティ',
     noPosts: 'まだ投稿がありません',
     writeFirst: '最初の投稿を書いてみましょう',
@@ -198,6 +202,9 @@ export default function Home() {
   async function handleLogout() {
     await getSupabaseClient().auth.signOut();
   }
+
+  // 사이드바 학사일정 위젯 (xl 이상)
+  const upcoming = getUpcoming(6);
 
   // 차단한 사용자의 게시글 숨김
   const visibleFeedPosts = feedPosts.filter(p => !blockedIds.includes(p.author_id));
@@ -329,7 +336,12 @@ export default function Home() {
             <div className="px-[18px] py-[15px] bg-white border-b border-[#EBEBEB]">
               <span className="text-base font-bold text-[#111827]">📅 {t.calendar}</span>
             </div>
-            {getUpcoming(6).map((item, i) => (
+            {upcoming.length === 0 ? (
+              // 정적 일정 데이터(lib/schedule.ts)가 끝나면 빈 카드 대신 안내 문구
+              <p className="px-[18px] py-4 text-sm text-gray-500 text-center border-b border-[#F5F5F5]">
+                {t.noUpcoming}
+              </p>
+            ) : upcoming.map((item, i) => (
               <div key={i} className="flex gap-3 px-[18px] py-2.5 items-center border-b border-[#F5F5F5]">
                 <span className="text-[12px] text-[#92702A] font-bold shrink-0 bg-[#F9F3E8] border border-[#EEE0C4] px-[7px] py-0.5 rounded whitespace-nowrap">
                   {fmtRange(item)}
