@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { ChevronRight, Gift, Handshake, MapPin, Stamp, Ticket } from 'lucide-react';
 import type { UILang } from '../../lib/categories';
 import {
-  currentUserId, fetchPartnerStores, fetchStampState, partnerText, PARTNER_T, type PartnerStore, type StampState,
+  currentUserId, fetchPartnerStores, fetchStampState, myStampOf, partnerBenefit, partnerText, PARTNER_T,
+  type PartnerStore, type StampState,
 } from '../../lib/partners';
 import PartnerImage from './PartnerImage';
 
@@ -46,7 +47,7 @@ export default function PartnerSection({ lang }: { lang: UILang }) {
       <div className="space-y-2">
         {stores.map(store => {
           const name = partnerText(store, lang, 'name');
-          const mine = stamp?.available ? (stamp.byStore.get(store.id) ?? { stamps: 0, coupons: 0 }) : null;
+          const mine = myStampOf(stamp, store.id);
           return (
             <Link
               key={store.id}
@@ -60,9 +61,9 @@ export default function PartnerSection({ lang }: { lang: UILang }) {
                   <span className="shrink-0 rounded-md bg-[#C2611F] px-1.5 py-[1px] text-[10.5px] font-bold text-white">{t.badge}</span>
                   <p className="truncate text-[15px] font-bold text-[#111827]">{name}</p>
                 </div>
-                <p className="mt-1.5 flex items-center gap-1 text-[12.5px] font-semibold text-[#C2611F]">
-                  <Gift size={13} strokeWidth={2} className="shrink-0" />
-                  <span className="truncate">{t.benefit(store.stamps_per_reward)}</span>
+                <p className="mt-1.5 flex items-start gap-1 text-[12.5px] font-semibold leading-snug text-[#C2611F]">
+                  <Gift size={13} strokeWidth={2} className="mt-[2px] shrink-0" />
+                  <span className="line-clamp-2">{partnerBenefit(store, lang)}</span>
                 </p>
                 {store.transit_note && (
                   <p className="mt-1 flex items-center gap-1 text-[12px] text-[#64748B]">

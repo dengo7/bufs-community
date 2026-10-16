@@ -16,7 +16,8 @@ import { checkinUrl, currentUserId, STICKER_LINES } from '../../lib/partners';
  * PIN은 입력 즉시 RPC로 보내고 입력칸을 비운다. DB에는 둘 다 해시만 저장된다.
  */
 
-type AdminStore = { id: string; slug: string; name: string; active: boolean; stamps_per_reward: number };
+// welcome_reward: null = 016 적용 전(컬럼 없음)
+type AdminStore = { id: string; slug: string; name: string; active: boolean; stamps_per_reward: number; welcome_reward: boolean | null };
 type SecretStatus = { store_id: string; has_code: boolean; has_pin: boolean; updated_at: string | null };
 
 export default function AdminPartnersView() {
@@ -27,12 +28,19 @@ export default function AdminPartnersView() {
 
   const load = useCallback(async () => {
     const client = getSupabaseClient();
-    const [s, sec] = await Promise.all([
-      client.from('partner_stores').select('id, slug, name, active, stamps_per_reward').order('sort_order'),
+    const base = 'id, slug, name, active, stamps_per_reward';
+    const [first, sec] = await Promise.all([
+      client.from('partner_stores').select(`${base}, welcome_reward`).order('sort_order'),
       client.rpc('partner_admin_secret_status'),
     ]);
+    // 016 적용 전이면 welcome_reward 컬럼이 없다(42703) → 빼고 다시 읽는다
+    const s = first.error?.code === '42703'
+      ? await client.from('partner_stores').select(base).order('sort_order')
+      : first;
     if (s.error || sec.error) { setState('unavailable'); return; }
-    setStores((s.data ?? []) as AdminStore[]);
+    type Row = Omit<AdminStore, 'welcome_reward'> & { welcome_reward?: boolean };
+    setStores(((s.data ?? []) as Row[])
+      .map(x => ({ ...x, welcome_reward: typeof x.welcome_reward === 'boolean' ? x.welcome_reward : null })));
     setSecrets(new Map(((sec.data ?? []) as SecretStatus[]).map(x => [x.store_id, x])));
     setState('ready');
   }, []);
@@ -126,8 +134,21 @@ function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secre
         {!store.active && <span className="text-[11px] font-bold text-[#B91C1C]">비활성</span>}
       </div>
       <p className="mt-1 text-[12.5px] text-[#64748B]">
-        QR 코드 {secret?.has_code ? '발급됨' : '없음'} · 직원 PIN {secret?.has_pin ? '설정됨' : '없음'} · 스탬프 {store.stamps_per_reward}개마다 쿠폰
+        QR 코드 {secret?.has_code ? '발급됨' : '없음'} · 직원 PIN {secret?.has_pin ? '설정됨' : '없음'}
       </p>
+      {/* 혜택 설정 (보기 전용 — 바꾸려면 Supabase Table Editor) */}
+      <dl className="mt-2 grid grid-cols-2 gap-2 text-[12.5px]">
+        <div className="rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] px-3 py-2">
+          <dt className="text-[#94A3B8] font-semibold">첫 방문 웰컴 쿠폰 (welcome_reward)</dt>
+          <dd className="mt-0.5 font-bold text-[#111827]">
+            {store.welcome_reward === null ? '016 적용 전' : store.welcome_reward ? '켜짐' : '꺼짐'}
+          </dd>
+        </div>
+        <div className="rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] px-3 py-2">
+          <dt className="text-[#94A3B8] font-semibold">쿠폰 주기 (stamps_per_reward)</dt>
+          <dd className="mt-0.5 font-bold text-[#111827]">스탬프 {store.stamps_per_reward}개마다</dd>
+        </div>
+      </dl>
 
       {/* QR 코드 */}
       <div className="mt-4">

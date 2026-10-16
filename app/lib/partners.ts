@@ -19,11 +19,35 @@ export type PartnerStore = {
   hours_note: string | null;
   image: string | null;
   stamps_per_reward: number;
+  /** 첫 방문 웰컴 쿠폰 (016). 016 적용 전에는 컬럼이 없어 false로 본다 */
+  welcome_reward: boolean;
   translations: Partial<Record<Exclude<UILang, 'ko'>, LocalizedFields>> | null;
 };
 
-const PUBLIC_COLUMNS =
+const BASE_COLUMNS =
   'id, slug, name, intro, address, transit_note, phone, open_time, close_time, hours_note, image, stamps_per_reward, translations';
+const PUBLIC_COLUMNS = `${BASE_COLUMNS}, welcome_reward`;
+
+/** PostgREST: 없는 컬럼을 고르면 42703 */
+const isMissingColumn = (error: { code?: string } | null) => error?.code === '42703';
+
+/**
+ * partner_stores 조회. 016 적용 전(welcome_reward 컬럼 없음)이면 그 컬럼 없이 다시 읽고
+ * welcome_reward=false 로 채운다 → 적용 전에는 기존 "N회마다" 규칙 문구로 보인다.
+ */
+async function selectStores(
+  build: (columns: string) => PromiseLike<{ data: unknown; error: { code?: string } | null }>,
+): Promise<{ data: PartnerStore[]; error: boolean }> {
+  let res = await build(PUBLIC_COLUMNS);
+  let withWelcome = true;
+  if (isMissingColumn(res.error)) {
+    res = await build(BASE_COLUMNS);
+    withWelcome = false;
+  }
+  if (res.error) return { data: [], error: true };
+  const rows = (Array.isArray(res.data) ? res.data : res.data ? [res.data] : []) as PartnerStore[];
+  return { data: rows.map(r => ({ ...r, welcome_reward: withWelcome ? !!r.welcome_reward : false })), error: false };
+}
 
 /** 매장 QR 스티커가 가리키는 주소의 기준 (앱 WebView가 띄우는 프로덕션 도메인) */
 export const PARTNER_QR_ORIGIN = 'https://bufs-community.vercel.app';
@@ -35,13 +59,10 @@ export const PARTNER_QR_ORIGIN = 'https://bufs-community.vercel.app';
  */
 export async function fetchPartnerStores(): Promise<PartnerStore[]> {
   try {
-    const { data, error } = await getSupabaseClient()
-      .from('partner_stores')
-      .select(PUBLIC_COLUMNS)
-      .eq('active', true)
-      .order('sort_order', { ascending: true });
-    if (error) return [];
-    return (data ?? []) as PartnerStore[];
+    const client = getSupabaseClient();
+    const { data } = await selectStores(cols =>
+      client.from('partner_stores').select(cols).eq('active', true).order('sort_order', { ascending: true }));
+    return data;
   } catch {
     return [];
   }
@@ -50,17 +71,19 @@ export async function fetchPartnerStores(): Promise<PartnerStore[]> {
 /** slug로 한 곳(운영 중). 없거나 조회 실패면 null */
 export async function fetchPartnerStore(slug: string): Promise<PartnerStore | null> {
   try {
-    const { data, error } = await getSupabaseClient()
-      .from('partner_stores')
-      .select(PUBLIC_COLUMNS)
-      .eq('slug', slug)
-      .eq('active', true)
-      .maybeSingle();
-    if (error) return null;
-    return (data as PartnerStore | null) ?? null;
+    const client = getSupabaseClient();
+    const { data } = await selectStores(cols =>
+      client.from('partner_stores').select(cols).eq('slug', slug).eq('active', true).maybeSingle());
+    return data[0] ?? null;
   } catch {
     return null;
   }
+}
+
+/** 혜택 한 줄 — 웰컴 쿠폰이 켜져 있으면 "첫 방문 1잔 + 이후 N번마다 1잔" */
+export function partnerBenefit(store: PartnerStore, lang: UILang): string {
+  const t = PARTNER_T[lang];
+  return store.welcome_reward ? t.benefitWithWelcome(store.stamps_per_reward) : t.benefit(store.stamps_per_reward);
 }
 
 /** ko는 기본 컬럼, 그 외 언어는 translations[lang][field] (없으면 ko로) */
@@ -101,15 +124,20 @@ export type StampState = {
   /** 2차 마이그레이션(015)이 적용돼 스탬프 기능을 쓸 수 있는지 */
   available: boolean;
   /** store_id → 내 스탬프·미사용 쿠폰 수 (비로그인이면 비어 있음) */
-  byStore: Map<string, { stamps: number; coupons: number }>;
+  byStore: Map<string, MyStamp>;
 };
+
+export type MyStamp = { stamps: number; coupons: number; totalVisits: number };
+const EMPTY_STAMP: MyStamp = { stamps: 0, coupons: 0, totalVisits: 0 };
+export const myStampOf = (state: StampState | null, storeId: string): MyStamp | null =>
+  state?.available ? (state.byStore.get(storeId) ?? EMPTY_STAMP) : null;
 
 /**
  * 내 스탬프 현황. 테이블이 없으면(015 적용 전) available=false.
  * RLS상 관리자는 다른 사용자 행도 보이므로 user_id 조건을 반드시 건다.
  */
 export async function fetchStampState(userId: string | null): Promise<StampState> {
-  const byStore = new Map<string, { stamps: number; coupons: number }>();
+  const byStore = new Map<string, MyStamp>();
   try {
     const client = getSupabaseClient();
     if (!userId) {
@@ -118,15 +146,15 @@ export async function fetchStampState(userId: string | null): Promise<StampState
       return { available: !error, byStore };
     }
     const [cards, coupons] = await Promise.all([
-      client.from('partner_stamp_cards').select('store_id, stamps').eq('user_id', userId),
+      client.from('partner_stamp_cards').select('store_id, stamps, total_visits').eq('user_id', userId),
       client.from('partner_coupons').select('store_id').eq('user_id', userId).is('redeemed_at', null),
     ]);
     if (cards.error || coupons.error) return { available: false, byStore };
-    for (const c of (cards.data ?? []) as { store_id: string; stamps: number }[]) {
-      byStore.set(c.store_id, { stamps: c.stamps, coupons: 0 });
+    for (const c of (cards.data ?? []) as { store_id: string; stamps: number; total_visits: number }[]) {
+      byStore.set(c.store_id, { stamps: c.stamps, coupons: 0, totalVisits: c.total_visits });
     }
     for (const c of (coupons.data ?? []) as { store_id: string }[]) {
-      const cur = byStore.get(c.store_id) ?? { stamps: 0, coupons: 0 };
+      const cur = byStore.get(c.store_id) ?? { ...EMPTY_STAMP };
       cur.coupons++;
       byStore.set(c.store_id, cur);
     }
@@ -158,7 +186,8 @@ export async function fetchMyCoupons(storeId: string, userId: string): Promise<{
 }
 
 // ── RPC ─────────────────────────────────────────────────────────────────
-export type CheckinStatus = 'stamped' | 'coupon_issued' | 'already_today' | 'closed' | 'invalid_code' | 'not_logged_in';
+export type CheckinStatus =
+  | 'welcome_coupon' | 'stamped' | 'coupon_issued' | 'already_today' | 'closed' | 'invalid_code' | 'not_logged_in';
 export type CheckinResult =
   | { status: CheckinStatus; stamps?: number; per_reward?: number; coupons?: number; open_time?: string; close_time?: string }
   | { status: 'error' };
@@ -242,6 +271,7 @@ type PartnerDict = {
   sectionSub: string;
   badge: string;
   benefit: (n: number) => string;
+  benefitWithWelcome: (n: number) => string;
   benefitTitle: string;
   benefitNote: string;
   stampTitle: string;
@@ -257,6 +287,7 @@ type PartnerDict = {
   stampProgress: (s: number, p: number) => string;
   couponCount: (n: number) => string;
   nextCoupon: (left: number) => string;
+  firstVisitHint: string;
   scanToCollect: string;
   loginToCollect: string;
   login: string;
@@ -276,6 +307,7 @@ type PartnerDict = {
   processing: string;
   resStamped: string;
   resCoupon: string;
+  resWelcome: string;
   resCouponSub: (n: number) => string;
   resAlready: string;
   resAlreadySub: string;
@@ -309,6 +341,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     sectionSub: 'The Well 회원 전용 혜택',
     badge: '제휴',
     benefit: (n) => `방문 ${n}회마다 음료 1잔 무료`,
+    benefitWithWelcome: (n) => `첫 방문 음료 1잔 + 이후 ${n}번 방문마다 1잔`,
     benefitTitle: '혜택',
     benefitNote: '음료 종류는 매장에서 골라 주세요.',
     stampTitle: '내 스탬프',
@@ -323,6 +356,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     stampProgress: (s, p) => `스탬프 ${s}/${p}`,
     couponCount: (n) => `쿠폰 ${n}장`,
     nextCoupon: (left) => `${left}번 더 방문하면 음료 1잔 쿠폰`,
+    firstVisitHint: '첫 방문에 적립하면 바로 음료 1잔 쿠폰을 드려요',
     scanToCollect: 'QR 스캔해서 적립',
     loginToCollect: '로그인하면 스탬프를 모을 수 있어요',
     login: '로그인',
@@ -340,6 +374,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     processing: '적립 중…',
     resStamped: '스탬프 1개 적립!',
     resCoupon: '쿠폰이 발급됐어요!',
+    resWelcome: '첫 방문 웰컴 음료 쿠폰이 발급됐어요!',
     resCouponSub: (n) => `음료 1잔 쿠폰 · 보유 ${n}장`,
     resAlready: '오늘은 이미 적립했어요',
     resAlreadySub: '같은 가게는 하루 1번 적립돼요.',
@@ -370,6 +405,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     sectionSub: 'Perks for The Well members',
     badge: 'Partner',
     benefit: (n) => `Free drink every ${n} visits`,
+    benefitWithWelcome: (n) => `Free drink on your first visit + every ${n} visits after`,
     benefitTitle: 'Perk',
     benefitNote: 'Choose your drink at the shop.',
     stampTitle: 'My stamps',
@@ -384,6 +420,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     stampProgress: (s, p) => `Stamps ${s}/${p}`,
     couponCount: (n) => (n === 1 ? '1 coupon' : `${n} coupons`),
     nextCoupon: (left) => (left === 1 ? '1 more visit for a free drink' : `${left} more visits for a free drink`),
+    firstVisitHint: 'Get a free drink coupon right on your first visit',
     scanToCollect: 'Scan QR to collect',
     loginToCollect: 'Log in to collect stamps',
     login: 'Log in',
@@ -401,6 +438,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     processing: 'Collecting…',
     resStamped: 'Stamp collected!',
     resCoupon: 'You got a coupon!',
+    resWelcome: 'Welcome! Here is a free drink coupon for your first visit',
     resCouponSub: (n) => `Free drink coupon · ${n} in total`,
     resAlready: 'Already collected today',
     resAlreadySub: 'You can collect once a day per shop.',
@@ -431,6 +469,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     sectionSub: 'The Well 会员专属优惠',
     badge: '合作',
     benefit: (n) => `每到店${n}次赠送饮料1杯`,
+    benefitWithWelcome: (n) => `首次到店赠饮料1杯 + 之后每到店${n}次再赠1杯`,
     benefitTitle: '优惠',
     benefitNote: '饮料种类请在店内选择。',
     stampTitle: '我的印章',
@@ -445,6 +484,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     stampProgress: (s, p) => `印章 ${s}/${p}`,
     couponCount: (n) => `优惠券${n}张`,
     nextCoupon: (left) => `再到店${left}次即可获得饮料券`,
+    firstVisitHint: '首次到店集章即送饮料券1张',
     scanToCollect: '扫码集章',
     loginToCollect: '登录后即可集章',
     login: '登录',
@@ -462,6 +502,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     processing: '正在集章…',
     resStamped: '集章成功！',
     resCoupon: '已获得优惠券！',
+    resWelcome: '首次到店欢迎饮料券已发放！',
     resCouponSub: (n) => `免费饮料券 · 共${n}张`,
     resAlready: '今天已经集过章了',
     resAlreadySub: '同一店铺每天只能集章一次。',
@@ -492,6 +533,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     sectionSub: 'The Well会員限定の特典',
     badge: '提携',
     benefit: (n) => `${n}回の来店ごとにドリンク1杯無料`,
+    benefitWithWelcome: (n) => `初回来店でドリンク1杯 + 以降${n}回来店ごとに1杯`,
     benefitTitle: '特典',
     benefitNote: 'ドリンクの種類は店内でお選びください。',
     stampTitle: 'マイスタンプ',
@@ -506,6 +548,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     stampProgress: (s, p) => `スタンプ ${s}/${p}`,
     couponCount: (n) => `クーポン${n}枚`,
     nextCoupon: (left) => `あと${left}回の来店でドリンク1杯クーポン`,
+    firstVisitHint: '初回来店のスタンプですぐにドリンク1杯クーポン',
     scanToCollect: 'QRをスキャンして貯める',
     loginToCollect: 'ログインするとスタンプを貯められます',
     login: 'ログイン',
@@ -523,6 +566,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     processing: 'スタンプ処理中…',
     resStamped: 'スタンプを1つ獲得！',
     resCoupon: 'クーポンが発行されました！',
+    resWelcome: '初回来店ウェルカムドリンククーポンが発行されました！',
     resCouponSub: (n) => `ドリンク1杯無料クーポン · 計${n}枚`,
     resAlready: '本日はすでに獲得済みです',
     resAlreadySub: '同じ店舗は1日1回までです。',

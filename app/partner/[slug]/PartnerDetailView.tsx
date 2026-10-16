@@ -8,7 +8,7 @@ import PartnerImage from '../../components/partner/PartnerImage';
 import QrScanModal from '../../components/partner/QrScanModal';
 import { useLang } from '../../lib/lang';
 import {
-  currentUserId, fetchPartnerStore, fetchStampState, loginHref, partnerHours, partnerText, telHref,
+  currentUserId, fetchPartnerStore, fetchStampState, loginHref, myStampOf, partnerBenefit, partnerHours, partnerText, telHref,
   PARTNER_T, type PartnerStore, type StampState,
 } from '../../lib/partners';
 
@@ -45,7 +45,7 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
 
   const name = store ? partnerText(store, lang, 'name') : '';
   const cardCls = 'bg-white rounded-2xl border border-[#E5E7EB]';
-  const mine = store && stamp?.available ? (stamp.byStore.get(store.id) ?? { stamps: 0, coupons: 0 }) : null;
+  const mine = store ? myStampOf(stamp, store.id) : null;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
@@ -91,7 +91,7 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
                 <Gift size={15} strokeWidth={2} />
                 {t.benefitTitle}
               </h2>
-              <p className="mt-1.5 text-[17px] font-extrabold text-[#111827]">{t.benefit(store.stamps_per_reward)}</p>
+              <p className="mt-1.5 text-[17px] font-extrabold leading-snug text-[#111827]">{partnerBenefit(store, lang)}</p>
               <p className="mt-1 text-[12.5px] text-[#64748B]">{t.benefitNote}</p>
             </section>
 
@@ -146,7 +146,9 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
                 <>
                   {mine && (
                     <p className="mt-3 text-[12.5px] text-[#64748B]">
-                      {t.nextCoupon(store.stamps_per_reward - mine.stamps)}
+                      {store.welcome_reward && mine.totalVisits === 0
+                        ? t.firstVisitHint
+                        : t.nextCoupon(store.stamps_per_reward - mine.stamps)}
                     </p>
                   )}
                   <button

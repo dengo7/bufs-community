@@ -117,7 +117,7 @@ type View = {
   coupons: number;
 };
 
-/** 결과 5종(적립됨 / 쿠폰 발급됨 / 오늘 이미 적립 / 영업시간 아님 / 잘못된 코드) + 오류 */
+/** 결과: 첫 방문 웰컴 쿠폰 / 적립됨 / 쿠폰 발급됨 / 오늘 이미 적립 / 영업시간 아님 / 잘못된 코드 + 오류 */
 function describe(r: CheckinResult | null, t: (typeof PARTNER_T)['ko']): View | null {
   if (!r) return null;
   const progress = 'per_reward' in r && r.per_reward ? { stamps: r.stamps ?? 0, per: r.per_reward } : undefined;
@@ -127,6 +127,8 @@ function describe(r: CheckinResult | null, t: (typeof PARTNER_T)['ko']): View | 
   const bad = { bg: '#FEF2F2', fg: '#B91C1C' };
 
   switch (r.status) {
+    case 'welcome_coupon':
+      return { Icon: PartyPopper, ...ok, title: t.resWelcome, sub: t.resCouponSub(coupons), progress, coupons };
     case 'stamped':
       return { Icon: Stamp, ...ok, title: t.resStamped, progress, coupons };
     case 'coupon_issued':
