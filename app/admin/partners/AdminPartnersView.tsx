@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { encode } from 'uqr';
-import { ArrowLeft, Download, KeyRound, QrCode, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Download, KeyRound, QrCode, RefreshCw, ShieldAlert } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { checkinUrl, currentUserId, STICKER_LINES } from '../../lib/partners';
 
@@ -11,9 +11,10 @@ import { checkinUrl, currentUserId, STICKER_LINES } from '../../lib/partners';
  * 관리자 전용 — 제휴 가게 매장 QR 코드 발급·재발급, 직원 PIN 설정, QR 스티커 이미지 내려받기.
  * 화면 문구는 관리자용이라 한국어만 둔다.
  *
- * 보안: QR 코드 원문은 발급 RPC 응답으로 한 번만 받아 이 화면의 메모리(state)에만 둔다.
- * 콘솔·저장소·로그에 남기지 않고, 화면을 벗어나면 다시 볼 수 없다(필요하면 재발급).
- * PIN은 입력 즉시 RPC로 보내고 입력칸을 비운다. DB에는 둘 다 해시만 저장된다.
+ * 보안: 매장 QR은 계산대에 공개로 붙는 값이라 관리자에게는 언제든 다시 보여준다(017,
+ * 관리자 전용 RPC partner_admin_get_code). 화면 메모리(state)에만 두고 콘솔·저장소·로그에는 남기지 않는다.
+ * 적립 검증은 DB의 해시로 한다. 직원 PIN은 입력 즉시 RPC로 보내고 입력칸을 비우며,
+ * bcrypt 해시로만 저장돼 다시 볼 수 없다.
  */
 
 // welcome_reward: null = 016 적용 전(컬럼 없음)
@@ -91,23 +92,68 @@ export default function AdminPartnersView() {
   );
 }
 
+// 현재 QR 상태 — unsupported: 017 적용 전(다시 보기 RPC 없음), missing: 017 이전에 발급돼 원본이 없음
+type QrState =
+  | { kind: 'loading' }
+  | { kind: 'none' }
+  | { kind: 'missing' }
+  | { kind: 'unsupported' }
+  | { kind: 'code'; code: string };
+
+/** PostgREST: RPC 함수가 없으면 PGRST202 (017 적용 전) */
+const isMissingFunction = (error: { code?: string } | null) => error?.code === 'PGRST202' || error?.code === '42883';
+
 function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secret?: SecretStatus; onChanged: () => Promise<void> }) {
-  const [confirmReissue, setConfirmReissue] = useState(false);
-  const [sticker, setSticker] = useState<string | null>(null);   // PNG data URL (코드 원문은 보관하지 않음)
+  const [qr, setQr] = useState<QrState>({ kind: 'loading' });
+  const [sticker, setSticker] = useState<string | null>(null);   // PNG data URL
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [pin, setPin] = useState('');
   const [pin2, setPin2] = useState('');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const hasCode = !!secret?.has_code;
+
+  // 현재 QR 원본 불러오기 (관리자 전용 RPC)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!hasCode) { if (!cancelled) setQr({ kind: 'none' }); return; }
+      const { data, error } = await getSupabaseClient().rpc('partner_admin_get_code', { p_store_id: store.id });
+      if (cancelled) return;
+      if (isMissingFunction(error)) setQr(prev => (prev.kind === 'code' ? prev : { kind: 'unsupported' }));
+      else if (error) setQr({ kind: 'unsupported' });
+      else if (typeof data === 'string' && data) setQr({ kind: 'code', code: data });
+      else setQr({ kind: 'missing' });
+    })();
+    return () => { cancelled = true; };
+  }, [hasCode, store.id]);
+
+  // QR이 정해지면 스티커 이미지를 만든다
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const url = qr.kind === 'code' ? await drawSticker(store.name, checkinUrl(store.slug, qr.code)) : null;
+      if (!cancelled) setSticker(url);
+    })();
+    return () => { cancelled = true; };
+  }, [qr, store.name, store.slug]);
+
   async function issueCode() {
-    if (secret?.has_code && !confirmReissue) { setConfirmReissue(true); return; }
-    setBusy(true); setMsg(null); setConfirmReissue(false);
+    setConfirmOpen(false);
+    setBusy(true); setMsg(null);
     const { data, error } = await getSupabaseClient().rpc('partner_admin_issue_code', { p_store_id: store.id });
     if (error || typeof data !== 'string') {
       setMsg({ ok: false, text: 'QR 코드 발급에 실패했어요.' });
     } else {
-      setSticker(await drawSticker(store.name, checkinUrl(store.slug, data)));
-      setMsg({ ok: true, text: 'QR 코드를 발급했어요. 지금 스티커 이미지를 내려받으세요 — 이 화면을 벗어나면 다시 볼 수 없어요.' });
+      const reviewable = qr.kind !== 'unsupported';
+      setQr({ kind: 'code', code: data });
+      setMsg({
+        ok: true,
+        text: reviewable
+          ? 'QR 코드를 발급했어요. 새 스티커를 출력해 계산대에 붙여 주세요.'
+          : 'QR 코드를 발급했어요. 지금 스티커를 내려받으세요 — 017 적용 전이라 이 화면을 벗어나면 다시 볼 수 없어요.',
+      });
       await onChanged();
     }
     setBusy(false);
@@ -134,7 +180,7 @@ function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secre
         {!store.active && <span className="text-[11px] font-bold text-[#B91C1C]">비활성</span>}
       </div>
       <p className="mt-1 text-[12.5px] text-[#64748B]">
-        QR 코드 {secret?.has_code ? '발급됨' : '없음'} · 직원 PIN {secret?.has_pin ? '설정됨' : '없음'}
+        QR 코드 {hasCode ? '발급됨' : '없음'} · 직원 PIN {secret?.has_pin ? '설정됨' : '없음'}
       </p>
       {/* 혜택 설정 (보기 전용 — 바꾸려면 Supabase Table Editor) */}
       <dl className="mt-2 grid grid-cols-2 gap-2 text-[12.5px]">
@@ -150,44 +196,55 @@ function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secre
         </div>
       </dl>
 
-      {/* QR 코드 */}
-      <div className="mt-4">
+      {/* 현재 QR · 스티커 */}
+      <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-3">
+        <p className="flex items-center gap-1.5 text-[13px] font-bold text-[#334155]"><QrCode size={15} /> 현재 매장 QR</p>
+
+        {qr.kind === 'loading' && <div className="mt-3 mx-auto h-64 max-w-[300px] rounded-lg bg-gray-100 animate-pulse" />}
+        {qr.kind === 'none' && <p className="mt-2 text-[13px] text-[#64748B]">아직 발급한 QR이 없어요. 아래에서 발급해 주세요.</p>}
+        {qr.kind === 'missing' && (
+          <p className="mt-2 rounded-xl bg-[#FFF8E6] border border-[#F5E1A4] px-3 py-2.5 text-[13px] text-[#7A5B00] leading-snug">
+            QR을 다시 보려면 한 번 재발급해 주세요. 이전 버전에서 발급한 QR은 원본이 저장돼 있지 않아요.
+            (재발급하면 지금 붙어 있는 스티커는 바로 쓸 수 없게 되니 새 스티커로 바꿔 붙여 주세요)
+          </p>
+        )}
+        {qr.kind === 'unsupported' && (
+          <p className="mt-2 text-[13px] text-[#64748B] leading-snug">
+            QR 다시 보기는 017 마이그레이션 적용 후에 쓸 수 있어요. 지금은 발급 직후에만 볼 수 있어요.
+          </p>
+        )}
+
+        {sticker && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={sticker} alt={`${store.name} QR 스티커`} className="mt-3 mx-auto w-full max-w-[300px] rounded-lg border border-[#E5E7EB] bg-white" />
+            <a
+              href={sticker}
+              download={`the-well-qr-${store.slug}.png`}
+              className="mt-3 h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#111827] text-[14px] font-semibold text-white no-underline"
+            >
+              <Download size={17} /> 스티커 이미지 내려받기 (PNG)
+            </a>
+            <p className="mt-2 text-[11.5px] text-[#64748B]">앱 안에서 내려받기가 안 되면 이미지를 길게 눌러 저장하세요.</p>
+          </>
+        )}
+
         <button
           type="button"
-          onClick={issueCode}
-          disabled={busy}
-          className={`h-11 px-4 inline-flex items-center gap-1.5 rounded-xl text-[14px] font-semibold border-none cursor-pointer disabled:opacity-50
-            ${confirmReissue ? 'bg-[#B91C1C] text-white' : 'bg-[#1D4ED8] text-white'}`}
+          onClick={() => (hasCode ? setConfirmOpen(true) : issueCode())}
+          disabled={busy || qr.kind === 'loading'}
+          className={`mt-3 h-11 w-full inline-flex items-center justify-center gap-1.5 rounded-xl text-[14px] font-semibold cursor-pointer disabled:opacity-50
+            ${hasCode ? 'bg-white text-[#B91C1C] border border-[#FECACA]' : 'bg-[#1D4ED8] text-white border-none'}`}
         >
-          <QrCode size={17} />
-          {!secret?.has_code ? 'QR 코드 발급' : confirmReissue ? '한 번 더 누르면 재발급 (기존 스티커 즉시 무효)' : 'QR 코드 재발급'}
+          <RefreshCw size={16} />
+          {hasCode ? 'QR 코드 재발급' : 'QR 코드 발급'}
         </button>
-        {confirmReissue && (
-          <button type="button" onClick={() => setConfirmReissue(false)}
-            className="ml-2 h-11 px-3 rounded-xl border border-[#E5E7EB] bg-white text-[13px] cursor-pointer">
-            취소
-          </button>
-        )}
       </div>
 
-      {sticker && (
-        <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={sticker} alt={`${store.name} QR 스티커`} className="mx-auto w-full max-w-[300px] rounded-lg border border-[#E5E7EB] bg-white" />
-          <a
-            href={sticker}
-            download={`the-well-qr-${store.slug}.png`}
-            className="mt-3 h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#111827] text-[14px] font-semibold text-white no-underline"
-          >
-            <Download size={17} /> 스티커 이미지 내려받기 (PNG)
-          </a>
-          <p className="mt-2 text-[11.5px] text-[#64748B]">앱 안에서 내려받기가 안 되면 이미지를 길게 눌러 저장하세요.</p>
-        </div>
-      )}
-
-      {/* 직원 PIN */}
+      {/* 직원 PIN — 해시로만 저장하고 다시 보여주지 않는다 */}
       <div className="mt-5">
         <p className="flex items-center gap-1.5 text-[13px] font-bold text-[#334155]"><KeyRound size={15} /> 직원 PIN {secret?.has_pin ? '변경' : '설정'}</p>
+        <p className="mt-1 text-[11.5px] text-[#94A3B8]">PIN은 저장 후 다시 볼 수 없어요. 잊으면 새로 설정해 주세요.</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <input type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} placeholder="PIN"
             value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} className={pinInputCls} aria-label="새 PIN" />
@@ -201,6 +258,28 @@ function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secre
       </div>
 
       {msg && <p className={`mt-3 text-[13px] font-semibold ${msg.ok ? 'text-[#15803D]' : 'text-[#B91C1C]'}`}>{msg.text}</p>}
+
+      {/* 재발급 확인창 (브라우저 confirm 대신 화면 안 모달 — 앱 WebView에서도 같은 모양) */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 px-6" role="dialog" aria-modal="true" aria-labelledby={`reissue-${store.id}`}>
+          <div className="w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+            <p id={`reissue-${store.id}`} className="text-[16px] font-extrabold">QR 코드를 재발급할까요?</p>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-[#475569]">
+              기존 스티커는 바로 쓸 수 없게 돼요. 새 스티커를 출력해 계산대에 다시 붙여 주세요.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button type="button" onClick={() => setConfirmOpen(false)}
+                className="flex-1 h-11 rounded-xl border border-[#E5E7EB] bg-white text-[14px] font-semibold cursor-pointer">
+                취소
+              </button>
+              <button type="button" onClick={issueCode}
+                className="flex-1 h-11 rounded-xl bg-[#B91C1C] text-[14px] font-semibold text-white border-none cursor-pointer">
+                재발급
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
