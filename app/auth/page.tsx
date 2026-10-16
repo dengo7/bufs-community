@@ -129,6 +129,17 @@ const inputCls =
   'w-full py-3 px-4 text-base border border-gray-200 rounded-xl bg-white text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-colors placeholder:text-gray-400';
 
 // ── Main page ──────────────────────────────────────────────────────────────
+/**
+ * 로그인 후 돌아갈 내부 경로 (?next=, 예: 매장 QR 적립 페이지).
+ * 같은 사이트의 절대 경로만 허용해 open redirect를 막는다(//, 역슬래시, 제어문자 거부).
+ */
+function nextPath(): string {
+  if (typeof window === 'undefined') return '/';
+  const n = new URLSearchParams(window.location.search).get('next') ?? '';
+  const safe = n.startsWith('/') && !n.startsWith('//') && !n.includes('\\') && !/[\u0000-\u001f]/.test(n);
+  return safe ? n : '/';
+}
+
 export default function AuthPage() {
   const lang = useLang();
   const [mode, setMode] = useState<Mode>('login');
@@ -178,12 +189,12 @@ export default function AuthPage() {
           // 푸시 구독 실패는 무시
         }
         // 언어는 이미 진입 시(언어 선택 화면 또는 기존 저장값)로 확정돼 있으므로
-        // 바로 홈으로 이동한다.
+        // 바로 홈(또는 ?next= 로 받은 내부 경로)으로 이동한다.
         // 의도적 풀 리로드: 쿠키 기반 세션(@supabase/ssr)이 proxy.ts(미들웨어)를 거쳐
         // 확실히 갱신된 뒤 홈으로 이동해야, 이어지는 서버 컴포넌트(예: /post/[id])가
         // 아직 안 갱신된 쿠키를 읽어 비로그인으로 보이는 문제를 피할 수 있다.
         // router.push()로 바꾸지 말 것.
-        window.location.href = '/';
+        window.location.href = nextPath();
         return;
       }
     } catch {
@@ -203,7 +214,8 @@ export default function AuthPage() {
       options: {
         data: { name: name.trim(), nickname: nickname.trim() },
         // 가입한 환경(로컬/프로덕션)으로 인증 링크가 돌아오게 한다.
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // ?next= 가 있으면 인증 후 그 경로로 (callback 라우트가 내부 경로만 허용)
+        emailRedirectTo: `${window.location.origin}/auth/callback${nextPath() !== '/' ? `?next=${encodeURIComponent(nextPath())}` : ''}`,
       },
     });
     if (error) {
@@ -215,10 +227,10 @@ export default function AuthPage() {
       setMode('login');
       setMessage(t.successSignup);
     } else {
-      // 세션 즉시 발급(이메일 인증 비활성) → 언어는 이미 확정돼 있으므로 바로 홈으로.
+      // 세션 즉시 발급(이메일 인증 비활성) → 언어는 이미 확정돼 있으므로 바로 홈(또는 next)으로.
       // 의도적 풀 리로드: handleLogin과 같은 이유(쿠키 기반 세션이 proxy.ts를
       // 거쳐 갱신된 뒤 이동). router.push()로 바꾸지 말 것.
-      window.location.href = '/';
+      window.location.href = nextPath();
       return;
     }
     setLoading(false);

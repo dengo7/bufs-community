@@ -31,15 +31,14 @@ export default function ScanTestView() {
   const [photoResult, setPhotoResult] = useState<Result>(null);
 
   useEffect(() => {
-    setEnv({
+    queueMicrotask(() => setEnv({
       userAgent: navigator.userAgent,
       isSecureContext: String(window.isSecureContext),
       mediaDevices: String(!!navigator.mediaDevices?.getUserMedia),
       nativeBarcodeDetector: String('BarcodeDetector' in window),
       url: location.href,
-    });
+    }));
     return () => stopLive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopLive() {

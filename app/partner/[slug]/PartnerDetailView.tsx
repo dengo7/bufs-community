@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, Gift, MapPin, Phone, QrCode, Stamp, TrainFront } from 'lucide-react';
+import { ArrowLeft, Clock, Gift, MapPin, Phone, QrCode, Stamp, Ticket, TrainFront } from 'lucide-react';
 import BottomTabBar from '../../components/BottomTabBar';
 import PartnerImage from '../../components/partner/PartnerImage';
+import QrScanModal from '../../components/partner/QrScanModal';
 import { useLang } from '../../lib/lang';
 import {
-  fetchPartnerStore, partnerHours, partnerText, telHref, PARTNER_T, type PartnerStore,
+  currentUserId, fetchPartnerStore, fetchStampState, loginHref, partnerHours, partnerText, telHref,
+  PARTNER_T, type PartnerStore, type StampState,
 } from '../../lib/partners';
 
 export default function PartnerDetailView({ slug }: { slug: string }) {
@@ -16,19 +18,34 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
   const router = useRouter();
   const [store, setStore] = useState<PartnerStore | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [stamp, setStamp] = useState<StampState | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    fetchPartnerStore(slug).then(s => {
+    (async () => {
+      const [s, uid] = await Promise.all([fetchPartnerStore(slug), currentUserId()]);
       if (cancelled) return;
       setStore(s);
+      setUserId(uid);
       setLoading(false);
-    });
+      if (s) {
+        const state = await fetchStampState(uid);
+        if (!cancelled) setStamp(state);
+      }
+    })();
     return () => { cancelled = true; };
   }, [slug]);
 
+  const onDetected = useCallback((target: { slug: string; code: string }) => {
+    setScanning(false);
+    router.push(`/partner/${target.slug}/checkin?code=${encodeURIComponent(target.code)}`);
+  }, [router]);
+
   const name = store ? partnerText(store, lang, 'name') : '';
   const cardCls = 'bg-white rounded-2xl border border-[#E5E7EB]';
+  const mine = store && stamp?.available ? (stamp.byStore.get(store.id) ?? { stamps: 0, coupons: 0 }) : null;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
@@ -78,25 +95,81 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
               <p className="mt-1 text-[12.5px] text-[#64748B]">{t.benefitNote}</p>
             </section>
 
-            {/* 스탬프·QR — 2차에서 연결 */}
+            {/* 내 스탬프 · QR 스캔 · 쿠폰 */}
             <section className={`${cardCls} mt-3 px-4 py-4`}>
-              <h2 className="flex items-center gap-1.5 text-[14px] font-bold text-[#0F172A]">
-                <Stamp size={16} strokeWidth={2} className="text-[#C2611F]" />
-                {t.stampTitle}
-              </h2>
-              <div className="mt-3 flex gap-2" aria-hidden="true">
-                {Array.from({ length: store.stamps_per_reward }).map((_, i) => (
-                  <span key={i} className="h-10 w-10 rounded-full border-2 border-dashed border-[#E5E7EB]" />
-                ))}
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-1.5 text-[14px] font-bold text-[#0F172A]">
+                  <Stamp size={16} strokeWidth={2} className="text-[#C2611F]" />
+                  {t.stampTitle}
+                </h2>
+                {mine && (
+                  <span className="text-[13px] font-bold text-[#C2611F]">{mine.stamps}/{store.stamps_per_reward}</span>
+                )}
               </div>
-              <button
-                type="button"
-                disabled
-                className="mt-4 w-full h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#F1F5F9] text-[13.5px] font-semibold text-[#94A3B8] border-none cursor-not-allowed"
-              >
-                <QrCode size={17} strokeWidth={2} />
-                {t.comingSoon}
-              </button>
+
+              <div className="mt-3 flex flex-wrap gap-2" aria-hidden="true">
+                {Array.from({ length: store.stamps_per_reward }).map((_, i) => {
+                  const filled = !!mine && i < mine.stamps;
+                  return (
+                    <span
+                      key={i}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2
+                        ${filled ? 'border-[#C2611F] bg-[#C2611F] text-white' : 'border-dashed border-[#E5E7EB]'}`}
+                    >
+                      {filled && <Stamp size={18} strokeWidth={2} />}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {!stamp ? null : !stamp.available ? (
+                // 015 마이그레이션 적용 전
+                <button
+                  type="button"
+                  disabled
+                  className="mt-4 w-full h-11 flex items-center justify-center gap-1.5 rounded-xl bg-[#F1F5F9] text-[13.5px] font-semibold text-[#94A3B8] border-none cursor-not-allowed"
+                >
+                  <QrCode size={17} strokeWidth={2} />
+                  {t.comingSoon}
+                </button>
+              ) : !userId ? (
+                <>
+                  <p className="mt-3 text-[13px] text-[#64748B]">{t.loginToCollect}</p>
+                  <a
+                    href={loginHref(`/partner/${store.slug}`)}
+                    className="mt-3 w-full h-11 flex items-center justify-center rounded-xl bg-[#1D4ED8] text-[14px] font-semibold text-white no-underline"
+                  >
+                    {t.login}
+                  </a>
+                </>
+              ) : (
+                <>
+                  {mine && (
+                    <p className="mt-3 text-[12.5px] text-[#64748B]">
+                      {t.nextCoupon(store.stamps_per_reward - mine.stamps)}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setScanning(true)}
+                    className="mt-3 w-full h-12 flex items-center justify-center gap-1.5 rounded-xl bg-[#C2611F] text-[15px] font-bold text-white border-none cursor-pointer active:scale-[0.99] transition-transform"
+                  >
+                    <QrCode size={19} strokeWidth={2} />
+                    {t.scanToCollect}
+                  </button>
+                  {mine && mine.coupons > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/partner/${store.slug}/coupon`)}
+                      className="mt-2 w-full h-12 flex items-center justify-center gap-1.5 rounded-xl border-2 border-[#C2611F] bg-[#FFF8F1] text-[15px] font-bold text-[#C2611F] cursor-pointer"
+                    >
+                      <Ticket size={19} strokeWidth={2} />
+                      {t.useCoupon} · {t.couponCount(mine.coupons)}
+                    </button>
+                  )}
+                  <p className="mt-2.5 text-[11.5px] text-[#94A3B8]">{t.onceADay}</p>
+                </>
+              )}
             </section>
 
             {/* 위치·영업시간·전화 */}
@@ -132,6 +205,8 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
           </>
         )}
       </div>
+
+      {scanning && <QrScanModal lang={lang} onClose={() => setScanning(false)} onDetected={onDetected} />}
 
       <BottomTabBar lang={lang} />
     </div>
