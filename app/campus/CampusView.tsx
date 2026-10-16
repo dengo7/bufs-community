@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import BottomTabBar from '../components/BottomTabBar';
 import FacilityCard, { InfoCard } from '../components/campus/FacilityCard';
+import PartnerSection from '../components/partner/PartnerSection';
 import { CAMPUS_TONES, type CampusTone } from '../components/campus/FacilityThumb';
 import { useLang } from '../lib/lang';
 import { useNowMinute } from '../lib/useNowMinute';
@@ -89,6 +90,7 @@ export default function CampusView() {
   const searching = trimmedQuery !== '';
   // 팁 섹션(많이 찾는 정보·뭐가 필요하세요?)은 학교 꿀팁 화면에서, 검색 중이 아닐 때만
   const showTips = category === 'tips' && !searching;
+  const showPartners = (category === 'all' || category === 'food') && !searching;
 
   // "전체"는 검색어가 없으면 교내시설 목록을, 검색 중이면 전체에서 찾은 결과를 보여준다
   const listCategory: CampusCategoryFilter = category === 'all' && !searching ? 'facility' : category;
@@ -196,6 +198,9 @@ export default function CampusView() {
             );
           })}
         </div>
+
+        {/* ── 제휴 가게 ("전체"·"식당·카페", 검색 중 제외). 데이터가 없으면 PartnerSection이 숨는다 ── */}
+        {showPartners && <PartnerSection lang={lang} />}
 
         {/* ── 지금 많이 찾는 정보 ── */}
         {showTips && (
