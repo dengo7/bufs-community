@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/copy-zxing-wasm.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "crawl:notices": "node scripts/crawl-notices.mjs",
+    "vendor:zxing": "node scripts/copy-zxing-wasm.mjs",
     "cap:sync": "npx cap sync",
     "cap:open": "npx cap open ios",
     "capacitor:copy:before": "mkdir -p out",

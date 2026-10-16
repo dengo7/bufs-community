@@ -3,44 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getQrEngine } from '../../lib/qrDetector';
 
 /**
  * QR 스캔 실기기 테스트 (숨김 페이지, DB 사용 없음)
  * 방식 1: getUserMedia 실시간 스캔 / 방식 2: <input capture> 사진 → 해독
  * 결과·에러를 가공 없이 화면에 보여준다. 문구는 개발 확인용이라 한국어만 둔다.
  *
- * 해독 엔진: 기기에 BarcodeDetector(qr_code 지원)가 있으면 그것을, 없으면
- * barcode-detector 폴리필(zxing-wasm, 처음 쓸 때 WASM을 내려받음)을 쓴다.
+ * 해독 엔진은 app/lib/qrDetector.ts (내장 BarcodeDetector 또는 자체 호스팅 zxing-wasm).
  */
-
-type DetectedCode = { rawValue: string; format: string };
-type Detector = { detect(source: ImageBitmapSource): Promise<DetectedCode[]> };
-type Engine = { detector: Detector; name: string };
-
-let enginePromise: Promise<Engine> | null = null;
-
-function getEngine(): Promise<Engine> {
-  enginePromise ??= (async () => {
-    const Native = (window as unknown as {
-      BarcodeDetector?: {
-        new (opts: { formats: string[] }): Detector;
-        getSupportedFormats(): Promise<string[]>;
-      };
-    }).BarcodeDetector;
-    if (Native) {
-      try {
-        if ((await Native.getSupportedFormats()).includes('qr_code')) {
-          return { detector: new Native({ formats: ['qr_code'] }), name: '기기 내장 BarcodeDetector' };
-        }
-      } catch { /* 폴리필로 */ }
-    }
-    const { BarcodeDetector } = await import('barcode-detector/ponyfill');
-    return { detector: new BarcodeDetector({ formats: ['qr_code'] }), name: 'barcode-detector 폴리필 (zxing-wasm)' };
-  })();
-  // 실패하면 다음 시도에서 다시 불러올 수 있게
-  enginePromise.catch(() => { enginePromise = null; });
-  return enginePromise;
-}
 
 const errText = (e: unknown) =>
   e instanceof Error ? `${e.name}: ${e.message}` : String(e);
@@ -86,7 +57,7 @@ export default function ScanTestView() {
     const started = performance.now();
     try {
       setLiveStatus('엔진 준비 중…');
-      const engine = await getEngine();
+      const engine = await getQrEngine();
 
       setLiveStatus('카메라 권한 요청 중…');
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -134,7 +105,7 @@ export default function ScanTestView() {
     const started = performance.now();
     try {
       setPhotoStatus(`사진 수신 (${file.type || 'type 없음'}, ${Math.round(file.size / 1024)}KB) — 엔진 준비 중…`);
-      const engine = await getEngine();
+      const engine = await getQrEngine();
       setPhotoStatus('해독 중…');
       let source: ImageBitmapSource = file;
       try { source = await createImageBitmap(file); } catch { /* Blob 그대로 시도 */ }

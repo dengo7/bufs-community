@@ -7,7 +7,7 @@ import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/s
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
-  Heart, User, UserX, Globe,
+  Heart, User, UserX, Globe, QrCode,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -193,7 +193,7 @@ export default function MyPage() {
   const lang = useLang();
   const [user, setUser]             = useState<SupabaseUser | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
-  const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null } | null>(null);
+  const [profile, setProfile]       = useState<{ nickname: string; avatar_url: string | null; role: string | null } | null>(null);
   const [totalLikes, setTotalLikes] = useState(0);
   const [toast, setToast]           = useState<string | null>(null);
   const [langExpanded, setLangExpanded] = useState(false);
@@ -217,7 +217,7 @@ export default function MyPage() {
       if (!u) return;
 
       const [{ data: prof }, { data: posts }] = await Promise.all([
-        client.from('profiles').select('nickname, avatar_url').eq('id', u.id).single(),
+        client.from('profiles').select('nickname, avatar_url, role').eq('id', u.id).single(),
         client.from('posts').select('like_count').eq('author_id', u.id).eq('is_deleted', false),
       ]);
 
@@ -376,6 +376,14 @@ export default function MyPage() {
               <MenuRow icon={Bookmark}   title={t.savedPosts} desc={t.savedPostsDesc} onClick={() => router.push('/my/saved')} />
               <MenuRow icon={Compass}    title={t.guide}      desc={t.guideDesc}      onClick={() => router.push('/my/guide')} />
             </SectionCard>
+
+            {/* ── 관리자 전용 (profiles.role = 'admin'일 때만 렌더링) ── */}
+            {/* TODO(제휴 2차): 가게 상세에 실제 [QR 스캔] 버튼이 생기면 이 테스트 링크는 삭제 */}
+            {profile?.role === 'admin' && (
+              <SectionCard label="관리자">
+                <MenuRow icon={QrCode} title="QR 스캔 테스트" desc="실기기 카메라·사진 QR 해독 확인" onClick={() => router.push('/partner/scan-test')} />
+              </SectionCard>
+            )}
 
             {/* ── 계정 ── */}
             <SectionCard label={t.sectionAccount}>
