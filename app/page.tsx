@@ -7,6 +7,8 @@ import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/s
 import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
+import PushPromptSheet from './components/PushPromptSheet';
+import { removeNativePushTokenForLogout } from './lib/nativePush';
 import HeroBanner from './components/HeroBanner';
 import HomeQuickLinks from './components/HomeQuickLinks';
 import NoticeSection from './components/NoticeSection';
@@ -200,6 +202,8 @@ export default function Home() {
   }, [blockedIds]);
 
   async function handleLogout() {
+    // 앱 푸시 토큰은 RLS 로 본인 행만 지울 수 있으므로 signOut 전에 정리
+    await removeNativePushTokenForLogout();
     await getSupabaseClient().auth.signOut();
   }
 
@@ -468,6 +472,7 @@ export default function Home() {
 
       {/* 홈의 글쓰기 FAB는 제거 — 글쓰기 진입은 커뮤니티 페이지에서 */}
 
+      <PushPromptSheet lang={lang} />
       <BottomTabBar lang={lang} user={user} />
 
     </div>

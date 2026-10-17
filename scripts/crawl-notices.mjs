@@ -910,7 +910,44 @@ async function main() {
   const recovered = await recoverRecent(store, new Set(fresh.map(itemKey)));
   if (recovered) summaries.push(recovered);
 
+  // e. 앱 푸시 발송 요청 — 미발송(pushed_at null) 공지를 서버가 묶어 보낸다.
+  //    신규가 없어도 호출한다(야간에 보류된 공지가 아침 실행에서 나가야 하므로).
+  await triggerNoticePush();
+
   reportOutcome(summaries);
+}
+
+/**
+ * /api/push/notices 호출. PUSH_NOTICES_URL 과 PUSH_WEBHOOK_SECRET 이 둘 다 있을 때만.
+ * 실패해도 크롤 결과에는 영향을 주지 않는다(경고만).
+ */
+async function triggerNoticePush() {
+  const url = process.env.PUSH_NOTICES_URL;
+  const secret = process.env.PUSH_WEBHOOK_SECRET;
+  if (!url || !secret) {
+    console.log('[push] PUSH_NOTICES_URL/PUSH_WEBHOOK_SECRET 없음 — 푸시 발송 요청 생략');
+    return;
+  }
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 30_000);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'x-webhook-secret': secret, 'Content-Type': 'application/json' },
+      body: '{}',
+      signal: ac.signal,
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      console.warn(`::warning::[push] 발송 요청 실패 HTTP ${res.status}: ${text.slice(0, 300)}`);
+      return;
+    }
+    console.log(`[push] ${text.slice(0, 500)}`);
+  } catch (err) {
+    console.warn(`::warning::[push] 발송 요청 오류: ${err.name === 'AbortError' ? '타임아웃(30초)' : err.message}`);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 main().catch(err => {

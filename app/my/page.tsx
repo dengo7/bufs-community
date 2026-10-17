@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
 import { useLang, setLang, type UILang } from '../lib/lang';
+import { removeNativePushTokenForLogout } from '../lib/nativePush';
 import BottomTabBar from '../components/BottomTabBar';
 
 const LANG_LABELS: Record<UILang, string> = { ko: 'KR', en: 'EN', zh: '中', ja: '日' };
@@ -237,6 +238,8 @@ export default function MyPage() {
   }, []);
 
   const handleLogout = async () => {
+    // 앱 푸시 토큰은 RLS 로 본인 행만 지울 수 있으므로 signOut 전에 정리
+    await removeNativePushTokenForLogout();
     await getSupabaseClient().auth.signOut();
     setUser(null);
     setProfile(null);

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
+import NativePushBootstrap from "./components/NativePushBootstrap";
 import NavigationProgressWrapper from "./components/NavigationProgressWrapper";
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout({
         <NavigationProgressWrapper />
         {children}
         <ServiceWorkerRegister />
+        <NativePushBootstrap />
       </body>
     </html>
   );

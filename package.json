@@ -12,18 +12,20 @@
     "vendor:zxing": "node scripts/copy-zxing-wasm.mjs",
     "cap:sync": "npx cap sync",
     "cap:open": "npx cap open ios",
-    "capacitor:copy:before": "mkdir -p out",
-    "capacitor:sync:before": "mkdir -p out"
+    "capacitor:copy:before": "node -e \"require('fs').mkdirSync('out',{recursive:true})\"",
+    "capacitor:sync:before": "node -e \"require('fs').mkdirSync('out',{recursive:true})\""
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
     "@capacitor/core": "^8.4.1",
     "@capacitor/ios": "^8.4.1",
+    "@capacitor/push-notifications": "^8.1.3",
     "@capacitor/splash-screen": "^8.0.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "barcode-detector": "3.2.2",
     "browser-image-compression": "^2.0.2",
+    "firebase-admin": "^14.5.0",
     "lucide-react": "^1.16.0",
     "next": "16.3.5",
     "react": "19.2.4",

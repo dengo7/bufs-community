@@ -18,6 +18,10 @@ const config: CapacitorConfig = {
       backgroundColor: '#ffffff',
       showSpinner: false,
     },
+    PushNotifications: {
+      // 앱이 켜져 있을 때(포그라운드)도 배너·소리·배지로 표시
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
   },
 };
 

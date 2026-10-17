@@ -160,7 +160,8 @@ npm run dev        # http://localhost:3000
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | 웹 푸시 공개 키 |
 | `VAPID_PRIVATE_KEY` | 웹 푸시 비공개 키 |
 | `VAPID_SUBJECT` | 웹 푸시 발신자 식별자 |
-| `PUSH_WEBHOOK_SECRET` | `/api/push` 호출 검증용 시크릿 |
+| `PUSH_WEBHOOK_SECRET` | `/api/push`, `/api/push/notices`, `/api/admin/push-env-check` 호출 검증용 시크릿 |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 앱 푸시(FCM) 발송용 Firebase 서비스 계정 JSON 전체(원문 또는 base64). 없으면 앱 푸시만 생략 |
 | `RESEND_API_KEY` | 신고 알림 이메일 발송 |
 | `ADMIN_EMAIL` | 신고 알림 수신 주소 |
 
@@ -173,6 +174,7 @@ npm run dev        # http://localhost:3000
 | `GEMINI_API_KEY` | 공지 번역 (없으면 번역 단계 제한) |
 | `GEMINI_MODEL` | 번역 모델 (선택) |
 | `GEMINI_DELAY_MS` | 번역 배치 사이 대기 시간 (선택, 기본 15000ms) |
+| `PUSH_WEBHOOK_SECRET` | 크롤 끝에 `/api/push/notices` 를 호출해 새 공지 앱 푸시를 보낼 때 사용 (없으면 생략) |
 
 ## 배포
 
