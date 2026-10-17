@@ -49,3 +49,6 @@ ios/App/App.xcworkspace/xcuserdata/
 
 android/.idea/
 .idea/
+
+# Firebase 설정 파일 — 커밋하지 않음 (Xcode에서 직접 추가)
+ios/App/App/GoogleService-Info.plist
