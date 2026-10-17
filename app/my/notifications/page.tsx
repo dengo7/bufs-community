@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bell, BookOpen, Globe, MessageCircle } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import BottomTabBar from '../../components/BottomTabBar';
+import NativePushDiagnostics from '../../components/NativePushDiagnostics';
 import { useLang } from '../../lib/lang';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import {
@@ -310,6 +311,9 @@ export default function NotificationSettingsPage() {
             </div>
           </>
         )}
+
+        {/* 관리자 전용 푸시 진단 (일반 사용자에게는 렌더링되지 않음) */}
+        {userId && <NativePushDiagnostics userId={userId} />}
       </div>
 
       {/* ── 토스트 ── */}
