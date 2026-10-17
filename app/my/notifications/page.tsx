@@ -15,9 +15,9 @@ import {
   unsubscribeFromPush,
 } from '../../lib/push';
 import {
+  checkNativePushPermission,
   disableNativePush,
   enableNativePush,
-  getNativePushPermission,
   isNativePushEnabled,
   isNativePushSupported,
 } from '../../lib/nativePush';
@@ -121,9 +121,10 @@ function ToggleSwitch({ on, disabled }: { on: boolean; disabled?: boolean }) {
 type PrefKey = keyof NotificationPreferences;
 
 // 마스터 스위치 상태 — 네이티브(iOS 앱)와 웹 푸시를 같은 모양으로 다룬다
+// permission 'unknown' = 상태 확인 실패(에러) — 거부와 구분하고, 토글을 누르면 권한 요청을 시도한다
 type MasterState = {
   mode: 'native' | 'web';
-  permission: 'granted' | 'denied' | 'prompt' | 'unsupported';
+  permission: 'granted' | 'denied' | 'prompt' | 'unknown' | 'unsupported';
   on: boolean;
 };
 
@@ -150,8 +151,8 @@ export default function NotificationSettingsPage() {
 
     (async () => {
       if (isNativePushSupported()) {
-        const [perm, on] = await Promise.all([getNativePushPermission(), isNativePushEnabled()]);
-        if (!cancelled) setMaster({ mode: 'native', permission: perm, on });
+        const [{ permission }, on] = await Promise.all([checkNativePushPermission(), isNativePushEnabled()]);
+        if (!cancelled) setMaster({ mode: 'native', permission, on });
       } else {
         const perm = getPushPermissionState();
         const on = perm !== 'unsupported' ? await isPushSubscribed() : false;
@@ -190,9 +191,11 @@ export default function NotificationSettingsPage() {
         if (master.on) {
           if (await disableNativePush()) setMaster({ ...master, on: false });
         } else {
-          const { ok, permission } = await enableNativePush();
+          // prompt·unknown 이면 enableNativePush 가 requestPermissions() 를 직접 호출한다
+          const { ok, permission, error } = await enableNativePush();
           setMaster({ mode: 'native', permission, on: ok });
-          if (!ok && permission === 'granted') showToast(t.enableError);
+          if (!ok && permission === 'denied') showToast(t.deniedHintNative);
+          else if (!ok) showToast(error ? `${t.enableError} (${error})` : t.enableError);
         }
       } else {
         if (master.on) {

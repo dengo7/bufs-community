@@ -7,11 +7,12 @@ import {
   enableNativePush,
   getNativePushPermission,
   isNativePushSupported,
+  markPushPromptDismissed,
+  pushPromptDismissedRecently,
 } from '../lib/nativePush';
 
-// "나중에" 를 누르면 이 기간 동안 다시 묻지 않는다. 설정 화면에서는 언제든 켤 수 있다.
-const DISMISS_KEY = 'the-well-push-prompt-dismissed-at';
-const DISMISS_DAYS = 30;
+// "나중에" 를 누르면 30일(PUSH_PROMPT_DISMISS_DAYS) 동안 다시 묻지 않는다. 설정 화면에서는 언제든 켤 수 있다.
+// (기록은 관리자 진단 카드의 "시트 다시 보기"로 지울 수 있다)
 
 const T = {
   ko: {
@@ -44,18 +45,6 @@ const T = {
   },
 } as const;
 
-function dismissedRecently(): boolean {
-  try {
-    const at = Number(localStorage.getItem(DISMISS_KEY));
-    return Number.isFinite(at) && at > 0 && Date.now() - at < DISMISS_DAYS * 86_400_000;
-  } catch {
-    return false;
-  }
-}
-
-function markDismissed() {
-  try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch { /* 무시 */ }
-}
 
 interface Props {
   lang: UILang;
@@ -63,7 +52,7 @@ interface Props {
 
 /**
  * 로그인 후 홈에서 한 번 보여주는 권한 안내 시트.
- * 네이티브 푸시 지원 빌드 + 아직 권한을 묻지 않은 상태(prompt)에서만 뜬다.
+ * 네이티브 푸시 지원 빌드 + 아직 권한을 묻지 않은 상태(prompt) 또는 확인 실패(unknown)일 때 뜬다.
  * 시스템 권한 프롬프트는 사용자가 "알림 켜기" 를 누른 뒤에만 띄운다(iOS 는 한 번뿐).
  */
 export default function PushPromptSheet({ lang }: Props) {
@@ -72,17 +61,17 @@ export default function PushPromptSheet({ lang }: Props) {
   const t = T[lang];
 
   useEffect(() => {
-    if (!isNativePushSupported() || dismissedRecently()) return;
+    if (!isNativePushSupported() || pushPromptDismissedRecently()) return;
     let cancelled = false;
     getNativePushPermission().then(perm => {
-      if (!cancelled && perm === 'prompt') setOpen(true);
+      if (!cancelled && (perm === 'prompt' || perm === 'unknown')) setOpen(true);
     });
     return () => { cancelled = true; };
   }, []);
 
   if (!open) return null;
 
-  const dismiss = () => { markDismissed(); setOpen(false); };
+  const dismiss = () => { markPushPromptDismissed(); setOpen(false); };
 
   const handleEnable = async () => {
     if (busy) return;
