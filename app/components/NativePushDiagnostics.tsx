@@ -22,6 +22,7 @@ import {
  *  - 앱 경로: nativePush.checkNativePushPermission() — 시트·토글이 실제로 쓰는 함수
  *  - 권한 요청 테스트: 앱이 쓰는 enableNativePush() 를 그대로 실행하고 단계별 결과를 표시
  *  - 시트 다시 보기: "나중에" 기록을 지우고 홈으로 이동
+ *  - 테스트 알림 보내기: /api/admin/push-test 로 내 기기들에만 1통 (서버에서 관리자 확인, 5초 지연 옵션)
  */
 
 type Row = [label: string, value: string];
@@ -76,6 +77,8 @@ export default function NativePushDiagnostics({ userId }: { userId: string }) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [steps, setSteps] = useState<Row[] | null>(null);
   const [testing, setTesting] = useState(false);
+  const [sending, setSending] = useState<0 | 5 | null>(null);
+  const [sendResult, setSendResult] = useState<Row[] | null>(null);
 
   const run = useCallback(async () => {
     setRows(await collect());
@@ -111,6 +114,42 @@ export default function NativePushDiagnostics({ userId }: { userId: string }) {
     }
   };
 
+  // 서버가 FCM으로 내 기기들에만 발송. 5초 지연은 서버에서 기다린다(그동안 앱을 꺼도 발송됨)
+  const sendTest = async (delaySeconds: 0 | 5) => {
+    if (sending !== null) return;
+    setSending(delaySeconds);
+    setSendResult(delaySeconds
+      ? [['안내', '5초 뒤 발송돼요 — 지금 홈으로 나가거나 앱을 완전히 꺼 보세요']]
+      : [['요청', '발송 중…']]);
+    try {
+      const res = await fetch('/api/admin/push-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delaySeconds }),
+      });
+      const body = await res.json().catch(() => null) as {
+        ok?: boolean; devices?: number; sent?: number; failed?: number; error?: string; sentAt?: string;
+        results?: { device: string; platform: string | null; ok: boolean; messageId: string | null; error: string | null }[];
+      } | null;
+      const out: Row[] = [['HTTP', String(res.status)]];
+      if (!body) out.push(['응답', '본문 없음']);
+      else {
+        out.push(['결과', body.ok ? '성공' : '실패']);
+        if (body.devices !== undefined) out.push(['내 기기 수', String(body.devices)]);
+        if (body.sent !== undefined) out.push(['성공 기기 수', `${body.sent} / 실패 ${body.failed ?? 0}`]);
+        if (body.error) out.push(['에러', body.error]);
+        if (body.sentAt) out.push(['발송 시각', new Date(body.sentAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })]);
+        (body.results ?? []).forEach((r, i) =>
+          out.push([`기기 ${i + 1} (${r.platform ?? '?'} ${r.device})`, r.ok ? `성공 ${r.messageId ?? ''}` : `실패 — ${r.error}`]));
+      }
+      setSendResult(out);
+    } catch (e) {
+      setSendResult([['요청 실패', nativePushErrorText(e)]]);
+    } finally {
+      setSending(null);
+    }
+  };
+
   const resetSheet = () => {
     clearPushPromptDismissed();
     window.location.href = '/';
@@ -132,6 +171,31 @@ export default function NativePushDiagnostics({ userId }: { userId: string }) {
           {testing ? '권한 요청 중…' : '권한 요청 테스트'}
         </button>
         <button type="button" onClick={resetSheet} className={btn}>시트 다시 보기(기록 초기화)</button>
+      </div>
+
+      <div className="mt-3 rounded-xl border border-[#E5E7EB] px-3 py-3">
+        <p className="text-[12px] font-bold text-[#475569]">테스트 알림 보내기</p>
+        <p className="mt-0.5 text-[11px] text-gray-400">
+          내 기기들에만 &quot;The Well / 테스트 알림입니다&quot; 1통. 탭하면 공지 목록으로 이동해요.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={() => sendTest(0)} disabled={sending !== null} className={btn}>
+            {sending === 0 ? '보내는 중…' : '지금 보내기'}
+          </button>
+          <button type="button" onClick={() => sendTest(5)} disabled={sending !== null} className={btn}>
+            {sending === 5 ? '5초 뒤 발송 대기…' : '5초 뒤 보내기'}
+          </button>
+        </div>
+        {sendResult && (
+          <dl className="mt-2 space-y-1.5 rounded-lg bg-[#F8FAFC] px-3 py-2.5 text-[12px] break-all select-text">
+            {sendResult.map(([k, v], i) => (
+              <div key={`${k}-${i}`}>
+                <dt className="font-semibold text-[#64748B]">{k}</dt>
+                <dd className="font-mono text-[#111827]">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
       <p className="mt-1.5 text-[11px] text-gray-400">
         iOS 권한 창은 기기당 한 번만 떠요. 한 번 허용·거부한 뒤에는 바로 결과만 돌아와요.
