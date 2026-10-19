@@ -21,32 +21,47 @@ export type PartnerStore = {
   stamps_per_reward: number;
   /** 첫 방문 웰컴 쿠폰 (016). 016 적용 전에는 컬럼이 없어 false로 본다 */
   welcome_reward: boolean;
+  /** 영업시간에만 적립 (020). 020 적용 전에는 DB가 항상 영업시간을 검사하므로 true로 본다 */
+  enforce_hours: boolean;
   translations: Partial<Record<Exclude<UILang, 'ko'>, LocalizedFields>> | null;
 };
 
 const BASE_COLUMNS =
   'id, slug, name, intro, address, transit_note, phone, open_time, close_time, hours_note, image, stamps_per_reward, translations';
-const PUBLIC_COLUMNS = `${BASE_COLUMNS}, welcome_reward`;
+/**
+ * 나중 마이그레이션에서 추가된 컬럼. 적용 전이면 그 컬럼을 고를 때 42703이 나므로
+ * 최신 컬럼부터 하나씩 빼며 다시 읽는다.
+ *  - 016 welcome_reward 없음 → false (기존 "N회마다" 규칙 문구)
+ *  - 020 enforce_hours 없음 → true  (020 전 RPC는 항상 영업시간을 검사)
+ */
+const COLUMN_TIERS = [
+  `${BASE_COLUMNS}, welcome_reward, enforce_hours`,
+  `${BASE_COLUMNS}, welcome_reward`,
+  BASE_COLUMNS,
+];
 
 /** PostgREST: 없는 컬럼을 고르면 42703 */
 const isMissingColumn = (error: { code?: string } | null) => error?.code === '42703';
 
-/**
- * partner_stores 조회. 016 적용 전(welcome_reward 컬럼 없음)이면 그 컬럼 없이 다시 읽고
- * welcome_reward=false 로 채운다 → 적용 전에는 기존 "N회마다" 규칙 문구로 보인다.
- */
+/** partner_stores 조회. 마이그레이션 적용 전 컬럼은 빼고 다시 읽어 기본값으로 채운다 */
 async function selectStores(
   build: (columns: string) => PromiseLike<{ data: unknown; error: { code?: string } | null }>,
 ): Promise<{ data: PartnerStore[]; error: boolean }> {
-  let res = await build(PUBLIC_COLUMNS);
-  let withWelcome = true;
-  if (isMissingColumn(res.error)) {
-    res = await build(BASE_COLUMNS);
-    withWelcome = false;
+  let tier = 0;
+  let res = await build(COLUMN_TIERS[tier]);
+  while (isMissingColumn(res.error) && tier < COLUMN_TIERS.length - 1) {
+    res = await build(COLUMN_TIERS[++tier]);
   }
   if (res.error) return { data: [], error: true };
   const rows = (Array.isArray(res.data) ? res.data : res.data ? [res.data] : []) as PartnerStore[];
-  return { data: rows.map(r => ({ ...r, welcome_reward: withWelcome ? !!r.welcome_reward : false })), error: false };
+  return {
+    data: rows.map(r => ({
+      ...r,
+      welcome_reward: tier <= 1 ? !!r.welcome_reward : false,
+      enforce_hours: tier === 0 ? r.enforce_hours !== false : true,
+    })),
+    error: false,
+  };
 }
 
 /** 매장 QR 스티커가 가리키는 주소의 기준 (앱 WebView가 띄우는 프로덕션 도메인) */
@@ -293,6 +308,8 @@ type PartnerDict = {
   login: string;
   useCoupon: string;
   onceADay: string;
+  /** 영업시간 제한이 없는 가게(enforce_hours=false) */
+  onceADayAnytime: string;
   // 스캐너
   scanTitle: string;
   scanHint: string;
@@ -362,6 +379,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     login: '로그인',
     useCoupon: '쿠폰 사용하기',
     onceADay: '같은 가게는 하루 1번, 영업시간에만 적립돼요.',
+    onceADayAnytime: '같은 가게는 하루 1번 적립돼요.',
     scanTitle: '매장 QR 스캔',
     scanHint: '계산대의 The Well QR을 화면 안에 맞춰 주세요',
     cameraFailed: '카메라를 쓸 수 없어요. QR을 사진으로 찍어 주세요.',
@@ -426,6 +444,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     login: 'Log in',
     useCoupon: 'Use coupon',
     onceADay: 'One stamp per shop per day, during opening hours.',
+    onceADayAnytime: 'One stamp per shop per day.',
     scanTitle: 'Scan shop QR',
     scanHint: 'Fit The Well QR at the counter inside the frame',
     cameraFailed: "Camera isn't available. Take a photo of the QR instead.",
@@ -490,6 +509,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     login: '登录',
     useCoupon: '使用优惠券',
     onceADay: '同一店铺每天限集章1次，仅限营业时间内。',
+    onceADayAnytime: '同一店铺每天限集章1次。',
     scanTitle: '扫描店铺二维码',
     scanHint: '请将收银台的 The Well 二维码对准取景框',
     cameraFailed: '无法使用相机，请拍摄二维码照片。',
@@ -554,6 +574,7 @@ export const PARTNER_T: Record<UILang, PartnerDict> = {
     login: 'ログイン',
     useCoupon: 'クーポンを使う',
     onceADay: '同じ店舗は1日1回、営業時間内のみ貯まります。',
+    onceADayAnytime: '同じ店舗は1日1回貯まります。',
     scanTitle: '店舗のQRをスキャン',
     scanHint: 'レジのThe Well QRを枠内に合わせてください',
     cameraFailed: 'カメラを使えません。QRの写真を撮ってください。',

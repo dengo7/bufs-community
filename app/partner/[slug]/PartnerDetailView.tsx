@@ -169,7 +169,7 @@ export default function PartnerDetailView({ slug }: { slug: string }) {
                       {t.useCoupon} · {t.couponCount(mine.coupons)}
                     </button>
                   )}
-                  <p className="mt-2.5 text-[11.5px] text-[#94A3B8]">{t.onceADay}</p>
+                  <p className="mt-2.5 text-[11.5px] text-[#94A3B8]">{store.enforce_hours ? t.onceADay : t.onceADayAnytime}</p>
                 </>
               )}
             </section>

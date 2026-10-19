@@ -17,8 +17,11 @@ import { checkinUrl, currentUserId, STICKER_LINES } from '../../lib/partners';
  * bcrypt 해시로만 저장돼 다시 볼 수 없다.
  */
 
-// welcome_reward: null = 016 적용 전(컬럼 없음)
-type AdminStore = { id: string; slug: string; name: string; active: boolean; stamps_per_reward: number; welcome_reward: boolean | null };
+// welcome_reward: null = 016 적용 전, enforce_hours: null = 020 적용 전(컬럼 없음)
+type AdminStore = {
+  id: string; slug: string; name: string; active: boolean; stamps_per_reward: number;
+  welcome_reward: boolean | null; enforce_hours: boolean | null;
+};
 type SecretStatus = { store_id: string; has_code: boolean; has_pin: boolean; updated_at: string | null };
 
 export default function AdminPartnersView() {
@@ -30,18 +33,23 @@ export default function AdminPartnersView() {
   const load = useCallback(async () => {
     const client = getSupabaseClient();
     const base = 'id, slug, name, active, stamps_per_reward';
+    // 마이그레이션 적용 전 컬럼은 42703 → 최신 컬럼부터 하나씩 빼고 다시 읽는다
+    const tiers = [`${base}, welcome_reward, enforce_hours`, `${base}, welcome_reward`, base];
     const [first, sec] = await Promise.all([
-      client.from('partner_stores').select(`${base}, welcome_reward`).order('sort_order'),
+      client.from('partner_stores').select(tiers[0]).order('sort_order'),
       client.rpc('partner_admin_secret_status'),
     ]);
-    // 016 적용 전이면 welcome_reward 컬럼이 없다(42703) → 빼고 다시 읽는다
-    const s = first.error?.code === '42703'
-      ? await client.from('partner_stores').select(base).order('sort_order')
-      : first;
+    let s = first;
+    for (let i = 1; s.error?.code === '42703' && i < tiers.length; i++) {
+      s = await client.from('partner_stores').select(tiers[i]).order('sort_order');
+    }
     if (s.error || sec.error) { setState('unavailable'); return; }
-    type Row = Omit<AdminStore, 'welcome_reward'> & { welcome_reward?: boolean };
-    setStores(((s.data ?? []) as Row[])
-      .map(x => ({ ...x, welcome_reward: typeof x.welcome_reward === 'boolean' ? x.welcome_reward : null })));
+    type Row = Omit<AdminStore, 'welcome_reward' | 'enforce_hours'> & { welcome_reward?: boolean; enforce_hours?: boolean };
+    setStores(((s.data ?? []) as unknown as Row[]).map(x => ({
+      ...x,
+      welcome_reward: typeof x.welcome_reward === 'boolean' ? x.welcome_reward : null,
+      enforce_hours: typeof x.enforce_hours === 'boolean' ? x.enforce_hours : null,
+    })));
     setSecrets(new Map(((sec.data ?? []) as SecretStatus[]).map(x => [x.store_id, x])));
     setState('ready');
   }, []);
@@ -193,6 +201,14 @@ function StoreAdminCard({ store, secret, onChanged }: { store: AdminStore; secre
         <div className="rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] px-3 py-2">
           <dt className="text-[#94A3B8] font-semibold">쿠폰 주기 (stamps_per_reward)</dt>
           <dd className="mt-0.5 font-bold text-[#111827]">스탬프 {store.stamps_per_reward}개마다</dd>
+        </div>
+        <div className="col-span-2 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] px-3 py-2">
+          <dt className="text-[#94A3B8] font-semibold">영업시간 제한 (enforce_hours)</dt>
+          <dd className="mt-0.5 font-bold text-[#111827]">
+            {store.enforce_hours === null
+              ? '020 적용 전 — 영업시간에만 적립'
+              : store.enforce_hours ? '켜짐 — 영업시간에만 적립' : '꺼짐 — 시간 상관없이 적립'}
+          </dd>
         </div>
       </dl>
 
