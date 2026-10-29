@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '../../lib/supabase/client';
 import { useLang } from '../../lib/lang';
+import { cleanupPushForLogout } from '../../lib/nativePush';
 
 const T = {
   ko: {
@@ -100,7 +101,9 @@ export default function ResetPasswordPage() {
       return;
     }
     setStatus('done');
-    // 새 비밀번호로 다시 로그인하도록 세션을 정리한 뒤 이동
+    // 새 비밀번호로 다시 로그인하도록 세션을 정리한 뒤 이동.
+    // 다른 로그아웃과 같이 이 기기의 푸시 토큰·웹 구독을 먼저 정리한다(실패해도 진행)
+    await cleanupPushForLogout();
     await supabase.auth.signOut();
     setTimeout(() => { window.location.href = '/auth'; }, 2500);
   }

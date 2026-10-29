@@ -6,11 +6,13 @@
 //  - Android: google-services.json 이 아직 없어 register() 가 실패하므로 막아 둔다.
 //    (다음 단계에서 'android' 를 허용 목록에 추가)
 //
-// 토큰은 push_tokens 에 upsert(onConflict token) 된다. "기기 = 토큰 = 언어".
+// 토큰은 register_push_token() (022) 으로 push_tokens 에 저장된다. "기기 = 토큰 = 언어".
+// 같은 기기에서 계정이 바뀌어도 함수가 토큰 주인을 지금 로그인한 사용자로 옮긴다.
 import { Capacitor } from '@capacitor/core';
 import type { PushNotificationsPlugin } from '@capacitor/push-notifications';
 import { getSupabaseClient } from './supabase/client';
 import { getLang, type UILang } from './lang';
+import { removeWebPushSubscriptionForLogout } from './push';
 
 const TOKEN_KEY = 'the-well-push-token';
 const ENABLED_PLATFORMS: readonly string[] = ['ios'];
@@ -129,27 +131,34 @@ export async function getNativePushPermission(): Promise<NativePushPermission> {
   return (await checkNativePushPermission()).permission;
 }
 
-/** 토큰을 push_tokens 에 저장(갱신). 로그인 상태가 아니면 false. */
+/** PostgREST: 함수가 없음(022 적용 전) */
+const isMissingFunction = (error: { code?: string } | null) => error?.code === 'PGRST202' || error?.code === '42883';
+
+/**
+ * 토큰을 push_tokens 에 저장(갱신). 로그인 상태가 아니면 false.
+ * register_push_token() 이 같은 토큰 행의 주인을 지금 사용자로 옮기고 언어·last_seen_at 을 갱신한다.
+ * 022 적용 전(함수 없음)에는 예전처럼 직접 upsert 한다 — 본인 토큰 갱신은 그대로 되고,
+ * 다른 사람 행이 남은 기기에서의 계정 전환만 예전처럼 실패한다.
+ */
 async function saveToken(token: string): Promise<{ ok: boolean; error?: string }> {
   const supabase = getSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: '로그인 상태가 아님' };
 
-  const { error } = await supabase
-    .from('push_tokens')
-    .upsert(
-      {
-        user_id: user.id,
-        token,
-        platform: Capacitor.getPlatform(),
-        lang: getLang(),
-        last_seen_at: new Date().toISOString(),
-      },
-      { onConflict: 'token' }
-    );
+  const platform = Capacitor.getPlatform();
+  const lang = getLang();
+  let { error } = await supabase.rpc('register_push_token', { p_token: token, p_platform: platform, p_lang: lang });
+  if (isMissingFunction(error)) {
+    ({ error } = await supabase
+      .from('push_tokens')
+      .upsert(
+        { user_id: user.id, token, platform, lang, last_seen_at: new Date().toISOString() },
+        { onConflict: 'token' }
+      ));
+  }
   if (error) {
     // 018 미적용(테이블 없음) 등 — 화면은 깨지지 않게 로그만 남긴다
-    console.error('[nativePush] upsert push_tokens error:', error.message);
+    console.error('[nativePush] register push token error:', error.message);
     return { ok: false, error: `push_tokens 저장 실패: ${error.code ?? ''} ${error.message}` };
   }
   storeToken(token);
@@ -304,17 +313,39 @@ export async function updateNativePushLang(lang: UILang): Promise<void> {
   if (error) console.error('[nativePush] update lang error:', error.message);
 }
 
-/**
- * 로그아웃 직전 — 이 기기의 토큰 행을 지워 다음 사용자에게 알림이 가지 않게 한다.
- * (signOut 전에 호출해야 RLS 로 본인 행을 지울 수 있다.)
- * localStorage 의 토큰은 남겨 두어, 같은 기기에서 다시 로그인하면 자동으로 재등록된다.
- */
-export async function removeNativePushTokenForLogout(): Promise<void> {
-  const token = storedToken();
-  if (!isNativePushSupported() || !token) return;
-  const { error } = await getSupabaseClient().from('push_tokens').delete().eq('token', token);
-  if (error) console.error('[nativePush] logout cleanup error:', error.message);
+/** 이 기기의 앱 토큰 행 삭제 (실패해도 던지지 않는다) */
+async function removeNativeTokenRow(): Promise<void> {
+  try {
+    const token = storedToken();
+    if (!isNativePushSupported() || !token) return;
+    const { error } = await getSupabaseClient().from('push_tokens').delete().eq('token', token);
+    if (error) console.error('[nativePush] logout cleanup error:', error.message);
+  } catch (err) {
+    console.error('[nativePush] logout cleanup error:', nativePushErrorText(err));
+  }
 }
+
+const LOGOUT_CLEANUP_TIMEOUT_MS = 4_000;
+
+/**
+ * 로그아웃 직전 — 이 기기·브라우저로 다음 사용자에게 이전 사용자의 알림이 가지 않게 정리한다.
+ *  - 앱: push_tokens 의 이 기기 토큰 행 삭제 (localStorage 토큰은 남겨, 같은 기기에서
+ *    다시 로그인하면 자동으로 재등록된다)
+ *  - 웹: 이 브라우저의 push_subscriptions 행 삭제 + 브라우저 구독 해지
+ * signOut 전에 호출해야 RLS 로 본인 행을 지울 수 있다.
+ * 실패하거나 느려도 로그아웃은 막지 않는다(최대 4초 기다리고 진행). 앱 토큰 정리가 실패해도
+ * 다음 로그인 때 register_push_token() 이 토큰 주인을 새 사용자로 바로잡는다.
+ */
+export async function cleanupPushForLogout(): Promise<void> {
+  const cleanup = Promise.allSettled([removeNativeTokenRow(), removeWebPushSubscriptionForLogout()]);
+  await Promise.race([cleanup, new Promise(resolve => setTimeout(resolve, LOGOUT_CLEANUP_TIMEOUT_MS))]);
+}
+
+/**
+ * @deprecated 예전 이름 — 지금은 웹 구독 정리까지 하는 cleanupPushForLogout 과 같다.
+ * (호출부 app/my/page.tsx 는 다른 미커밋 작업이 있어 이번에 바꾸지 않았다. 다음에 이름을 맞출 것)
+ */
+export const removeNativePushTokenForLogout = cleanupPushForLogout;
 
 /** 알림을 탭해 앱이 열렸을 때 — data.url 로 이동. 해제 함수를 돌려준다. */
 export async function listenNativePushActions(onUrl: (url: string) => void): Promise<() => void> {

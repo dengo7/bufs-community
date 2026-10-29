@@ -118,3 +118,30 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * 로그아웃 직전 — 이 브라우저의 웹 푸시 구독을 정리한다(다음 사용자에게 이전 사용자 알림이 가지 않게).
+ *  1) push_subscriptions 에서 이 브라우저 endpoint 행 삭제 (signOut 전이라 RLS 로 본인 행 삭제 가능)
+ *  2) 브라우저 구독 해지 — 1)이 실패해도 endpoint 가 죽어 다음 발송 때 서버(/api/push)가
+ *     410 응답을 보고 그 행을 지운다.
+ * 다시 받으려면 로그인 후 알림 설정에서 켜면 된다. 실패해도 던지지 않는다.
+ * (serviceWorker.ready 는 등록된 서비스워커가 없으면 끝나지 않으므로 getRegistration 을 쓴다)
+ */
+export async function removeWebPushSubscriptionForLogout(): Promise<void> {
+  try {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = await reg?.pushManager?.getSubscription();
+    if (!sub) return;
+
+    const { error } = await getSupabaseClient()
+      .from('push_subscriptions')
+      .delete()
+      .eq('endpoint', sub.endpoint);
+    if (error) console.error('[push] logout cleanup delete error:', error.message);
+
+    await sub.unsubscribe();
+  } catch (err) {
+    console.error('[push] logout cleanup error:', err);
+  }
+}

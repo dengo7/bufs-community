@@ -8,7 +8,7 @@ import { getSupabaseClient } from './lib/supabase/client';
 import { getBlockedIds } from './lib/blocks';
 import BottomTabBar from './components/BottomTabBar';
 import PushPromptSheet from './components/PushPromptSheet';
-import { removeNativePushTokenForLogout } from './lib/nativePush';
+import { cleanupPushForLogout } from './lib/nativePush';
 import HeroBanner from './components/HeroBanner';
 import HomeQuickLinks from './components/HomeQuickLinks';
 import NoticeSection from './components/NoticeSection';
@@ -202,8 +202,9 @@ export default function Home() {
   }, [blockedIds]);
 
   async function handleLogout() {
-    // 앱 푸시 토큰은 RLS 로 본인 행만 지울 수 있으므로 signOut 전에 정리
-    await removeNativePushTokenForLogout();
+    // 앱 푸시 토큰·웹 푸시 구독은 RLS 로 본인 행만 지울 수 있으므로 signOut 전에 정리
+    // (실패해도 로그아웃은 진행 — 앱 토큰은 다음 로그인 때 register_push_token 이 바로잡는다)
+    await cleanupPushForLogout();
     await getSupabaseClient().auth.signOut();
   }
 
