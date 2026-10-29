@@ -4,6 +4,7 @@ import "./globals.css";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import NativePushBootstrap from "./components/NativePushBootstrap";
 import NavigationProgressWrapper from "./components/NavigationProgressWrapper";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,8 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegister />
         <NativePushBootstrap />
+        {/* Vercel Web Analytics — 배포 환경에서만 집계(dev에서는 스크립트가 디버그 모드로 동작하고 전송 안 함) */}
+        <Analytics />
       </body>
     </html>
   );
