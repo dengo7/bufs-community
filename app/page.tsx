@@ -12,6 +12,7 @@ import { cleanupPushForLogout } from './lib/nativePush';
 import HeroBanner from './components/HeroBanner';
 import HomeQuickLinks from './components/HomeQuickLinks';
 import NoticeSection from './components/NoticeSection';
+import ProgramSection from './components/ProgramSection';
 import ShuttleQuickCard from './components/campus/ShuttleQuickCard';
 import { formatTimeAgo } from './lib/utils';
 import { fetchUnreadCount } from './lib/notifications';
@@ -376,6 +377,9 @@ export default function Home() {
 
           {/* ── ④ 학사공지 (2개 미리보기 + 전체보기) ── */}
           <NoticeSection lang={lang} />
+
+          {/* ── ④-1 비교과 프로그램 (신청 가능 2건 미리보기, 0건이면 숨김) ── */}
+          <ProgramSection lang={lang} />
 
           {/* ── ⑤ 최근 커뮤니티 (최신 RECENT_LIMIT개 + 전체보기) ── */}
           <div className="mt-4">

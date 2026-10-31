@@ -45,6 +45,7 @@ The Well은 부산외국어대학교(BUFS)에 다니는 외국인 유학생이 �
 | 학사일정 | `/schedule` | 시험·방학·신청 등 유형별 일정, 다가오는 일정 표시 |
 | 시간표 | `/timetable` | 과목·요일·시간·강의실·교수·학점 입력, 시간 겹침 검사, 오늘의 수업 |
 | 학교 공지 | `/notices` | 학사공지·국제교류처 공지 목록, 언어별 번역 제목 |
+| 비교과 프로그램 | `/programs`, `/programs/[slug]` | 특강 등 비교과 프로그램 목록·상세(일시·장소·신청기간·혜택), 4개 언어. 수동 입력(`extracurricular_programs`), 신청은 학교 시스템 링크로 |
 | 커뮤니티 | `/community`, `/category/[slug]`, `/post/[id]`, `/write` | 카테고리별 게시판, 글쓰기(이미지 최대 5장, 업로드 전 압축), 댓글·답글, 좋아요, 북마크, 신고, 사용자 차단, 글 핀 고정 |
 | 생활 가이드 | `/category/[slug]`, `/guide/[id]`, `/guides` | 부동산·은행·통신·보험·병원 카테고리의 가이드 카드(절차·장소·체크리스트·정보). 관리자가 편집 |
 | 검색 | `/search` | 게시글 검색 |
@@ -59,6 +60,7 @@ The Well은 부산외국어대학교(BUFS)에 다니는 외국인 유학생이 �
 - 관리자 역할(`profiles.role = 'admin'`)이 게시글 삭제, 사용자 차단, 핀 고정, 가이드 편집을 할 수 있습니다.
 - 게시글 신고는 이메일로 관리자에게 전달됩니다(Resend).
 - 학교 공지는 GitHub Actions가 **매시 17분**에 자동 수집합니다(`.github/workflows/crawl-notices.yml`).
+- 비교과 프로그램은 원문 사이트가 로그인을 요구해 자동 수집하지 않고, 관리자가 `extracurricular_programs`에 직접 입력합니다(번역도 사람이 작성, `supabase/migrations/023_extracurricular_programs.sql` seed 참고).
 
 ## 기술 스택
 
