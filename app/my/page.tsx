@@ -7,7 +7,7 @@ import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/s
 import {
   Bell, SquarePen, Bookmark, Compass,
   FileText, ShieldCheck, LogOut, ChevronRight,
-  Heart, User, UserX, Globe, QrCode, Store,
+  Heart, User, UserX, Globe, QrCode, Store, ListChecks,
   type LucideIcon,
 } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase/client';
@@ -386,6 +386,8 @@ export default function MyPage() {
               <SectionCard label="관리자">
                 <MenuRow icon={Store} title="제휴 가게 관리" desc="매장 QR 발급·직원 PIN·스티커" onClick={() => router.push('/admin/partners')} />
                 <MenuRow icon={QrCode} title="QR 스캔 테스트" desc="실기기 카메라·사진 QR 해독 확인" onClick={() => router.push('/partner/scan-test')} />
+                {/* 정착 체크리스트 1단계 — 공개 전까지 관리자 메뉴에서만 진입 */}
+                <MenuRow icon={ListChecks} title="정착 체크리스트 (미리보기)" desc="입국일·비자·거주형태별 할 일 · 공개 전" onClick={() => router.push('/settle')} />
               </SectionCard>
             )}
 
