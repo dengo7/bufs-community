@@ -156,9 +156,9 @@ export default function NoticesPage() {
                     )}
                   </div>
 
-                  <p className="text-[14px] text-[#1A2236] leading-snug line-clamp-2">
+                  <a href={`/notices/${n.id}`} className="block text-[14px] text-[#1A2236] leading-snug line-clamp-2 no-underline">
                     {noticeTitle(n, lang)}
-                  </p>
+                  </a>
 
                   <div className="mt-2.5 flex items-center justify-between gap-2">
                     <span className="text-[11px] text-slate-400">{formatNoticeDate(n.published_at)}</span>
